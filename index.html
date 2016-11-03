@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>um test</title>
+    <link rel="stylesheet" href="bower_components/umpack-front/dist/css/umpack-style.css" />
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/js-cookie/src/js.cookie.js"></script>
+    <script src="bower_components/umpack-front/dist/js/umpack-front.min.js"></script>
+</head>
+
+<body>
+    <button id="getTestResources">get Res</button>
+    <button id="logout">Logout</button>
+    <button id="signup_button">signup</button>
+    <script>
+    $(document).ready(function() {
+
+        $('#logout').click(function() {
+            umfp.logout();
+        });
+
+        $('#getTestResources').click(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/resources',
+                headers: umfp.getAuthorizationHeader(),
+
+                success: function(result) {
+                    alert(result.toString());
+                },
+                error: function(err) {
+
+                    alert(err.responseText);
+                }
+
+            })
+        });
+
+        $('#signup_button').click(function() {
+            umfp.showSignUp();
+        });
+
+        umfp.setOptions({
+            loginPopupTitle: 'enter user name and password',
+            signupPopupTitle: 'please enter your info',
+            loginUrl: '/um/login',
+            signupUrl: '/um/signup',
+            loginSuccessRedirectionUrl: 'http://stackoverflow.com'
+        });
+        umfp.showLogin();
+
+
+    })
+    </script>
+</body>
+
+</html>

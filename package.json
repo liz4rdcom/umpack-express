@@ -1,0 +1,33 @@
+{
+  "name": "umpack-express",
+  "version": "1.0.0",
+  "description": "usermanagement pack for express app",
+  "main": "umpack.js",
+  "scripts": {
+    "start": "node testServer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xZeroCode/umpack-express.git"
+  },
+  "keywords": [
+    "usermanagement",
+    "umpack",
+    "user",
+    "management",
+    "express"
+  ],
+  "author": "0xzerocode",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/0xZeroCode/umpack-express/issues"
+  },
+  "homepage": "https://github.com/0xZeroCode/umpack-express#readme",
+  "dependencies": {
+    "bluebird": "3.4.6",
+    "body-parser": "1.15.2",
+    "express": "4.14.0",
+    "jsonwebtoken": "7.1.9",
+    "mongoose": "4.6.6"
+  }
+}
