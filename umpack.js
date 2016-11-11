@@ -16,7 +16,13 @@ var User = mongoose.model('user', {
     email: String,
     phone: String,
     address: String,
-    additionalInfo: String
+    additionalInfo: String,
+    isActivated: Boolean,
+    roles: [String]
+});
+
+var Role = mongoose.model('roleactions', {
+    name: String
 });
 
 
@@ -73,7 +79,9 @@ router.post('/signup', function(req, res, next) {
                 email: userData.email,
                 phone: userData.phone,
                 address: userData.address,
-                additionalInfo: userData.additionalInfo
+                additionalInfo: userData.additionalInfo,
+                isActivated: false,
+                roles: []
 
             });
 
@@ -93,6 +101,112 @@ function passwordHash(password) {
         .update('password')
         .digest('hex');
 }
+
+router.get('/users', function(req, res, next) {
+
+    var dbPromise = User.find({}).exec();
+
+    dbPromise
+        .then(function(result) {
+            var userList = result.map(function(item) {
+                return {
+                    id: item._id,
+                    userName: item.userName,
+                    isActivated: item.isActivated,
+                    roles: item.roles
+                }
+            })
+            res.send(userList);
+
+
+        })
+        .catch(function(err) {
+            res.status(400).send(err.message);
+        })
+
+});
+
+router.post('/updateUserStatus', function(req, res, next) {
+
+    var dbPromise = User.findById(req.body.id).exec();
+
+    dbPromise
+        .then(function(user) {
+            user.isActivated = req.body.isActivated;
+            return user.save();
+        })
+        .then(function(user) {
+            res.send({
+                id: user._id,
+                isActivated: user.isActivated,
+                userName: user.userName,
+                roles: user.roles
+            });
+        })
+        .catch(function(err) {
+            res.status(400).send(err.message);
+        })
+
+
+});
+
+router.get('/roles', function(req, res, next) {
+
+    var dbPromise = Role.find({}, 'name').exec();
+
+    dbPromise
+        .then(function(result) {
+            var roles = result.map(function(item) {
+                return { name: item.name };
+            })
+            res.send(roles);
+        })
+        .catch(function(err) {
+            res.status(400).send(err.message);
+        })
+
+});
+
+router.post('/updateUserRoles', function(req, res, next) {
+
+    var reqData = req.body;
+    console.log(reqData);
+
+    var dbPromise = User.findById(reqData.userId).exec();
+    dbPromise
+        .then(function(user) {
+
+            if (!user.roles)
+                user.roles = [];
+
+            if (reqData.enable === 'true') {
+                user.roles.push(reqData.roleName);
+                return user.save();
+            }
+
+            var roleIndex = user.roles.indexOf(reqData.roleName);
+
+            if (roleIndex === -1)
+                throw new Error('wrong role name');
+
+            user.roles.splice(roleIndex, 1);
+            return user.save();
+
+
+        })
+        .then(function(user) {
+            res.send({
+                id: user._id,
+                userName: user.userName,
+                isActivated: user.isActivated,
+                roles: user.roles
+            })
+        })
+        .catch(function(err) {
+            res.status(400).send(err.message);
+        });
+
+});
 
 function isAuthorized(req, res, next) {
 

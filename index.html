@@ -2,17 +2,21 @@
 <html>
 
 <head>
-    <title>um test</title>
-    <link rel="stylesheet" href="bower_components/umpack-front/dist/css/umpack-style.css" />
+    <title>um front pack test page</title>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="umpack-style.css" />
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/js-cookie/src/js.cookie.js"></script>
-    <script src="bower_components/umpack-front/dist/js/umpack-front.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="umpack-front.js"></script>
 </head>
 
 <body>
     <button id="getTestResources">get Res</button>
     <button id="logout">Logout</button>
-    <button id="signup_button">signup</button>
+    <button id="signup_button">sign up</button>
+    <button id="showRoleManager_button">show role manager</button>
     <script>
     $(document).ready(function() {
 
@@ -41,14 +45,23 @@
             umfp.showSignUp();
         });
 
-        umfp.setOptions({
-            loginPopupTitle: 'enter user name and password',
-            signupPopupTitle: 'please enter your info',
-            loginUrl: '/um/login',
-            signupUrl: '/um/signup',
-            loginSuccessRedirectionUrl: 'http://stackoverflow.com'
+        $('#showRoleManager_button').click(function() {
+            umfp.showRoleManager();
         });
-        umfp.showLogin();
+
+        umfp.setOptions({
+            loginPopupTitle: 'Enter user name and password',
+            signupPopupTitle: 'Please enter your info',
+            baseUrl: '/um',
+            loginSuccessRedirectionUrl: 'http://stackoverflow.com',
+            afterLogin: function() {
+                alert('after login callback');
+            },
+            afterCancel: function() {
+                alert('after Cancel callback');
+            }
+        });
+        //umfp.showLogin();
 
 
     })
