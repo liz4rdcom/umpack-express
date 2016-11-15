@@ -36,7 +36,7 @@ gulp.task('pack-umpack-front', [
     'compile-css'
 
 ], function() {
-    gulp.src('bower.json').pipe(gulp.dest('dist_front/'));
+    
     gulp.src('loginModal-template.html').pipe(gulp.dest('dist_front/js/'));
     gulp.src('signupModal-template.html').pipe(gulp.dest('dist_front/js/'));
     gulp.src('userRoleManagementModal-template.html').pipe(gulp.dest('dist_front/js/'));
