@@ -10,6 +10,7 @@ var umfp = (function(options) {
             umfp.options.updateUserStatusUrl = umfp.options.baseUrl + '/updateUserStatus';
             umfp.options.getRolesUrl = umfp.options.baseUrl + '/roles';
             umfp.options.updateUserRoleUrl = umfp.options.baseUrl + '/updateUserRoles';
+            umfp.options.umfpBasePath = umfp.options.umfpBasePath || '/bower_components/umpack-express-front/dist_front/js/';
         },
 
         isLogedIn: function() {
@@ -25,7 +26,7 @@ var umfp = (function(options) {
 
             $("body").append(modal);
 
-            $("#loginModal").load("loginModal-template.html", function() {
+            $("#loginModal").load(umfp.options.umfpBasePath + "loginModal-template.html", function() {
 
                 $("#loginModal").modal("show");
 
@@ -88,7 +89,7 @@ var umfp = (function(options) {
 
             $("body").append(modal);
 
-            $("#signupModal").load("signupModal-template.html", function() {
+            $("#signupModal").load(umfp.options.umfpBasePath + "signupModal-template.html", function() {
 
                 $("#signupModal").modal('show');
 
@@ -133,7 +134,7 @@ var umfp = (function(options) {
 
             $("body").append(modal);
 
-            $("#roleManagerModal").load("userRoleManagementModal-template.html", function() {
+            $("#roleManagerModal").load(umfp.options.umfpBasePath + "userRoleManagementModal-template.html", function() {
 
                 $("#roleManagerModal").modal('show');
 
@@ -142,7 +143,7 @@ var umfp = (function(options) {
                 $("label > input[name='userIsActivated']").click(activateUserCheckBox_Click);
                 $("span.search-button-span > button.search-user-button").click(userSearch_click);
                 $("div.input-group > input[name='searchUser']").keypress(userSearch_keypress);
-                
+
                 $("#userRoleModal-Title").text(umfp.options.roleManagerPopupTitle);
             });
 
@@ -343,7 +344,7 @@ var umfp = (function(options) {
 
             }
 
-           
+
 
             function handleServerError(error) {
 

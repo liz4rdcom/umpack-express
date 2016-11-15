@@ -1,6 +1,5 @@
 {
   "name": "umpack-express-front",
-  "version": "0.0.1",
   "description": "usermanagement pack for express app",
   "main": "umpack-front.js",
   "authors": [
