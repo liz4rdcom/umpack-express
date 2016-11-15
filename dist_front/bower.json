@@ -1,0 +1,29 @@
+{
+  "name": "umpack-express-front",
+  "version": "0.0.1",
+  "description": "usermanagement pack for express app",
+  "main": "umpack-front.js",
+  "authors": [
+    "0xzerocode"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "usermanagement",
+    "umpack",
+    "user",
+    "management",
+    "express"
+  ],
+  "homepage": "https://github.com/0xZeroCode/umpack-express",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "3.3.7",
+    "js-cookie": "2.1.3"
+  }
+}

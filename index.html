@@ -14,6 +14,7 @@
 
 <body>
     <button id="getTestResources">get Res</button>
+    <button id="getUserMetaData_button">get user meta data</button>
     <button id="logout">Logout</button>
     <button id="signup_button">sign up</button>
     <button id="showRoleManager_button">show role manager</button>
@@ -49,16 +50,35 @@
             umfp.showRoleManager();
         });
 
+        $('#getUserMetaData_button').click(function () {
+             $.ajax({
+                type: 'GET',
+                url: '/resources/usermetadata',
+                headers: umfp.getAuthorizationHeader(),
+
+                success: function(result) {
+                    console.log(result);
+                    
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
+
+            })
+        })
+
         umfp.setOptions({
-            loginPopupTitle: 'Enter user name and password',
-            signupPopupTitle: 'Please enter your info',
+            loginPopupTitle: 'Enter user name and password 1',
+            signupPopupTitle: 'Please enter your info 1',
+            roleManagerPopupTitle: 'User Role Manager blabla',
             baseUrl: '/um',
             loginSuccessRedirectionUrl: 'http://stackoverflow.com',
             afterLogin: function() {
                 alert('after login callback');
             },
-            afterCancel: function() {
-                alert('after Cancel callback');
+            afterClose: function() {
+                alert('after modal close call back');
             }
         });
         //umfp.showLogin();

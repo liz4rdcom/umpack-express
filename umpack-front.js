@@ -27,42 +27,46 @@ var umfp = (function(options) {
 
             $("#loginModal").load("loginModal-template.html", function() {
 
-                $("#loginModal").modal('show');
+                $("#loginModal").modal("show");
 
-                $("div.login-modal-footer > button.login-button").click(function() {
-                    var userLoginData = {
-                        userName: $("div.login-modal-content > input[name='userName']").val(),
-                        password: $("div.login-modal-content > input[name='password']").val()
-                    }
+                $("div.login-modal-footer > button.login-button").click(loginButton_click);
 
-                    $.ajax({
-                        type: 'POST',
-                        url: umfp.options.loginUrl,
-                        data: userLoginData,
-                        success: function(result) {
-                            $("#loginModal").modal('hide');
-                            Cookies.set('accessToken', result);
-                            window.location.href = umfp.options.loginSuccessRedirectionUrl;
-
-                            if (umfp.options.afterLogin)
-                                umfp.options.afterLogin();
-
-                        },
-                        error: function(err) {
-
-                            $("div.login-modal-content > div.response-message-box").text(err.responseJSON.message);
-                        }
-
-                    });
+                $("#loginModal").on("hide.bs.modal", function(e) {
+                    if (umfp.options.afterClose)
+                        umfp.options.afterClose();
                 });
 
-
-
-                $('#loginModal').on('hide.bs.modal', function(e) {
-                    if (umfp.options.afterCancel)
-                        umfp.options.afterCancel();
-                })
+                $("#loginModal-Title").text(umfp.options.loginPopupTitle);
             });
+
+            function loginButton_click() {
+                var userLoginData = {
+                    userName: $("div.login-modal-content > input[name='userName']").val(),
+                    password: $("div.login-modal-content > input[name='password']").val()
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: umfp.options.loginUrl,
+                    data: userLoginData,
+                    success: function(result) {
+                        $("#loginModal").modal('hide');
+                        Cookies.set('accessToken', result);
+                        window.location.href = umfp.options.loginSuccessRedirectionUrl;
+
+                        if (umfp.options.afterLogin)
+                            umfp.options.afterLogin();
+
+                    },
+                    error: function(err) {
+
+                        $("div.login-modal-content > div.response-message-box").text(err.responseJSON.message);
+                    }
+
+                });
+            }
+
+
         },
 
         logout: function() {
@@ -88,35 +92,40 @@ var umfp = (function(options) {
 
                 $("#signupModal").modal('show');
 
-                $("div.signup-modal-footer > button.signup-button").click(function() {
+                $("div.signup-modal-footer > button.signup-button").click(signUpButton_click);
 
-                    var userSignupData = {
-                        userName: $("div.signup-modal-content > input[name='userName']").val(),
-                        password: $("div.signup-modal-content > input[name='password']").val(),
-                        rePassword: $("div.signup-modal-content > input[name='rePassword']").val(),
-                        firstName: $("div.signup-modal-content > input[name='firstName']").val(),
-                        lastName: $("div.signup-modal-content > input[name='lastName']").val(),
-                        email: $("div.signup-modal-content > input[name='email']").val(),
-                        phone: $("div.signup-modal-content > input[name='phone']").val(),
-                        address: $("div.signup-modal-content > input[name='address']").val(),
-                        additionalInfo: $("div.signup-modal-content > input[name='additionalInfo']").val()
+                $("#signupModal-Title").text(umfp.options.signupPopupTitle);
+            });
 
+            function signUpButton_click() {
+
+                var userSignupData = {
+                    userName: $("div.signup-modal-content > input[name='userName']").val(),
+                    password: $("div.signup-modal-content > input[name='password']").val(),
+                    rePassword: $("div.signup-modal-content > input[name='rePassword']").val(),
+                    firstName: $("div.signup-modal-content > input[name='firstName']").val(),
+                    lastName: $("div.signup-modal-content > input[name='lastName']").val(),
+                    email: $("div.signup-modal-content > input[name='email']").val(),
+                    phone: $("div.signup-modal-content > input[name='phone']").val(),
+                    address: $("div.signup-modal-content > input[name='address']").val(),
+                    additionalInfo: $("div.signup-modal-content > input[name='additionalInfo']").val()
+
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: umfp.options.signupUrl,
+                    data: userSignupData,
+                    success: function(result) {
+                        $("#signupModal").modal('hide');
+                    },
+                    error: function(err) {
+                        $("div.signup-modal-content > div.response-message-box").text(err.responseJSON.message);
                     }
 
-                    $.ajax({
-                        type: 'POST',
-                        url: umfp.options.signupUrl,
-                        data: userSignupData,
-                        success: function(result) {
-                            $("#signupModal").modal('hide');
-                        },
-                        error: function(err) {
-                            $("div.signup-modal-content > div.response-message-box").text(err.responseJSON.message);
-                        }
-
-                    });
                 });
-            });
+            }
+
         },
 
         showRoleManager: function() {
@@ -133,12 +142,16 @@ var umfp = (function(options) {
                 $("label > input[name='userIsActivated']").click(activateUserCheckBox_Click);
                 $("span.search-button-span > button.search-user-button").click(userSearch_click);
                 $("div.input-group > input[name='searchUser']").keypress(userSearch_keypress);
+                
+                $("#userRoleModal-Title").text(umfp.options.roleManagerPopupTitle);
             });
 
             function activateUserCheckBox_Click() {
 
-                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data())
-                    return; //TODO show error (select user first)
+                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data()) {
+                    hadnelValidation('firstly select user from list');
+                    return;
+                }
 
                 var userData = umfp.selectedUserItem.data();
 
@@ -152,8 +165,7 @@ var umfp = (function(options) {
 
                     },
                     error: function(err) {
-                        //TODO error Handler
-                        console.log(err.message);
+                        handleServerError(err);
                     }
                 });
             }
@@ -168,8 +180,7 @@ var umfp = (function(options) {
                         populateUsers(result);
                     },
                     error: function(err) {
-                        //TODO error handler
-                        console.log(err);
+                        handleServerError(err);
                     }
 
                 });
@@ -183,9 +194,8 @@ var umfp = (function(options) {
                     success: function(result) {
                         populateRoles(result);
                     },
-                    error: function(error) {
-                        //TODO error handler
-                        console.log(err);
+                    error: function(err) {
+                        handleServerError(err);
                     }
                 });
             }
@@ -261,8 +271,10 @@ var umfp = (function(options) {
 
             function roleCheckBox_click(e) {
 
-                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data())
-                    return; //TODO show error (select user first)
+                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data()) {
+                    hadnelValidation('firstly select user from list');
+                    return;
+                }
 
 
                 var target = $(e.target);
@@ -279,8 +291,7 @@ var umfp = (function(options) {
 
                     },
                     error: function(err) {
-                        //TODO error Handler
-                        console.log(err.message);
+                        handleServerError(err);
                     }
                 });
 
@@ -288,8 +299,10 @@ var umfp = (function(options) {
 
             function showSelectedUserRoles() {
 
-                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data())
-                    return; //TODO show error (select user first)
+                if (!umfp.selectedUserItem || !umfp.selectedUserItem.data()) {
+                    hadnelValidation('firstly select user from list');
+                    return;
+                }
 
                 var userData = umfp.selectedUserItem.data();
 
@@ -327,6 +340,20 @@ var umfp = (function(options) {
                     return ($(this).data().userName.includes(searchWord));
 
                 }).show();
+
+            }
+
+           
+
+            function handleServerError(error) {
+
+                $("div.responseMessge").text(error.responseJSON.message);
+
+            }
+
+            function hadnelValidation(message) {
+
+                $("div.responseMessge").text(message);
 
             }
 

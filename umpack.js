@@ -2,6 +2,10 @@ var router = require('express').Router();
 var jwt = require('jsonwebtoken');
 var mongoose = require('mongoose');
 var crypto = require('crypto');
+var urlMatch = require('./urlMatch');
+var Promise = require('bluebird');
+
+var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
 mongoose.Promise = require('bluebird');
 
@@ -18,11 +22,13 @@ var User = mongoose.model('user', {
     address: String,
     additionalInfo: String,
     isActivated: Boolean,
-    roles: [String]
+    roles: [String],
+    metaData: {}
 });
 
 var Role = mongoose.model('roleactions', {
-    name: String
+    name: String,
+    actions: []
 });
 
 
@@ -33,16 +39,19 @@ router.post('/login', function(req, res, next) {
     dbPromise = User.findOne({ 'userName': userData.userName }).exec();
 
     dbPromise
-        .then(function(result) {
+        .then(function(user) {
 
-            if (!result || result.password !== passwordHash(userData.password))
+            if (!user || user.password !== passwordHash(userData.password))
                 throw new Error('wrong user name or password');
 
             var accesKey = jwt.sign({
-                user: userData.username
+                user: user.userName,
+                roles: user.roles
             }, accessTokenSecret, {
                 expiresIn: '1h'
             });
+
+
 
             res.send(accesKey);
 
@@ -121,7 +130,7 @@ router.get('/users', function(req, res, next) {
 
         })
         .catch(function(err) {
-            res.status(400).send(err.message);
+            res.status(400).send({ message: err.message });
         })
 
 });
@@ -132,6 +141,7 @@ router.post('/updateUserStatus', function(req, res, next) {
 
     dbPromise
         .then(function(user) {
+            throw new Error('test error message');
             user.isActivated = req.body.isActivated;
             return user.save();
         })
@@ -144,7 +154,7 @@ router.post('/updateUserStatus', function(req, res, next) {
             });
         })
         .catch(function(err) {
-            res.status(400).send(err.message);
+            res.status(400).send({ message: err.message });
         })
 
 
@@ -162,7 +172,7 @@ router.get('/roles', function(req, res, next) {
             res.send(roles);
         })
         .catch(function(err) {
-            res.status(400).send(err.message);
+            res.status(400).send({ message: err.message });
         })
 
 });
@@ -170,7 +180,7 @@ router.get('/roles', function(req, res, next) {
 router.post('/updateUserRoles', function(req, res, next) {
 
     var reqData = req.body;
-    console.log(reqData);
+
 
     var dbPromise = User.findById(reqData.userId).exec();
     dbPromise
@@ -203,7 +213,7 @@ router.post('/updateUserRoles', function(req, res, next) {
             })
         })
         .catch(function(err) {
-            res.status(400).send(err.message);
+            res.status(400).send({ message: err.message });
         });
 
 });
@@ -215,13 +225,73 @@ function isAuthorized(req, res, next) {
     if (!jwtToken)
         return res.status(400).send({ message: 'there is no jwt token' });
 
-    jwt.verify(jwtToken, accessTokenSecret, function(err, decoded) {
-        if (err)
-            return res.status(400).send({ message: 'token verification failed' });
+    jwtVerifyAsync(jwtToken, accessTokenSecret)
+        .then(function(decoded) {
+            return { userName: decoded.user, roles: decoded.roles };
 
-        next();
-    });
+        })
+        .then(function(userInfo) {
+            return checkRole(req.method, req.originalUrl, userInfo);
+        })
+        .then(function() {
+            next();
+        })
+        .catch(function(err) {
+            return res.status(400).send({ message: err.message });
+        });
 
+    function checkRole(verb, requestUrl, userInfo) {
+
+
+
+        var roleConditionalArray = userInfo.roles.map(function(item) {
+            return { 'name': item };
+        });
+
+        var dbPromise = Role.find({ $or: roleConditionalArray }).exec();
+
+        return dbPromise
+            .then(function(roles) {
+
+                var actions = [];
+
+                roles.map(function(role) {
+                    actions = actions.concat(filterActionsByVerb(role, verb));
+                });
+
+                function filterActionsByVerb(role, verb) {
+
+
+                    var actions = [];
+                    if (!role.actions) return actions;
+
+                    role.actions.forEach(function(item) {
+
+
+                        if (
+                            (verb === 'GET' && !item.verbGet) ||
+                            (verb === 'POST' && !item.verbPost) ||
+                            (verb === 'PUT' && !item.verbPut) ||
+                            (verb === 'DELETE' && !item.verbDelete)
+                        ) {
+
+                            return;
+                        }
+
+                        actions.push(item.pattern);
+
+                    });
+
+                    return actions;
+                }
+
+                return actions;
+            })
+            .then(function(actions) {
+                if (!urlMatch(actions, requestUrl))
+                    throw new Error('Access Denied');
+            });
+    }
 }
 
 function handleOptions(options) {
@@ -239,10 +309,63 @@ function handleOptions(options) {
 
 }
 
+
+function updateUserMetaData(userName, metaDataObject) {
+
+    var dbPromise = User.findOne({ 'userName': userName }).exec();
+
+    return dbPromise.then(function(user) {
+        user.metaData = metaDataObject;
+        return user.save();
+    });
+
+}
+
+function getUserMetaDataByUserName(userName) {
+
+    var dbPromise = User.findOne({ 'userName': userName }).exec();
+
+    return dbPromise
+        .then(function(user) {
+            return user.metaData;
+        });
+
+}
+
+function getUserMetaDataByRequest(req) {
+
+    try {
+        var jwtToken = req.headers['authorization'];
+
+        if (!jwtToken)
+            throw new Error('cant find jwt token inside the request');
+
+        return jwtVerifyAsync(jwtToken, accessTokenSecret)
+            .then(function(decoded) {
+                return User.findOne({ 'userName': decoded.user }).exec();
+            })
+            .then(function(user) {
+                return user.metaData;
+            })
+
+    } catch (err) {
+
+        return Promise.reject(err);
+
+    }
+
+
+}
+
+
+
 module.exports = function(options) {
     handleOptions(options);
     return {
         router: router,
-        isAuthorized: isAuthorized
+        isAuthorized: isAuthorized,
+        updateUserMetaData: updateUserMetaData,
+        getUserMetaDataByUserName: getUserMetaDataByUserName,
+        getUserMetaDataByRequest: getUserMetaDataByRequest
     }
 }
