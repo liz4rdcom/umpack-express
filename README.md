@@ -1,4 +1,4 @@
-# umpack-express
+# umpack
 
 ## Install Guide
 ### Bower package (includes only frontend package)
@@ -10,8 +10,8 @@ bower install umpack-express-front
 npm install umpack-express
 ```
 
-## Use
-### Frontend Integration
+# Use
+## Frontend Integration
 ```sh
 bower install umpack-express-front jquery -S -E
 ```
@@ -44,19 +44,19 @@ bower install umpack-express-front jquery -S -E
 umfp.showLogin();
 umfp.logout();
 ```
-![alt text](http://www.w3schools.com/css/img_fjords.jpg "Logo Title Text 1")
+![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/login.PNG "login")
 
 ### umfp signup new user
 ```js
 umfp.showSignUp();
 ```
-![alt text](http://www.w3schools.com/css/img_fjords.jpg "Logo Title Text 1")
+![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/signup.PNG "signup")
 
 ### umfp show user role manager
 ```js
 umfp.showRoleManager();
 ```
-![alt text](http://www.w3schools.com/css/img_fjords.jpg "Logo Title Text 1")
+![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/roleManager.PNG "role manager")
 
 ### Additional util methods
 ```js
@@ -67,3 +67,113 @@ umfp.getAccessToken();
 umfp.isLogedIn();
 //returns 'user's access token' if access token exists else calls showLogin method 
 ```
+
+
+## Backend Integration
+### Install npm package
+```sh
+npm install umpack-express -S -E
+```
+
+### Set Options and Router(express app)
+```js
+var umpack = require('./umpack')({
+    mongodbConnectionString: 'mongodb://172.17.7.92:27017/umpack',
+    accessTokenSecret: 'myrandomstring',
+    passwordHashSecret: 'mypasswordsecret'
+});
+//.....
+app.use('/um', umpack.router);
+//.....
+```
+
+### Use Authorization Middleware
+* if user has no access right then response status is 400 and response is object with error message ```{ message: err.message }```
+
+```js
+var umpack = require('./umpack')();
+
+router.get('/', umpack.isAuthorized, function(req, res, next) {
+
+    return res.send('your resources');
+
+});
+```
+
+### User's Metadata Management
+* if you need to add additional info, attribute, etc. you can use user's metadata to manage it.
+* metadata is custom field/subdocument of user doc which can contains any kind of object.
+* example : 
+### assigne/update user metadata
+```js
+    var organizationInfo = { 
+        organizationId: '2222',
+        organiationName: 'bbbbb',
+        organizationTaxCode: '777777' 
+    };
+
+    umpack.updateUserMetaData('admin', organizationInfo)
+        .then(function(result) {
+            console.log(result);
+        })
+        .catch(function(err) {
+            console.log(err.message);
+        });
+```
+
+### get user metadata by user name
+```js
+router.get('/usermetadata', function(req, res, next) {
+
+     umpack.getUserMetaDataByUserName('admin')
+         .then(function(result) {
+             return res.send(result);
+         })
+         .catch(function(err) {
+             console.log(err.message);
+             return res.send({ message: err.message });
+         });
+
+
+
+});
+
+```
+
+### get user metadata by request
+```js
+router.get('/usermetadata', function(req, res, next) {
+
+    umpack.getUserMetaDataByRequest(req)
+        .then(function(result) {
+            return res.send(result);
+        })
+        .catch(function(err) {
+            //console.log(err.message);
+            return res.status(400).send({ message: err.message });
+        });
+
+});
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
