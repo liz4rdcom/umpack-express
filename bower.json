@@ -1,5 +1,6 @@
 {
   "name": "umpack-express-front",
+  "version":"0.0.4",
   "description": "usermanagement pack for express app",
   "main": "umpack-front.js",
   "authors": [
@@ -19,7 +20,21 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "bower.json",
+    "gulpfile.js",
+    "index.html",
+    "loginModal-template.html",
+    "signupModal-template.html",
+    "userRoleManagementModal-template.html",
+    "package.json",
+    "README.md",
+    "resRouter.js",
+    "testServer.js",
+    "umpack.js",
+    "urlMatch.js"
+    
+
   ],
   "dependencies": {
     "bootstrap": "3.3.7",
