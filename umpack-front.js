@@ -28,6 +28,7 @@ var umfp = (function(options) {
 
             $("#loginModal").load(umfp.options.umfpBasePath + "loginModal-template.html", function() {
 
+                
                 $("#loginModal").modal("show");
 
                 $("div.login-modal-footer > button.login-button").click(loginButton_click);

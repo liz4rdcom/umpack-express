@@ -31,7 +31,7 @@ gulp.task('compile-css', function() {
 
 
 
-gulp.task('pack-umpack-front', [
+gulp.task('build-front', [
     'compile-scripts',
     'compile-css'
 
