@@ -29,9 +29,9 @@
     "resRouter.js",
     "testServer.js",
     "umpack.js",
-    "urlMatch.js"
+    "urlMatch.js",
+    "doc"
     
-
   ],
   "dependencies": {
     "bootstrap": "3.3.7",

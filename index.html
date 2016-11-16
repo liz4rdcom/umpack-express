@@ -17,8 +17,8 @@
 
     
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="dist_front/js/umpack-front.min.js"></script>
-    <link rel="stylesheet" href="dist_front/css/umpack-style.min.css" />
+    <script src="bower_components/umpack-express-front/dist_front/js/umpack-front.min.js"></script>
+    <link rel="stylesheet" href="bower_components/umpack-express-front/dist_front/css/umpack-style.min.css" />
     
 </head>
 
@@ -79,12 +79,12 @@
         })
 
         umfp.setOptions({
-            loginPopupTitle: 'Enter user name and password 1',
-            signupPopupTitle: 'Please enter your info 1',
-            roleManagerPopupTitle: 'User Role Manager blabla',
+            loginPopupTitle: 'Enter user name and password',
+            signupPopupTitle: 'Please enter your info',
+            roleManagerPopupTitle: 'User Role Manager',
             baseUrl: '/um',
             loginSuccessRedirectionUrl: 'http://stackoverflow.com',
-            umfpBasePath:'/dist_front/js/',
+            //umfpBasePath:'/dist_front/js/',
             afterLogin: function() {
                 alert('after login callback');
             },
