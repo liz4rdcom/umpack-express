@@ -111,7 +111,7 @@ function passwordHash(password) {
         .digest('hex');
 }
 
-router.get('/users', function(req, res, next) {
+router.get('/users',isAuthorized, function(req, res, next) {
 
     var dbPromise = User.find({}).exec();
 
@@ -135,7 +135,7 @@ router.get('/users', function(req, res, next) {
 
 });
 
-router.post('/updateUserStatus', function(req, res, next) {
+router.post('/updateUserStatus',isAuthorized, function(req, res, next) {
 
     var dbPromise = User.findById(req.body.id).exec();
 
@@ -160,7 +160,7 @@ router.post('/updateUserStatus', function(req, res, next) {
 
 });
 
-router.get('/roles', function(req, res, next) {
+router.get('/roles',isAuthorized, function(req, res, next) {
 
     var dbPromise = Role.find({}, 'name').exec();
 
@@ -177,7 +177,7 @@ router.get('/roles', function(req, res, next) {
 
 });
 
-router.post('/updateUserRoles', function(req, res, next) {
+router.post('/updateUserRoles',isAuthorized, function(req, res, next) {
 
     var reqData = req.body;
 

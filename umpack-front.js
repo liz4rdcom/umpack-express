@@ -160,6 +160,7 @@ var umfp = (function(options) {
                 $.ajax({
                     type: 'POST',
                     url: umfp.options.updateUserStatusUrl,
+                    headers: umfp.getAuthorizationHeader(),
                     data: { id: userData.id, userName: userData.userName, isActivated: this.checked },
                     success: function(result) {
                         umfp.selectedUserItem.data(result);
@@ -177,6 +178,7 @@ var umfp = (function(options) {
                 $.ajax({
                     type: 'GET',
                     url: umfp.options.getUsersUrl,
+                    headers: umfp.getAuthorizationHeader(),
                     success: function(result) {
 
                         populateUsers(result);
@@ -192,6 +194,7 @@ var umfp = (function(options) {
 
                 $.ajax({
                     url: umfp.options.getRolesUrl,
+                    headers: umfp.getAuthorizationHeader(),
                     type: 'GET',
                     success: function(result) {
                         populateRoles(result);
@@ -286,6 +289,7 @@ var umfp = (function(options) {
                 $.ajax({
                     type: 'POST',
                     url: umfp.options.updateUserRoleUrl,
+                    headers: umfp.getAuthorizationHeader(),
                     data: { userId: userData.id, roleName: roleData.name, enable: this.checked },
                     success: function(result) {
 
