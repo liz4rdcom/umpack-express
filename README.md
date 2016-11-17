@@ -1,75 +1,7 @@
 # umpack
 
 ## Install Guide
-### Bower package (includes only frontend package)
-```sh
-bower install umpack-express-front
-```
-### NPM package
-```sh
-npm install umpack-express
-```
 
-# Use
-## Frontend Integration
-```sh
-bower install umpack-express-front jquery -S -E
-```
-* needs to include jquery
-```html
-<script src="bower_components/jquery/dist/jquery.min.js"></script>
-<script src="bower_components/umpack-express-front/dist_front/js/umpack-front.min.js"></script>
-<link rel="stylesheet" href="bower_components/umpack-express-front/dist_front/css/umpack-style.min.css" />
-```
-### First Step - setup options
-```js
- umfp.setOptions({
-            loginPopupTitle: 'Enter user name and password',
-            signupPopupTitle: 'Please enter your info',
-            roleManagerPopupTitle: 'User Role Manager',
-            baseUrl: '/um',
-            loginSuccessRedirectionUrl: 'http://stackoverflow.com',
-            //umfpBasePath:'/', // optional default is /bower_components/umpack-express-front/dist_front/js/
-            afterLogin: function() {
-                alert('after login callback');
-            },
-            afterClose: function() {
-                alert('after modal close call back');
-            }
-        });
-```
-
-### umfp  Login / Logout
-```js
-umfp.showLogin();
-umfp.logout();
-```
-![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/login.PNG "login")
-
-### umfp signup new user
-```js
-umfp.showSignUp();
-```
-![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/signup.PNG "signup")
-
-### umfp show user role manager
-```js
-umfp.showRoleManager();
-```
-![alt text](https://raw.githubusercontent.com/0xZeroCode/umpack-express/master/doc/roleManager.PNG "role manager")
-
-### Additional util methods
-```js
-umfp.getAuthorizationHeader();
-//returns object -  { 'authorization': 'user's access token' };
-umfp.getAccessToken();
-//returns 'user's access token'
-umfp.isLogedIn();
-//returns 'user's access token' if access token exists else calls showLogin method 
-```
-
-
-## Backend Integration
 ### Install npm package
 ```sh
 npm install umpack-express -S -E
@@ -85,6 +17,78 @@ var umpack = require('./umpack')({
 //.....
 app.use('/um', umpack.router);
 //.....
+```
+
+### umpack API Methods
+* ### This methods should be called without authorization hader
+```js
+POST : {baseurl}/login
+request - data/body : {userName:'user',password:'userpassword'}
+response - 'user access token'
+```
+
+```js
+POST : {baseurl}/signup
+request - data/body : {
+    userName: 'user',
+    password: 'userpassword',
+    firstName: 'first name',
+    lastName: 'last name',
+    email: 'user@test.com',
+    phone: '123456',
+    address: 'usa/de',
+    additionalInfo: 'user additional info',
+    }
+response - { success: true, message: 'Thanks for signUp' }
+```
+
+* ### Next methods  requires authorization header (access token).
+```js
+headers:{'authorization': 'user access token'}
+```
+
+```js
+GET : {baseurl}/users
+response - {
+                id: '34jhb5jh45b6',
+                userName: 'user name',
+                isActivated: 'true/false',
+                roles: ['admin','provider','root','etc.']
+            }
+```
+
+```js
+GET : {baseurl}/roles
+response - [{name:'admin'},{name:'user'},{name:'provider'},{name:'root'},{name:'organizationUser'}]
+```
+
+```js
+POST : {baseurl}/updateUserStatus
+request - data/body : {
+        id: 'user id',
+        isActivated: true/false,
+    }
+response - {
+                id: 'user id',
+                isActivated: 'true/false',
+                userName: 'user name',
+                roles: ['admin','provider','root','sys','etc.']
+            }
+```
+
+```js
+POST : {baseurl}/updateUserRoles
+request - data/body : {
+        userId: 'user id',
+        roleName: 'admin',
+        enable: 'true/false'
+    }
+response - {
+                id: 'user id',
+                isActivated: 'true/false',
+                userName: 'user name',
+                roles: ['admin','provider','root','sys','etc.']
+            }
 ```
 
 ### Use Authorization Middleware
