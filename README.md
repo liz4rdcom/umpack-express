@@ -20,13 +20,14 @@ app.use('/um', umpack.router);
 ```
 
 ### umpack API Methods
-* ### This methods should be called without authorization hader
+### This methods should be called without authorization hader
+### Login
 ```js
 POST : {baseurl}/login
 request - data/body : {userName:'user',password:'userpassword'}
 response - 'user access token'
 ```
-
+### Signup
 ```js
 POST : {baseurl}/signup
 request - data/body : {
@@ -42,11 +43,11 @@ request - data/body : {
 response - { success: true, message: 'Thanks for signUp' }
 ```
 
-* ### Next methods  requires authorization header (access token).
+### Next methods  requires authorization header (access token).
 ```js
 headers:{'authorization': 'user access token'}
 ```
-
+### Get all users
 ```js
 GET : {baseurl}/users
 response - {
@@ -56,12 +57,12 @@ response - {
                 roles: ['admin','provider','root','etc.']
             }
 ```
-
+### Get all roles
 ```js
 GET : {baseurl}/roles
 response - [{name:'admin'},{name:'user'},{name:'provider'},{name:'root'},{name:'organizationUser'}]
 ```
-
+### Update user status (Activate / Deactivate)
 ```js
 POST : {baseurl}/updateUserStatus
 request - data/body : {
@@ -75,7 +76,7 @@ response - {
                 roles: ['admin','provider','root','sys','etc.']
             }
 ```
-
+### Update user roles (assigne or remove role from user)
 ```js
 POST : {baseurl}/updateUserRoles
 request - data/body : {
