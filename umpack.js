@@ -40,7 +40,7 @@ router.post('/login', function(req, res, next) {
 
     dbPromise
         .then(function(user) {
-
+            console.log(user.password,passwordHash(userData.password));
             if (!user || user.password !== passwordHash(userData.password))
                 throw new Error('wrong user name or password');
 
@@ -107,7 +107,7 @@ router.post('/signup', function(req, res, next) {
 
 function passwordHash(password) {
     return crypto.createHmac('sha256', passwordHashSecret)
-        .update('password')
+        .update(password)
         .digest('hex');
 }
 
