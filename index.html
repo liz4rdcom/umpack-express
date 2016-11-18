@@ -28,6 +28,7 @@
     <button id="logout">Logout</button>
     <button id="signup_button">sign up</button>
     <button id="showRoleManager_button">show role manager</button>
+    <button id="filterUsersByMetadata_button">filter users by meta data</button>
     <script>
     $(document).ready(function() {
 
@@ -76,7 +77,25 @@
                 }
 
             })
-        })
+        });
+
+        $('#filterUsersByMetadata_button').click(function () {
+            $.ajax({
+                type: 'GET',
+                url: '/resources/usersbymeta',
+                
+
+                success: function(result) {
+                    console.log(result);
+                    
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
+
+            })
+        });
 
         umfp.setOptions({
             loginPopupTitle: 'Enter user name and password',

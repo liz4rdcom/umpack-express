@@ -40,7 +40,7 @@ router.post('/login', function(req, res, next) {
 
     dbPromise
         .then(function(user) {
-            console.log(user.password,passwordHash(userData.password));
+
             if (!user || user.password !== passwordHash(userData.password))
                 throw new Error('wrong user name or password');
 
@@ -111,7 +111,7 @@ function passwordHash(password) {
         .digest('hex');
 }
 
-router.get('/users',isAuthorized, function(req, res, next) {
+router.get('/users', isAuthorized, function(req, res, next) {
 
     var dbPromise = User.find({}).exec();
 
@@ -135,7 +135,7 @@ router.get('/users',isAuthorized, function(req, res, next) {
 
 });
 
-router.post('/updateUserStatus',isAuthorized, function(req, res, next) {
+router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
     var dbPromise = User.findById(req.body.id).exec();
 
@@ -160,7 +160,7 @@ router.post('/updateUserStatus',isAuthorized, function(req, res, next) {
 
 });
 
-router.get('/roles',isAuthorized, function(req, res, next) {
+router.get('/roles', isAuthorized, function(req, res, next) {
 
     var dbPromise = Role.find({}, 'name').exec();
 
@@ -177,7 +177,7 @@ router.get('/roles',isAuthorized, function(req, res, next) {
 
 });
 
-router.post('/updateUserRoles',isAuthorized, function(req, res, next) {
+router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
     var reqData = req.body;
 
@@ -357,6 +357,33 @@ function getUserMetaDataByRequest(req) {
 
 }
 
+function filterUsersByMetaData(key, value) {
+
+    var metaObject = {};
+    metaObject['metaData.' + key] = value;
+
+    var dbPromise = User.find(metaObject).exec();
+
+    return dbPromise
+        .then(function(result) {
+            return result.map(function(user) {
+                return {
+                    id: user._id,
+                    userName: user.userName,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    isActivated: user.isActivated,
+                    additionalInfo: user.additionalInfo,
+                    address: user.address,
+                    email: user.email,
+                    phone: user.phone,
+                    roles: user.roles,
+                    metaData: user.metaData
+                };
+            })
+        });
+}
+
 
 
 module.exports = function(options) {
@@ -366,6 +393,7 @@ module.exports = function(options) {
         isAuthorized: isAuthorized,
         updateUserMetaData: updateUserMetaData,
         getUserMetaDataByUserName: getUserMetaDataByUserName,
-        getUserMetaDataByRequest: getUserMetaDataByRequest
+        getUserMetaDataByRequest: getUserMetaDataByRequest,
+        filterUsersByMetaData: filterUsersByMetaData
     }
 }

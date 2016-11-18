@@ -45,6 +45,24 @@ router.get('/usermetadata', function(req, res, next) {
 
 });
 
+router.get('/usersbymeta', function(req, res, next) {
+
+    umpack.filterUsersByMetaData('organizationId', '2222')
+        .then(function(users) {
+
+            res.send(users);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+
+
+
+});
+
 
 
 module.exports = router;
