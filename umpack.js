@@ -401,7 +401,11 @@ function getUserRolesByUserName(userName) {
 
     return dbPromise
         .then(function(user) {
-            return user.roles;
+            return {
+                userName: user.userName,
+                roles: user.roles
+            };
+
         });
 }
 
@@ -416,7 +420,11 @@ function getUserRolesFromRequest(req) {
 
         return jwtVerifyAsync(jwtToken, accessTokenSecret)
             .then(function(decoded) {
-                return decoded.roles;
+                return {
+                    userName: decoded.user,
+                    roles: decoded.roles
+                };
+
 
             });
 

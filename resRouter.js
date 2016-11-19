@@ -83,20 +83,7 @@ router.get('/userFullName', function(req, res, next) {
 
 router.get('/userRoles',umpack.isAuthorized, function(req, res, next) {
 
-    // umpack.getUserRolesByUserName('admin')
-    //     .then(function(result) {
-
-    //         res.send(result);
-
-    //     })
-    //     .catch(function(err) {
-
-    //         return res.status(400).send({ message: err.message });
-
-    //     });
-
-
-    umpack.getUserRolesFromRequest(req)
+    umpack.getUserRolesByUserName('admin')
         .then(function(result) {
 
             res.send(result);
@@ -107,6 +94,19 @@ router.get('/userRoles',umpack.isAuthorized, function(req, res, next) {
             return res.status(400).send({ message: err.message });
 
         });
+
+
+    // umpack.getUserRolesFromRequest(req)
+    //     .then(function(result) {
+
+    //         res.send(result);
+
+    //     })
+    //     .catch(function(err) {
+
+    //         return res.status(400).send({ message: err.message });
+
+    //     });
 });
 
 
