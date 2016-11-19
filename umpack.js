@@ -384,6 +384,51 @@ function filterUsersByMetaData(key, value) {
         });
 }
 
+function getFullName(userName) {
+
+    var dbPromise = User.findOne({ 'userName': userName }).exec();
+
+    return dbPromise
+        .then(function(user) {
+            return user.firstName + ' ' + user.lastName;
+        });
+}
+
+function getUserRolesByUserName(userName) {
+
+    var dbPromise = User.findOne({ 'userName': userName }).exec();
+
+    return dbPromise
+        .then(function(user) {
+            return user.roles;
+        });
+}
+
+
+function getUserRolesFromRequest(req) {
+
+    try {
+        var jwtToken = req.headers['authorization'];
+
+        if (!jwtToken)
+            throw new Error('cant find jwt token inside the request');
+
+        return jwtVerifyAsync(jwtToken, accessTokenSecret)
+            .then(function(decoded) {
+                return decoded.roles;
+
+            });
+
+    } catch (err) {
+
+        return Promise.reject(err);
+
+    }
+
+}
+
+
+
 
 
 module.exports = function(options) {
@@ -394,6 +439,9 @@ module.exports = function(options) {
         updateUserMetaData: updateUserMetaData,
         getUserMetaDataByUserName: getUserMetaDataByUserName,
         getUserMetaDataByRequest: getUserMetaDataByRequest,
-        filterUsersByMetaData: filterUsersByMetaData
+        filterUsersByMetaData: filterUsersByMetaData,
+        getFullName: getFullName,
+        getUserRolesByUserName: getUserRolesByUserName,
+        getUserRolesFromRequest: getUserRolesFromRequest
     }
 }

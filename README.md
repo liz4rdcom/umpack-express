@@ -182,3 +182,58 @@ router.get('/usersbymeta', function(req, res, next) {
 
 });
 ```
+
+### Get User Full Name
+```js
+router.get('/userFullName', function(req, res, next) {
+
+    umpack.getFullName('admin')
+        .then(function(fullName) {
+
+            res.send(fullName);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
+
+
+### Get User Roles By User Name
+```js
+router.get('/userRoles', function(req, res, next) {
+
+     umpack.getUserRolesByUserName('admin')
+         .then(function(result) {
+             res.send(result);
+         })
+         .catch(function(err) {
+
+             return res.status(400).send({ message: err.message });
+
+         });
+   
+});
+```
+
+### Get User Roles From Request
+```js
+router.get('/userRoles', function(req, res, next) {
+
+    umpack.getUserRolesFromRequest(req)
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+
+```

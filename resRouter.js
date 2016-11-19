@@ -5,7 +5,8 @@ var umpack = require('./umpack')();
 
 router.get('/', umpack.isAuthorized, function(req, res, next) {
 
-    var organizationInfo = { organizationId: '2222', organiationName: 'bbbbb', organizationTaxCode: '777777' };
+    //var organizationInfo = { organizationId: '2222', organiationName: 'bbbbb', organizationTaxCode: '777777' };
+    var organizationInfo = { organizationId: undefined, xxx: 123 };
     umpack.updateUserMetaData('admin', organizationInfo)
         .then(function(result) {
             console.log(result);
@@ -62,6 +63,52 @@ router.get('/usersbymeta', function(req, res, next) {
 
 
 });
+
+
+router.get('/userFullName', function(req, res, next) {
+
+    umpack.getFullName('admin')
+        .then(function(fullName) {
+
+            res.send(fullName);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+
+
+router.get('/userRoles', function(req, res, next) {
+
+    // umpack.getUserRolesByUserName('admin')
+    //     .then(function(result) {
+
+    //         res.send(result);
+
+    //     })
+    //     .catch(function(err) {
+
+    //         return res.status(400).send({ message: err.message });
+
+    //     });
+
+
+    umpack.getUserRolesFromRequest(req)
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+
 
 
 

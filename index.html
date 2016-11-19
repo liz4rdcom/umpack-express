@@ -2,11 +2,8 @@
 <html>
 
 <head>
-    
     <title>um front pack test page</title>
-
     <!-- for development -->
-    
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" />
     <link rel="stylesheet" href="umpack-style.css" />
@@ -14,21 +11,28 @@
     <script src="bower_components/js-cookie/src/js.cookie.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="umpack-front.js"></script>
-
-    
     <!-- <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/umpack-express-front/dist_front/js/umpack-front.min.js"></script>
     <link rel="stylesheet" href="bower_components/umpack-express-front/dist_front/css/umpack-style.min.css" /> -->
-    
 </head>
 
 <body>
     <button id="getTestResources">get Res</button>
+    <br>
     <button id="getUserMetaData_button">get user meta data</button>
+    <br>
     <button id="logout">Logout</button>
+    <br>
     <button id="signup_button">sign up</button>
+    <br>
     <button id="showRoleManager_button">show role manager</button>
+    <br>
     <button id="filterUsersByMetadata_button">filter users by meta data</button>
+    <br>
+    <button id="getFullName_button">get user Full name</button>
+    <br>
+    <button id="getUserRoles_button">get User Roles</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -61,15 +65,15 @@
             umfp.showRoleManager();
         });
 
-        $('#getUserMetaData_button').click(function () {
-             $.ajax({
+        $('#getUserMetaData_button').click(function() {
+            $.ajax({
                 type: 'GET',
                 url: '/resources/usermetadata',
                 headers: umfp.getAuthorizationHeader(),
 
                 success: function(result) {
                     console.log(result);
-                    
+
                 },
                 error: function(err) {
                     console.log(err);
@@ -79,15 +83,15 @@
             })
         });
 
-        $('#filterUsersByMetadata_button').click(function () {
+        $('#filterUsersByMetadata_button').click(function() {
             $.ajax({
                 type: 'GET',
                 url: '/resources/usersbymeta',
-                
+
 
                 success: function(result) {
                     console.log(result);
-                    
+
                 },
                 error: function(err) {
                     console.log(err);
@@ -95,6 +99,39 @@
                 }
 
             })
+        });
+
+        $('#getFullName_button').click(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/resources/userRoles',
+                success: function(result) {
+                    console.log(result);
+
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
+
+            });
+        });
+
+        $('#getUserRoles_button').click(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/resources/userRoles',
+                headers: umfp.getAuthorizationHeader(),
+                success: function(result) {
+                    console.log(result);
+
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
+
+            });
         });
 
         umfp.setOptions({
