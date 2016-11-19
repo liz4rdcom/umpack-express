@@ -235,6 +235,7 @@ function isAuthorized(req, res, next) {
         })
         .then(function() {
             next();
+            return null;
         })
         .catch(function(err) {
             return res.status(400).send({ message: err.message });

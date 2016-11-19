@@ -81,7 +81,7 @@ router.get('/userFullName', function(req, res, next) {
 });
 
 
-router.get('/userRoles', function(req, res, next) {
+router.get('/userRoles',umpack.isAuthorized, function(req, res, next) {
 
     // umpack.getUserRolesByUserName('admin')
     //     .then(function(result) {
