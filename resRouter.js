@@ -111,7 +111,20 @@ router.get('/userRoles', umpack.isAuthorized, function(req, res, next) {
 
 router.get('/fullUserObject', function(req, res, next) {
 
-    umpack.getFullUserObject('admin')
+    // umpack.getFullUserObject('admin')
+    //     .then(function(result) {
+
+    //         res.send(result);
+
+    //     })
+    //     .catch(function(err) {
+
+    //         return res.status(400).send({ message: err.message });
+
+    //     });
+
+
+    umpack.getFullUserObjectFromRequest(req)
         .then(function(result) {
 
             res.send(result);

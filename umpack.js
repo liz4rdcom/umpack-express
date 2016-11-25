@@ -430,6 +430,29 @@ function getFullName(userName) {
         });
 }
 
+function getFullUserObjectFromRequest(req) {
+
+    try {
+        var jwtToken = req.headers['authorization'];
+
+        if (!jwtToken)
+            throw new Error('cant find jwt token inside the request');
+
+        return jwtVerifyAsync(jwtToken, accessTokenSecret)
+            .then(function(decoded) {
+
+                return getFullUserObject(decoded.user);
+
+            });
+
+    } catch (err) {
+
+        return Promise.reject(err);
+
+    }
+
+}
+
 function getFullUserObject(userName) {
 
     var dbPromise = User.findOne({ 'userName': userName }).exec();
@@ -510,6 +533,7 @@ module.exports = function(options) {
         getFullName: getFullName,
         getUserRolesByUserName: getUserRolesByUserName,
         getUserRolesFromRequest: getUserRolesFromRequest,
-        getFullUserObject:getFullUserObject
+        getFullUserObject: getFullUserObject,
+        getFullUserObjectFromRequest:getFullUserObjectFromRequest
     }
 }

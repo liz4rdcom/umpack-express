@@ -142,6 +142,7 @@
             $.ajax({
                 type:'GET',
                 url: '/resources/fullUserObject',
+                headers: umfp.getAuthorizationHeader(),
                 success: function(result) {
                     console.log(result);
 

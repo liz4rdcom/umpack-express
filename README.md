@@ -269,3 +269,21 @@ router.get('/fullUserObject', function(req, res, next) {
         });
 });
 ```
+
+### Get Full User Object From Request
+```js
+router.get('/fullUserObject', function(req, res, next) {
+
+    umpack.getFullUserObjectFromRequest(req)
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
