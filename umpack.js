@@ -11,6 +11,7 @@ mongoose.Promise = require('bluebird');
 
 var accessTokenSecret;
 var passwordHashSecret;
+var accessTokenExpiresIn = '1h';
 
 var User = mongoose.model('user', {
     userName: String,
@@ -41,20 +42,22 @@ router.post('/login', function(req, res, next) {
     dbPromise
         .then(function(user) {
 
+            if (user.isActivated === false)
+                throw new Error('user is not activated');
+
             if (!user || user.password !== passwordHash(userData.password))
                 throw new Error('wrong user name or password');
+
+
 
             var accesKey = jwt.sign({
                 user: user.userName,
                 roles: user.roles
             }, accessTokenSecret, {
-                expiresIn: '1h'
+                expiresIn: accessTokenExpiresIn
             });
 
-
-
             res.send(accesKey);
-
 
         })
         .catch(function(err) {
@@ -98,6 +101,36 @@ router.post('/signup', function(req, res, next) {
         })
         .then(function() {
             res.send({ success: true, message: 'Thanks for signUp' });
+        })
+        .catch(function(err) {
+            res.status(400).send({ message: err.message });
+        });
+
+});
+
+router.post('/resetpass', function(req, res, next) {
+
+    var userData = req.body;
+
+    //userName
+    //oldPassword
+    //newPassword
+
+    var dbPromise = User.findOne({ 'userName': userData.userName }).exec();
+
+    dbPromise
+        .then(function(user) {
+
+            var oldPasswordHash = passwordHash(userData.oldPassword);
+
+            if (user.password !== oldPasswordHash)
+                throw new Error('wrong password');
+
+            user.password = passwordHash(userData.newPassword);
+            return user.save();
+        })
+        .then(function(user) {
+            return res.send({ success: true, message: 'Password Reset Done' });
         })
         .catch(function(err) {
             res.status(400).send({ message: err.message });
@@ -307,6 +340,8 @@ function handleOptions(options) {
 
     if (options.passwordHashSecret)
         passwordHashSecret = options.passwordHashSecret;
+    if (options.accessTokenExpiresIn)
+        accessTokenExpiresIn = options.accessTokenExpiresIn;
 
 }
 
@@ -395,6 +430,29 @@ function getFullName(userName) {
         });
 }
 
+function getFullUserObject(userName) {
+
+    var dbPromise = User.findOne({ 'userName': userName }).exec();
+
+    return dbPromise
+        .then(function(user) {
+            return {
+                id: user._id,
+                userName: user.userName,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+                additionalInfo: user.additionalInfo,
+                isActivated: user.isActivated,
+                roles: user.roles,
+                metaData: user.metaData
+
+            };
+        });
+}
+
 function getUserRolesByUserName(userName) {
 
     var dbPromise = User.findOne({ 'userName': userName }).exec();
@@ -451,6 +509,7 @@ module.exports = function(options) {
         filterUsersByMetaData: filterUsersByMetaData,
         getFullName: getFullName,
         getUserRolesByUserName: getUserRolesByUserName,
-        getUserRolesFromRequest: getUserRolesFromRequest
+        getUserRolesFromRequest: getUserRolesFromRequest,
+        getFullUserObject:getFullUserObject
     }
 }

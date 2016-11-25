@@ -6,7 +6,8 @@ var resRouter = require('./resRouter');
 var umpack = require('./umpack')({
     mongodbConnectionString: 'mongodb://172.17.7.92:27017/umpack',
     accessTokenSecret: 'myrandomstring',
-    passwordHashSecret: 'mypasswordsecret'
+    passwordHashSecret: 'mypasswordsecret',
+    accessTokenExpiresIn: '1m'
 });
 
 

@@ -6,14 +6,14 @@ var umpack = require('./umpack')();
 router.get('/', umpack.isAuthorized, function(req, res, next) {
 
     //var organizationInfo = { organizationId: '2222', organiationName: 'bbbbb', organizationTaxCode: '777777' };
-    var organizationInfo = { organizationId: undefined, xxx: 123 };
-    umpack.updateUserMetaData('admin', organizationInfo)
-        .then(function(result) {
-            console.log(result);
-        })
-        .catch(function(err) {
-            console.log(err.message);
-        });
+    // var organizationInfo = { organizationId: undefined, xxx: 123 };
+    // umpack.updateUserMetaData('admin', organizationInfo)
+    //     .then(function(result) {
+    //         console.log(result);
+    //     })
+    //     .catch(function(err) {
+    //         console.log(err.message);
+    //     });
 
 
     return res.send('your resources');
@@ -81,7 +81,7 @@ router.get('/userFullName', function(req, res, next) {
 });
 
 
-router.get('/userRoles',umpack.isAuthorized, function(req, res, next) {
+router.get('/userRoles', umpack.isAuthorized, function(req, res, next) {
 
     umpack.getUserRolesByUserName('admin')
         .then(function(result) {
@@ -107,6 +107,21 @@ router.get('/userRoles',umpack.isAuthorized, function(req, res, next) {
     //         return res.status(400).send({ message: err.message });
 
     //     });
+});
+
+router.get('/fullUserObject', function(req, res, next) {
+
+    umpack.getFullUserObject('admin')
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
 });
 
 

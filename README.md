@@ -8,11 +8,13 @@ npm install umpack-express -S -E
 ```
 
 ### Set Options and Router(express app)
+* accessTokenExpiresIn [time span string description](https://github.com/zeit/ms)
 ```js
 var umpack = require('./umpack')({
     mongodbConnectionString: 'mongodb://172.17.7.92:27017/umpack',
     accessTokenSecret: 'myrandomstring',
-    passwordHashSecret: 'mypasswordsecret'
+    passwordHashSecret: 'mypasswordsecret',
+    accessTokenExpiresIn: '1m'
 });
 //.....
 app.use('/um', umpack.router);
@@ -41,6 +43,17 @@ request - data/body : {
     additionalInfo: 'user additional info',
     }
 response - { success: true, message: 'Thanks for signUp' }
+```
+
+### Password Reset
+```js
+POST : {baseurl}/resetpass
+request - data/body : {
+    userName: 'admin',
+    oldPassword: 'admin',
+    newPassword: '123456789'
+}
+response - { success: true, message: 'Password Reset Done' }
 ```
 
 ### Next methods  requires authorization header (access token).
@@ -236,4 +249,23 @@ router.get('/userRoles', function(req, res, next) {
         });
 });
 
+```
+
+
+### Get Full User Object
+```js
+router.get('/fullUserObject', function(req, res, next) {
+
+    umpack.getFullUserObject('admin')
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
 ```

@@ -33,6 +33,10 @@
     <br>
     <button id="getUserRoles_button">get User Roles</button>
     <br>
+    <button id="resetUserPass_button">resetpass</button>
+    <br>
+    <button id="getFullUserObject_button">get full user object</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -131,6 +135,41 @@
                     alert(err.responseText);
                 }
 
+            });
+        });
+
+        $('#getFullUserObject_button').click(function () {
+            $.ajax({
+                type:'GET',
+                url: '/resources/fullUserObject',
+                success: function(result) {
+                    console.log(result);
+
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
+
+            });
+        });
+
+        $('#resetUserPass_button').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: '/um/resetpass',
+                data: {
+                    userName: 'admin',
+                    oldPassword: 'admin',
+                    newPassword: '123456789'
+                },
+                success: function(result) {
+                    console.log(result);
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert(err.responseText);
+                }
             });
         });
 
