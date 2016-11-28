@@ -145,7 +145,7 @@ router.post('/signup', function(req, res, next) {
 
 });
 
-router.post('/resetpass', function(req, res, next) {
+router.post('/resetpass',isAuthorized, function(req, res, next) {
 
     var userData = req.body;
 

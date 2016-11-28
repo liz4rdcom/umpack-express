@@ -45,6 +45,13 @@ request - data/body : {
 response - { success: true, message: 'Thanks for signUp' }
 ```
 
+
+
+### Next methods  requires authorization header (access token).
+```js
+headers:{'authorization': 'user access token'}
+```
+
 ### Password Reset
 ```js
 POST : {baseurl}/resetpass
@@ -56,10 +63,6 @@ request - data/body : {
 response - { success: true, message: 'Password Reset Done' }
 ```
 
-### Next methods  requires authorization header (access token).
-```js
-headers:{'authorization': 'user access token'}
-```
 ### Get all users
 ```js
 GET : {baseurl}/users
