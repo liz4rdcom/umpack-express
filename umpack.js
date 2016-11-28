@@ -13,6 +13,21 @@ var accessTokenSecret;
 var passwordHashSecret;
 var accessTokenExpiresIn = '1h';
 
+var INTERNAL_STATUS = {
+
+    OK: { code: 600, message: 'OK' },
+    USER_NOT_ACTIVE: { code: 601, message: 'User Is Not Activated' },
+    USER_ALREADY_EXISTS: { code: 602, message: 'User Name Or Email Already Exists' },
+    WRONG_USER_CREDENTIALS: { code: 603, message: 'Wrong User Name Or Password' },
+    WRONG_PASSWORD: { code: 604, message: 'Wrong Password' },
+    USER_NOT_EXISTS: { code: 605, message: 'User Does Not Exists' },
+    JWT_NOT_EXISTS: { code: 606, message: 'Can\'t Find JWT Token Inside The Request Header' },
+    INVALID_JWT: { code: 607, message: 'Invalid JWT Token' },
+    JWT_TOKEN_EXPIRED: { code: 608, message: 'Token Expired' },
+    ACCESS_DENIDE: { code: 609, message: 'Access Denied' },
+    WRONG_ROLE_NAME: { code: 701, message: 'Wrong Role Name' }
+}
+
 var User = mongoose.model('user', {
     userName: String,
     password: String,
@@ -42,11 +57,24 @@ router.post('/login', function(req, res, next) {
     dbPromise
         .then(function(user) {
 
-            if (user.isActivated === false)
-                throw new Error('user is not activated');
+            if (!user) {
+                var err = new Error(INTERNAL_STATUS.USER_NOT_EXISTS.message);
+                err.internalStatus = INTERNAL_STATUS.USER_NOT_EXISTS.code;
+                throw err;
+            }
 
-            if (!user || user.password !== passwordHash(userData.password))
-                throw new Error('wrong user name or password');
+            if (user.isActivated === false) {
+                var err = new Error(INTERNAL_STATUS.USER_NOT_ACTIVE.message);
+                err.internalStatus = INTERNAL_STATUS.USER_NOT_ACTIVE.code;
+                throw err;
+
+            }
+
+            if (!user || user.password !== passwordHash(userData.password)) {
+                var err = new Error(INTERNAL_STATUS.WRONG_USER_CREDENTIALS.message);
+                err.internalStatus = INTERNAL_STATUS.WRONG_USER_CREDENTIALS.code;
+                throw err;
+            }
 
 
 
@@ -61,7 +89,9 @@ router.post('/login', function(req, res, next) {
 
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
 
@@ -78,8 +108,12 @@ router.post('/signup', function(req, res, next) {
 
     dbPromise
         .then(function(result) {
-            if (result)
-                throw new Error('user name or email already exists');
+            if (result) {
+                var err = new Error(INTERNAL_STATUS.USER_ALREADY_EXISTS.message);
+                err.internalStatus = INTERNAL_STATUS.USER_ALREADY_EXISTS.code;
+                throw err;
+
+            }
         })
         .then(function() {
 
@@ -103,7 +137,10 @@ router.post('/signup', function(req, res, next) {
             res.send({ success: true, message: 'Thanks for signUp' });
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
+
         });
 
 });
@@ -123,8 +160,12 @@ router.post('/resetpass', function(req, res, next) {
 
             var oldPasswordHash = passwordHash(userData.oldPassword);
 
-            if (user.password !== oldPasswordHash)
-                throw new Error('wrong password');
+            if (user.password !== oldPasswordHash) {
+                var err = new Error(INTERNAL_STATUS.WRONG_PASSWORD.message);
+                err.internalStatus = INTERNAL_STATUS.WRONG_PASSWORD.code;
+                throw err;
+
+            }
 
             user.password = passwordHash(userData.newPassword);
             return user.save();
@@ -133,7 +174,9 @@ router.post('/resetpass', function(req, res, next) {
             return res.send({ success: true, message: 'Password Reset Done' });
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
 });
@@ -163,7 +206,9 @@ router.get('/users', isAuthorized, function(req, res, next) {
 
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         })
 
 });
@@ -174,7 +219,7 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
     dbPromise
         .then(function(user) {
-            throw new Error('test error message');
+
             user.isActivated = req.body.isActivated;
             return user.save();
         })
@@ -187,7 +232,9 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
             });
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         })
 
 
@@ -205,7 +252,9 @@ router.get('/roles', isAuthorized, function(req, res, next) {
             res.send(roles);
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         })
 
 });
@@ -229,8 +278,11 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
             var roleIndex = user.roles.indexOf(reqData.roleName);
 
-            if (roleIndex === -1)
-                throw new Error('wrong role name');
+            if (roleIndex === -1) {
+                var err = new Error(INTERNAL_STATUS.WRONG_ROLE_NAME.message);
+                err.internalStatus = INTERNAL_STATUS.WRONG_ROLE_NAME.code;
+                throw err;
+            }
 
             user.roles.splice(roleIndex, 1);
             return user.save();
@@ -246,32 +298,71 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
             })
         })
         .catch(function(err) {
-            res.status(400).send({ message: err.message });
+            if (!err.internalStatus)
+                return res.status(500).send({ message: err.message });
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
 });
 
+function decodeRequestToken(req) {
+
+    try {
+
+        var jwtToken = req.headers['authorization'];
+
+        if (!jwtToken) {
+            var err = new Error(INTERNAL_STATUS.JWT_NOT_EXISTS.message);
+            err.internalStatus = INTERNAL_STATUS.JWT_NOT_EXISTS.code;
+            throw err;
+
+        }
+
+        return jwtVerifyAsync(jwtToken, accessTokenSecret)
+            .catch(function(err) {
+                if (err instanceof jwt.TokenExpiredError) {
+                    var err = new Error(INTERNAL_STATUS.JWT_TOKEN_EXPIRED.message);
+                    err.internalStatus = INTERNAL_STATUS.JWT_TOKEN_EXPIRED.code;
+                    throw err;
+
+                }
+
+                var err = new Error(INTERNAL_STATUS.INVALID_JWT.message);
+                err.internalStatus = INTERNAL_STATUS.INVALID_JWT.code;
+                throw err;
+            });
+
+
+
+    } catch (err) {
+
+        return Promise.reject(err);
+
+    }
+}
+
 function isAuthorized(req, res, next) {
 
-    var jwtToken = req.headers['authorization'];
-
-    if (!jwtToken)
-        return res.status(400).send({ message: 'there is no jwt token' });
-
-    jwtVerifyAsync(jwtToken, accessTokenSecret)
+    decodeRequestToken(req)
         .then(function(decoded) {
+
             return { userName: decoded.user, roles: decoded.roles };
 
         })
         .then(function(userInfo) {
+
             return checkRole(req.method, req.originalUrl, userInfo);
+
         })
         .then(function() {
+
             next();
             return null;
+
         })
         .catch(function(err) {
-            return res.status(400).send({ message: err.message });
+
+            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
     function checkRole(verb, requestUrl, userInfo) {
@@ -322,8 +413,12 @@ function isAuthorized(req, res, next) {
                 return actions;
             })
             .then(function(actions) {
-                if (!urlMatch(actions, requestUrl))
-                    throw new Error('Access Denied');
+                if (!urlMatch(actions, requestUrl)) {
+                    var err = new Error(INTERNAL_STATUS.ACCESS_DENIDE.message);
+                    err.internalStatus = INTERNAL_STATUS.ACCESS_DENIDE.code;
+                    throw err;
+
+                }
             });
     }
 }
@@ -342,7 +437,6 @@ function handleOptions(options) {
         passwordHashSecret = options.passwordHashSecret;
     if (options.accessTokenExpiresIn)
         accessTokenExpiresIn = options.accessTokenExpiresIn;
-
 }
 
 
@@ -354,7 +448,6 @@ function updateUserMetaData(userName, metaDataObject) {
         user.metaData = metaDataObject;
         return user.save();
     });
-
 }
 
 function getUserMetaDataByUserName(userName) {
@@ -365,32 +458,18 @@ function getUserMetaDataByUserName(userName) {
         .then(function(user) {
             return user.metaData;
         });
-
 }
 
 function getUserMetaDataByRequest(req) {
 
-    try {
-        var jwtToken = req.headers['authorization'];
 
-        if (!jwtToken)
-            throw new Error('cant find jwt token inside the request');
-
-        return jwtVerifyAsync(jwtToken, accessTokenSecret)
-            .then(function(decoded) {
-                return User.findOne({ 'userName': decoded.user }).exec();
-            })
-            .then(function(user) {
-                return user.metaData;
-            })
-
-    } catch (err) {
-
-        return Promise.reject(err);
-
-    }
-
-
+    return decodeRequestToken(req)
+        .then(function(decoded) {
+            return User.findOne({ 'userName': decoded.user }).exec();
+        })
+        .then(function(user) {
+            return user.metaData;
+        });
 }
 
 function filterUsersByMetaData(key, value) {
@@ -432,25 +511,10 @@ function getFullName(userName) {
 
 function getFullUserObjectFromRequest(req) {
 
-    try {
-        var jwtToken = req.headers['authorization'];
-
-        if (!jwtToken)
-            throw new Error('cant find jwt token inside the request');
-
-        return jwtVerifyAsync(jwtToken, accessTokenSecret)
-            .then(function(decoded) {
-
-                return getFullUserObject(decoded.user);
-
-            });
-
-    } catch (err) {
-
-        return Promise.reject(err);
-
-    }
-
+    return decodeRequestToken(req)
+        .then(function(decoded) {
+            return getFullUserObject(decoded.user);
+        });
 }
 
 function getFullUserObject(userName) {
@@ -493,28 +557,13 @@ function getUserRolesByUserName(userName) {
 
 function getUserRolesFromRequest(req) {
 
-    try {
-        var jwtToken = req.headers['authorization'];
-
-        if (!jwtToken)
-            throw new Error('cant find jwt token inside the request');
-
-        return jwtVerifyAsync(jwtToken, accessTokenSecret)
-            .then(function(decoded) {
-                return {
-                    userName: decoded.user,
-                    roles: decoded.roles
-                };
-
-
-            });
-
-    } catch (err) {
-
-        return Promise.reject(err);
-
-    }
-
+    return decodeRequestToken(req)
+        .then(function(decoded) {
+            return {
+                userName: decoded.user,
+                roles: decoded.roles
+            };
+        });
 }
 
 
@@ -534,6 +583,6 @@ module.exports = function(options) {
         getUserRolesByUserName: getUserRolesByUserName,
         getUserRolesFromRequest: getUserRolesFromRequest,
         getFullUserObject: getFullUserObject,
-        getFullUserObjectFromRequest:getFullUserObjectFromRequest
+        getFullUserObjectFromRequest: getFullUserObjectFromRequest
     }
 }

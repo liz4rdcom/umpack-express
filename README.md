@@ -105,6 +105,25 @@ response - {
             }
 ```
 
+### API Response Internal Statuses
+* Every response with status 400 has also internal status for example : 
+```js
+{message:User Is Not Activated, internalStatus:601}
+```
+* All internal status 
+```js
+    { code: 601, message: 'User Is Not Activated' }
+    { code: 602, message: 'User Name Or Email Already Exists' }
+    { code: 603, message: 'Wrong User Name Or Password' }
+    { code: 604, message: 'Wrong Password' }
+    { code: 605, message: 'User Does Not Exists' }
+    { code: 606, message: 'Can\'t Find JWT Token Inside The Request Header' }
+    { code: 607, message: 'Invalid JWT Token' }
+    { code: 608, message: 'Token Expired' }
+    { code: 609, message: 'Access Denied' }
+    { code: 701, message: 'Wrong Role Name' }
+```
+
 ### Use Authorization Middleware
 * if user has no access right then response status is 400 and response is object with error message ```{ message: err.message }```
 
