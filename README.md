@@ -106,7 +106,7 @@ response - {
 ```
 
 ### API Response Internal Statuses
-* Every response with status 400 has also internal status for example : 
+* Every response with status 400/401 has also internal status for example : 
 ```js
 {message:User Is Not Activated, internalStatus:601}
 ```
@@ -125,7 +125,7 @@ response - {
 ```
 
 ### Use Authorization Middleware
-* if user has no access right then response status is 400 and response is object with error message ```{ message: err.message }```
+* if user has no access right then response status is 401 and response is object with error message ```{ message: err.message }```
 
 ```js
 var umpack = require('./umpack')();

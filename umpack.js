@@ -362,7 +362,7 @@ function isAuthorized(req, res, next) {
         })
         .catch(function(err) {
 
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
+            return res.status(401).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
     function checkRole(verb, requestUrl, userInfo) {

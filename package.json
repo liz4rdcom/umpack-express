@@ -1,6 +1,6 @@
 {
   "name": "umpack-express",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "usermanagement pack for express app",
   "main": "umpack.js",
   "scripts": {
