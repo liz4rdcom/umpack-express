@@ -1,4 +1,5 @@
 var router = require('express').Router();
+var cookie = require('cookie');
 var jwt = require('jsonwebtoken');
 var mongoose = require('mongoose');
 var crypto = require('crypto');
@@ -12,6 +13,7 @@ mongoose.Promise = require('bluebird');
 var accessTokenSecret;
 var passwordHashSecret;
 var accessTokenExpiresIn = '1h';
+var cookieAccessTokenName = 'accessToken';
 
 var INTERNAL_STATUS = {
 
@@ -309,7 +311,8 @@ function decodeRequestToken(req) {
 
     try {
 
-        var jwtToken = req.headers['authorization'];
+        var cookies = cookie.parse(req.headers.cookie);
+        var jwtToken = req.headers['authorization'] || cookies[cookieAccessTokenName];
 
         if (!jwtToken) {
             var err = new Error(INTERNAL_STATUS.JWT_NOT_EXISTS.message);
@@ -366,8 +369,6 @@ function isAuthorized(req, res, next) {
         });
 
     function checkRole(verb, requestUrl, userInfo) {
-
-
 
         var roleConditionalArray = userInfo.roles.map(function(item) {
             return { 'name': item };
@@ -437,6 +438,8 @@ function handleOptions(options) {
         passwordHashSecret = options.passwordHashSecret;
     if (options.accessTokenExpiresIn)
         accessTokenExpiresIn = options.accessTokenExpiresIn;
+    if(options.cookieAccessTokenName)
+        cookieAccessTokenName=options.cookieAccessTokenName;
 }
 
 

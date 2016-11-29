@@ -7,7 +7,8 @@ var umpack = require('./umpack')({
     mongodbConnectionString: 'mongodb://172.17.7.92:27017/umpack',
     accessTokenSecret: 'myrandomstring',
     passwordHashSecret: 'mypasswordsecret',
-    accessTokenExpiresIn: '1m'
+    accessTokenExpiresIn: '1m',
+    cookieAccessTokenName:'accessToken'
 });
 
 
