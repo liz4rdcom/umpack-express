@@ -130,8 +130,11 @@ router.post('/signup', function(req, res, next) {
                 additionalInfo: userData.additionalInfo,
                 isActivated: false,
                 roles: []
-
             });
+
+            if (userData.metaData) {
+                newUser.metaData = userData.metaData;
+            }
 
             return newUser.save();
         })
