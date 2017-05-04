@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var crypto = require('crypto');
 var urlMatch = require('./urlMatch');
 var Promise = require('bluebird');
+var sendPromiseResult = require('./responseSender').sendPromiseResult;
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -309,6 +310,49 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
         });
 
 });
+
+router.put('/metadata', isAuthorized, function (req, res, next) {
+  var promise = decodeRequestToken(req)
+    .then(function (decoded) {
+      return updateUserMetaData(decoded.user, req.body);
+    })
+    .then(function () {
+      return {
+        success: true,
+        message: 'metadata updated'
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.put('/metadata/:key', isAuthorized, function (req, res, next) {
+  var promise = decodeRequestToken(req)
+    .then(function (decoded) {
+
+      return getUserMetaDataByRequest(req)
+        .then(function (metadata) {
+
+          metadata[req.params.key] = req.body;
+
+          return updateUserMetaData(decoded.user, metadata);
+
+        });
+
+    });
+
+  sendPromiseResult(promise, req, res, next);
+
+});
+
+router.get('/metadata', isAuthorized, function (req, res, next) {
+
+  var promise = getUserMetaDataByRequest(req);
+
+  sendPromiseResult(promise, req, res, next);
+
+});
+
 
 function decodeRequestToken(req) {
 
