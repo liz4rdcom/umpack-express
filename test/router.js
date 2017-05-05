@@ -107,6 +107,30 @@ describe('service API', function() {
 
     });
 
+    it('should return empty object on user without metadata', function() {
+
+      return saveRecordWithParameters()
+        .then(login)
+        .then(function(res) {
+
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .get('/um/metadata')
+            .set('authorization', res.text)
+            .set('cookie', '');
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+          res.body.should.be.an('object');
+          Object.keys(res.body).should.have.length(0);
+
+        });
+
+    });
+
 
   });
 });
