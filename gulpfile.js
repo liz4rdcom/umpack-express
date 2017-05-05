@@ -45,14 +45,3 @@ gulp.task('build-front', [
 
 
 });
-
-gulp.task('set-test-env', function() {
-  process.env.NODE_ENV = 'test';
-});
-
-gulp.task('test', ['set-test-env'], function() {
-  gulp.src('test/*.js', {
-      read: false
-    })
-    .pipe(mocha());
-});

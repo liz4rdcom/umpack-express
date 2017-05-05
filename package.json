@@ -4,7 +4,8 @@
   "description": "usermanagement pack for express app",
   "main": "umpack.js",
   "scripts": {
-    "start": "node testServer.js"
+    "start": "node testServer.js",
+    "test": "set NODE_ENV=test& mocha"
   },
   "repository": {
     "type": "git",
