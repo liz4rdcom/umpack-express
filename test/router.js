@@ -174,6 +174,95 @@ describe('service API', function() {
     });
 
   });
+
+  describe('PUT /metadata/:key', function() {
+
+    it('should set metadata primitive field on empty', function() {
+      return saveRecordWithParameters()
+        .then(login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/metadata/one')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({value: 1});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.success.should.equal(true);
+
+          return umpack.getUserMetaDataByUserName(username);
+        })
+        .then(function(metadata) {
+
+          metadata.should.have.property('one', 1);
+
+        });
+    });
+
+    it('should set metadata complex field on empty', function() {
+      return saveRecordWithParameters()
+        .then(login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/metadata/complex')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({value: {one: 1, two: 2}});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.success.should.equal(true);
+
+          return umpack.getUserMetaDataByUserName(username);
+        })
+        .then(function(metadata) {
+
+          metadata.should.have.property('complex');
+          metadata.complex.should.have.property('one', 1);
+          metadata.complex.should.have.property('two', 2);
+
+        });
+    });
+
+    it('should set existing metadata complex field', function() {
+      return saveRecordWithParameters({testOne: 1})
+        .then(login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/metadata/complex')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({value: {one: 1, two: 2}});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.success.should.equal(true);
+
+          return umpack.getUserMetaDataByUserName(username);
+        })
+        .then(function(metadata) {
+
+          metadata.should.have.property('complex');
+          metadata.complex.should.have.property('one', 1);
+          metadata.complex.should.have.property('two', 2);
+
+          metadata.should.have.property('testOne', 1);
+
+        });
+    });
+
+  });
+
 });
 
 function passwordHash(password) {
