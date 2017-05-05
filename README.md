@@ -109,12 +109,34 @@ response - {
             }
 ```
 
+### Get metadata
+```js
+GET : {baseurl}/metadata
+response - metadata object
+```
+
+### Update metadata
+```js
+PUT : {baseurl}/metadata
+request - data/body : metadata object
+response - { success: true, message: 'metadata updated' }
+```
+
+### Set metadata field
+```js
+PUT : {baseurl}/metadata/{fieldName}
+request - data/body : {
+  value: 'some value of any type'
+}
+response - { success: true, message: 'metadata key: {fieldName} updated' }
+```
+
 ### API Response Internal Statuses
-* Every response with status 400/401 has also internal status for example : 
+* Every response with status 400/401 has also internal status for example :
 ```js
 {message:User Is Not Activated, internalStatus:601}
 ```
-* All internal status 
+* All internal status
 ```js
     { code: 601, message: 'User Is Not Activated' }
     { code: 602, message: 'User Name Or Email Already Exists' }
@@ -144,13 +166,13 @@ router.get('/', umpack.isAuthorized, function(req, res, next) {
 ### User's Metadata Management
 * if you need to add additional info, attribute, etc. you can use user's metadata to manage it.
 * metadata is custom field/subdocument of user doc which can contains any kind of object.
-* example : 
+* example :
 ### assigne/update user metadata
 ```js
-    var organizationInfo = { 
+    var organizationInfo = {
         organizationId: '2222',
         organiationName: 'bbbbb',
-        organizationTaxCode: '777777' 
+        organizationTaxCode: '777777'
     };
 
     umpack.updateUserMetaData('admin', organizationInfo)
@@ -219,6 +241,8 @@ router.get('/usersbymeta', function(req, res, next) {
 });
 ```
 
+
+
 ### Get User Full Name
 ```js
 router.get('/userFullName', function(req, res, next) {
@@ -251,7 +275,7 @@ router.get('/userRoles', function(req, res, next) {
              return res.status(400).send({ message: err.message });
 
          });
-   
+
 });
 ```
 
