@@ -1,0 +1,6 @@
+port: 3000
+umpack:
+  mongodbConnectionString: 'mongodb://localhost:27017/umpackTest'
+  accessTokenSecret: 'ovU3PrDyHS9uqcKiHirt'
+  passwordHashSecret: 'I9ZqRNXm7wVCyzYhjB7Q'
+  accessTokenExpiresIn: '1h'
