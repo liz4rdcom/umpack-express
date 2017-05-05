@@ -333,12 +333,22 @@ router.put('/metadata/:key', isAuthorized, function (req, res, next) {
       return getUserMetaDataByRequest(req)
         .then(function (metadata) {
 
-          metadata[req.params.key] = req.body;
+          if (!metadata) {
+            metadata = {};
+          }
+
+          metadata[req.params.key] = req.body.value;
 
           return updateUserMetaData(decoded.user, metadata);
 
         });
 
+    })
+    .then(function () {
+      return {
+        success: true,
+        message: 'metadata key: '+ req.params.key + ' updated'
+      };
     });
 
   sendPromiseResult(promise, req, res, next);
