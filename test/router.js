@@ -131,6 +131,47 @@ describe('service API', function() {
 
     });
 
+  });
+
+  describe('PUT /metadata', function() {
+
+    it('should update metadata', function() {
+      return saveRecordWithParameters()
+        .then(login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/metadata')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({
+              one: 1,
+              text: 'text',
+              complex: {
+                two: 2,
+                textTwo: 'text'
+              }
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.success.should.equal(true);
+
+          return umpack.getUserMetaDataByUserName(username);
+        })
+        .then(function(metadata) {
+
+          metadata.should.have.property('one', 1);
+          metadata.should.have.property('text', 'text');
+          metadata.should.have.property('complex');
+
+          metadata.complex.should.have.property('two', 2);
+          metadata.complex.should.have.property('textTwo', 'text');
+
+        });
+    });
 
   });
 });
