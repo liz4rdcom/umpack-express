@@ -1,6 +1,6 @@
 {
   "name": "umpack-express",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "usermanagement pack for express app",
   "main": "umpack.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "express"
   ],
   "author": "0xzerocode",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/0xZeroCode/umpack-express/issues"
   },
