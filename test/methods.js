@@ -87,6 +87,54 @@ describe('umpack methods', function() {
 
       });
 
+
+    it(
+      'should return empty list when noone has specified role',
+      function() {
+
+        var users = [{
+            metaData: {},
+            userName: 'one',
+            password: utils.passwordHash(password),
+            email: 'one@test.com',
+            isActivated: true,
+            roles: ['admin', 'test'],
+            '__v': 0
+          },
+          {
+            userName: 'two',
+            password: utils.passwordHash(password),
+            email: 'two@test.com',
+            isActivated: true,
+            roles: [],
+            '__v': 0
+          },
+          {
+            userName: 'three',
+            password: utils.passwordHash(password),
+            email: 'three@test.com',
+            isActivated: true,
+            roles: ['test'],
+            '__v': 0
+          }
+        ];
+
+        return insertUsers(users)
+          .then(function () {
+            return umpack.filterUsersByRole('user');
+          })
+          .then(function (users) {
+            should.exist(users);
+
+            users.should.have.lengthOf(0);
+
+          });
+
+
+      });
+
+
+
   });
 
 });
