@@ -8,7 +8,7 @@ var config = require('config');
 var Promise = require('bluebird');
 var crypto = require('crypto');
 
-var umpack = require('../umpack')(config.get('umpack'));
+var umpack = require('./helpers/umpack');
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
 
@@ -48,11 +48,8 @@ describe('service API', function() {
 
     return new Promise(function(resolve, reject) {
 
-        mongoose.connection.once('connected', function() {
-
-          resolve(mongoose.connection.db.dropCollection(
-            rolesCollection));
-        });
+        resolve(mongoose.connection.db.dropCollection(
+          rolesCollection));
 
       })
       .then(function() {
@@ -187,7 +184,9 @@ describe('service API', function() {
             .put('/um/metadata/one')
             .set('authorization', res.text)
             .set('cookie', '')
-            .send({value: 1});
+            .send({
+              value: 1
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
@@ -213,7 +212,12 @@ describe('service API', function() {
             .put('/um/metadata/complex')
             .set('authorization', res.text)
             .set('cookie', '')
-            .send({value: {one: 1, two: 2}});
+            .send({
+              value: {
+                one: 1,
+                two: 2
+              }
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
@@ -232,7 +236,9 @@ describe('service API', function() {
     });
 
     it('should set existing metadata complex field', function() {
-      return saveRecordWithParameters({testOne: 1})
+      return saveRecordWithParameters({
+          testOne: 1
+        })
         .then(login)
         .then(function(res) {
           res.should.have.status(200);
@@ -241,7 +247,12 @@ describe('service API', function() {
             .put('/um/metadata/complex')
             .set('authorization', res.text)
             .set('cookie', '')
-            .send({value: {one: 1, two: 2}});
+            .send({
+              value: {
+                one: 1,
+                two: 2
+              }
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
