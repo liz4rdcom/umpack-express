@@ -46,7 +46,7 @@ describe('umpack methods', function() {
             password: utils.passwordHash(password),
             email: 'two@test.com',
             isActivated: true,
-            roles: ['test', 'user'],
+            roles: ['user'],
             '__v': 0
           },
           {
@@ -55,6 +55,14 @@ describe('umpack methods', function() {
             email: 'three@test.com',
             isActivated: true,
             roles: ['test'],
+            '__v': 0
+          },
+          {
+            userName: 'four',
+            password: utils.passwordHash(password),
+            email: 'four@test.com',
+            isActivated: true,
+            roles: [],
             '__v': 0
           }
         ];
