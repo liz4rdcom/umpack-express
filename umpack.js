@@ -559,6 +559,22 @@ function filterUsersByMetaData(key, value) {
         });
 }
 
+function toFullUserObject(user) {
+  return {
+      id: user._id,
+      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isActivated: user.isActivated,
+      additionalInfo: user.additionalInfo,
+      address: user.address,
+      email: user.email,
+      phone: user.phone,
+      roles: user.roles,
+      metaData: user.metaData
+  };
+}
+
 function getFullName(userName) {
 
     var dbPromise = User.findOne({ 'userName': userName }).exec();
@@ -626,6 +642,15 @@ function getUserRolesFromRequest(req) {
         });
 }
 
+function filterUsersByRole(role) {
+  var dbPromise = User.find({'roles': role}).exec();
+
+  return dbPromise
+    .then(function (result) {
+      return result.map(toFullUserObject);
+    });
+}
+
 
 
 
@@ -643,6 +668,7 @@ module.exports = function(options) {
         getUserRolesByUserName: getUserRolesByUserName,
         getUserRolesFromRequest: getUserRolesFromRequest,
         getFullUserObject: getFullUserObject,
-        getFullUserObjectFromRequest: getFullUserObjectFromRequest
+        getFullUserObjectFromRequest: getFullUserObjectFromRequest,
+        filterUsersByRole: filterUsersByRole
     }
 }
