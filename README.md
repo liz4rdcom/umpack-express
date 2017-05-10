@@ -298,6 +298,25 @@ router.get('/userRoles', function(req, res, next) {
 
 ```
 
+### Filter users by role
+```js
+router.get('/usersbyrole', function(req, res, next) {
+
+    umpack.filterUsersByRole('user')
+        .then(function(result) {
+
+            res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+
+```
+
 
 ### Get Full User Object
 ```js

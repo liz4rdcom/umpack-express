@@ -541,22 +541,24 @@ function filterUsersByMetaData(key, value) {
 
     return dbPromise
         .then(function(result) {
-            return result.map(function(user) {
-                return {
-                    id: user._id,
-                    userName: user.userName,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    isActivated: user.isActivated,
-                    additionalInfo: user.additionalInfo,
-                    address: user.address,
-                    email: user.email,
-                    phone: user.phone,
-                    roles: user.roles,
-                    metaData: user.metaData
-                };
-            })
+            return result.map(toFullUserObject);
         });
+}
+
+function toFullUserObject(user) {
+  return {
+      id: user._id,
+      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isActivated: user.isActivated,
+      additionalInfo: user.additionalInfo,
+      address: user.address,
+      email: user.email,
+      phone: user.phone,
+      roles: user.roles,
+      metaData: user.metaData
+  };
 }
 
 function getFullName(userName) {
@@ -582,22 +584,7 @@ function getFullUserObject(userName) {
     var dbPromise = User.findOne({ 'userName': userName }).exec();
 
     return dbPromise
-        .then(function(user) {
-            return {
-                id: user._id,
-                userName: user.userName,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                phone: user.phone,
-                address: user.address,
-                additionalInfo: user.additionalInfo,
-                isActivated: user.isActivated,
-                roles: user.roles,
-                metaData: user.metaData
-
-            };
-        });
+        .then(toFullUserObject);
 }
 
 function getUserRolesByUserName(userName) {
@@ -626,6 +613,15 @@ function getUserRolesFromRequest(req) {
         });
 }
 
+function filterUsersByRole(role) {
+  var dbPromise = User.find({'roles': role}).exec();
+
+  return dbPromise
+    .then(function (result) {
+      return result.map(toFullUserObject);
+    });
+}
+
 
 
 
@@ -643,6 +639,7 @@ module.exports = function(options) {
         getUserRolesByUserName: getUserRolesByUserName,
         getUserRolesFromRequest: getUserRolesFromRequest,
         getFullUserObject: getFullUserObject,
-        getFullUserObjectFromRequest: getFullUserObjectFromRequest
+        getFullUserObjectFromRequest: getFullUserObjectFromRequest,
+        filterUsersByRole: filterUsersByRole
     }
 }
