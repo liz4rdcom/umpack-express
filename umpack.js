@@ -48,10 +48,38 @@ var User = mongoose.model('user', {
     metaData: {}
 });
 
-var Role = mongoose.model('roleactions', {
+var RoleSchema = new mongoose.Schema({
     name: String,
     actions: []
 });
+
+RoleSchema.methods.anotherActionHasSamePattern = function (action) {
+  for (var i = 0; i < this.actions.length; i++) {
+    var item = this.actions[i];
+
+    if(item.pattern === action.pattern && item._id !== action._id) return true;
+  }
+
+  return false;
+};
+
+RoleSchema.methods.addAction = function (action) {
+  this.actions.push(action);
+};
+
+RoleSchema.methods.updateAction = function (action) {
+
+  for (var i = 0; i < this.actions.length; i++) {
+    if (this.actions[i]._id === action._id) {
+      this.actions[i] = action;
+
+      return;
+    }
+  }
+
+};
+
+var Role = mongoose.model('roleactions', RoleSchema);
 
 
 router.post('/login', function(req, res, next) {
@@ -427,13 +455,10 @@ router.post('/roles/:roleName/actions', isAuthorized, function (req, res, next) 
       return Role.findOne({name: roleName});
     })
     .then(function (role) {
-      var actionResult = role.actions.find(function (item) {
-        return item.pattern === action.pattern;
-      });
 
-      if(actionResult) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
+      checkPattern(role, action);
 
-      role.actions.push(action);
+      role.addAction(action);
 
       return role.save();
     })
@@ -447,6 +472,47 @@ router.post('/roles/:roleName/actions', isAuthorized, function (req, res, next) 
     sendPromiseResult(promise, req, res, next);
 
 });
+
+router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
+  var roleName = req.params.roleName;
+  var actionId = req.params.actionId;
+
+  var action = {
+    _id: actionId,
+    pattern: req.body.pattern,
+    name: req.body.name,
+    verbGet: req.body.verbGet || false,
+    verbPost: req.body.verbPost || false,
+    verbPut: req.body.verbPut || false,
+    verbDelete: req.body.verbDelete || false
+  };
+
+  var promise = Promise.try(function () {
+      if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+
+      return Role.findOne({name: roleName});
+    })
+    .then(function (role) {
+
+      checkPattern(role, action);
+
+      role.updateAction(action);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true,
+        actionId: action._id
+      };
+    });
+
+    sendPromiseResult(promise, req, res, next);
+});
+
+function checkPattern(role, action) {
+  if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
+}
 
 
 function apiError(status) {
