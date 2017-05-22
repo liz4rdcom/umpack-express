@@ -367,10 +367,8 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 
   var role = new Role({
     name: req.body.name,
-    actions: req.body.actions
+    actions: []
   });
-
-  if(!role.actions) role.actions = [];
 
   var promise = Role.findOne({name: role.name})
     .then(function (roleResult) {
