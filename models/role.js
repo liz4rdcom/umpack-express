@@ -34,4 +34,19 @@ RoleSchema.methods.updateAction = function (action) {
 
 };
 
+RoleSchema.methods.deleteAction = function (actionId) {
+  var index = -1;
+
+  for (var i = 0; i < this.actions.length; i++) {
+    if (this.actions[i]._id === actionId) {
+      index = i;
+      break;
+    }
+  }
+
+  if (index === -1) return;
+
+  this.actions.splice(index, 1);
+};
+
 module.exports = mongoose.model('roleactions', RoleSchema);
