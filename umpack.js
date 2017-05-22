@@ -471,8 +471,26 @@ router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, re
     })
     .then(function () {
       return {
-        success: true,
-        actionId: action._id
+        success: true
+      };
+    });
+
+    sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/roles/:roleName/actions/actionId', isAuthorized, function (req, res, next) {
+  var roleName = req.params.roleName;
+  var actionId = req.params.actionId;
+
+  var promise = Role.findOne({name: roleName})
+    .then(function (role) {
+      role.deleteAction(actionId);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true
       };
     });
 
@@ -482,7 +500,6 @@ router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, re
 function checkPattern(role, action) {
   if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
 }
-
 
 function apiError(status) {
   var err = new Error(status.message);
