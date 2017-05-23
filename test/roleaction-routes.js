@@ -186,7 +186,49 @@ describe('service Api roleaction routes', function() {
     });
   });
 
+  describe('POST roles/:roleName/actions', function () {
 
+    it('should add action to role', function () {
+
+      return saveRecordWithActions()
+        .then(login)
+        .then(function (res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .post('/um/roles/' + defaultRole + '/actions')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({
+              pattern: '/api/*',
+              name: 'api full',
+              verbGet: true,
+              verbPost: false
+            });
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('actionId');
+
+          return findRole(defaultRole);
+        })
+        .then(function (role) {
+          should.exist(role);
+
+          role.should.have.property('actions');
+          role.actions.should.have.length(1);
+          role.actions[0].should.have.property('pattern', '/api/*');
+          role.actions[0].should.have.property('verbGet', true);
+          role.actions[0].should.have.property('verbPost', false);
+          role.actions[0].should.have.property('verbPut', false);
+
+        });
+    });
+
+  });
 });
 
 function saveRecordWithActions(actions) {
