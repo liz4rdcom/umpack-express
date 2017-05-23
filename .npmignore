@@ -11,3 +11,4 @@ doc
 dist_front
 test
 config
+coverage
