@@ -118,8 +118,9 @@ describe('service Api roleaction routes', function() {
         });
     });
 
-    it('should save with actions empty array', function() {
-      return login()
+    it('should return ROLE_ALREADY_EXISTS when saving same role', function() {
+      return saveRecordWithActions()
+        .then(login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -128,31 +129,15 @@ describe('service Api roleaction routes', function() {
             .set('authorization', res.text)
             .set('cookie', '')
             .send({
-              name: defaultRole,
-              actions: [{
-                pattern: '/um/*',
-                name: 'um',
-                verbGet: true,
-                verbPost: false
-              }]
+              name: defaultRole
             });
         })
-        .then(function(res) {
-          res.should.have.status(200);
+        .catch(function(res) {
+          res.should.have.status(400);
 
-          should.exist(res.body);
-          res.body.should.have.property('success', true);
-
-          return findRole(defaultRole);
-        })
-        .then(function(role) {
-
-          should.exist(role);
-
-          role.should.have.property('actions');
-
-          role.actions.should.have.length(0);
-
+          should.exist(res.response.body);
+          res.response.body.should.have.property('internalStatus', 702);
+          res.response.body.should.have.property('message');
         });
     });
 
