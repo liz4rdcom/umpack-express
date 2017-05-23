@@ -8,11 +8,21 @@ var RoleSchema = new mongoose.Schema({
     actions: []
 });
 
+function trimPattern(pattern) {
+  var startPos = 0;
+  var endPos = pattern.length;
+
+  if (pattern.charAt(0) === '/') startPos = 1;
+  if (pattern.charAt(pattern.length - 1) === '/') endPos = pattern.length - 1;
+
+  return pattern.substring(startPos, endPos);
+}
+
 RoleSchema.methods.anotherActionHasSamePattern = function (action) {
   for (var i = 0; i < this.actions.length; i++) {
     var item = this.actions[i];
 
-    if(item.pattern === action.pattern && item._id !== action._id) return true;
+    if(trimPattern(item.pattern) === trimPattern(action.pattern) && item._id !== action._id) return true;
   }
 
   return false;
