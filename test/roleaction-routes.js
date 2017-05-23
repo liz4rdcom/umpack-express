@@ -250,7 +250,7 @@ describe('service Api roleaction routes', function() {
           err.should.have.status(400);
 
           should.exist(err.response.body);
-          err.response.body.should.have.prototype('internalStatus', 704);
+          err.response.body.should.have.property('internalStatus', 704);
         });
     });
   });
