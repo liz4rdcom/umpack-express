@@ -213,6 +213,41 @@ describe('service Api roleaction routes', function() {
         });
     });
 
+    it('should return PATTERN_ALREADY_EXISTS on same pattern', function () {
+      return saveRecordWithActions([{
+        pattern: '/test/*',
+        name: 'test route',
+        verbGet: true,
+        verbPost: true,
+        verbPut: false,
+        verbDelete: false
+      }])
+        .then(login)
+        .then(function (res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .post('/um/roles/' + defaultRole + '/actions')
+            .set('authorization', res.text)
+            .set('cookie', '')
+            .send({
+              pattern: 'test/*/',
+              name: 'test route two',
+              verbGet: true
+            });
+        })
+        .then(function (res) {
+          res.should.have.status(400);
+        })
+        .catch(function (err) {
+          if (err instanceof chai.AssertionError) throw err;
+
+          err.should.have.status(400);
+
+          should.exist(err.response.body);
+          err.response.body.should.have.prototype('internalStatus', 704);
+        });
+    });
   });
 });
 
