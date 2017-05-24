@@ -445,7 +445,7 @@ router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, re
   var actionId = req.params.actionId;
 
   var action = {
-    _id: actionId,
+    _id: mongoose.Types.ObjectId(actionId),
     pattern: req.body.pattern,
     name: req.body.name,
     verbGet: req.body.verbGet || false,

@@ -35,8 +35,8 @@ RoleSchema.methods.addAction = function (action) {
 RoleSchema.methods.updateAction = function (action) {
 
   for (var i = 0; i < this.actions.length; i++) {
-    if (this.actions[i]._id === action._id) {
-      this.actions[i] = action;
+    if (this.actions[i]._id.equals(action._id)) {
+      this.actions.set(i, action); //mongoose array alement assign. marks field modified
 
       return;
     }
