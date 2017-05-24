@@ -476,7 +476,7 @@ router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, re
     sendPromiseResult(promise, req, res, next);
 });
 
-router.delete('/roles/:roleName/actions/actionId', isAuthorized, function (req, res, next) {
+router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
   var roleName = req.params.roleName;
   var actionId = req.params.actionId;
 
