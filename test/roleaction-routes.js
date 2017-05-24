@@ -352,6 +352,72 @@ describe('service Api roleaction routes', function() {
       });
     });
   });
+
+  describe('DELETE /roles/:roleName/actions/:actionId', function () {
+    it('should delete action', function () {
+      var actionId = mongoose.Types.ObjectId();
+
+      return saveRecordWithActions([{
+        _id: actionId,
+        pattern: '/api/*',
+        name: 'api full',
+        verbGet: true,
+        verbPost: true,
+        verbPut: true,
+        verbDelete: true
+      }])
+        .then(login)
+        .then(function (res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .delete('/um/roles/' + defaultRole + '/actions/' + actionId)
+            .set('authorization', res.text)
+            .set('cookie', '');
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+          res.body.should.have.property('success', true);
+
+          return findRole(defaultRole);
+        })
+        .then(function (role) {
+          should.exist(role);
+
+          role.actions.should.have.length(0);
+        });
+    });
+
+    it('should return success on deleting non-existing action', function () {
+      var actionId = mongoose.Types.ObjectId();
+
+      return saveRecordWithActions()
+        .then(login)
+        .then(function (res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .delete('/um/roles/' + defaultRole + '/actions/' + actionId)
+            .set('authorization', res.text)
+            .set('cookie', '');
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+          res.body.should.have.property('success', true);
+
+          return findRole(defaultRole);
+        })
+        .then(function (role) {
+          should.exist(role);
+
+          role.actions.should.have.length(0);
+        });
+    });
+  });
 });
 
 function saveRecordWithActions(actions) {
