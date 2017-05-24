@@ -48,7 +48,7 @@ RoleSchema.methods.deleteAction = function (actionId) {
   var index = -1;
 
   for (var i = 0; i < this.actions.length; i++) {
-    if (this.actions[i]._id === actionId) {
+    if (this.actions[i]._id.equals(actionId)) {
       index = i;
       break;
     }
