@@ -148,6 +148,9 @@ response - { success: true, message: 'metadata key: {fieldName} updated' }
     { code: 608, message: 'Token Expired' }
     { code: 609, message: 'Access Denied' }
     { code: 701, message: 'Wrong Role Name' }
+    { code: 702, message: 'Role Already Exists'}
+    { code: 703, message: 'Invalid Action Pattern'}
+    { code: 704, message: 'Action Pattern Already Exists'}
 ```
 
 ### Use Authorization Middleware
