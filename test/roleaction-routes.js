@@ -220,6 +220,7 @@ describe('service Api roleaction routes', function() {
 
     it('should return PATTERN_ALREADY_EXISTS on same pattern', function () {
       return saveRecordWithActions([{
+        _id: mongoose.Types.ObjectId(),
         pattern: '/test/*',
         name: 'test route',
         verbGet: true,
@@ -252,6 +253,103 @@ describe('service Api roleaction routes', function() {
           should.exist(err.response.body);
           err.response.body.should.have.property('internalStatus', 704);
         });
+    });
+  });
+
+  describe('PUT roles/:roleName/actions/:actionId', function () {
+    it('should replace action, pattern changed', function () {
+      var actionId = mongoose.Types.ObjectId();
+
+      return saveRecordWithActions([
+        {
+          _id: actionId,
+          pattern: '/test/*',
+          name: 'test action',
+          verbGet: true,
+          verbPost: true,
+          verbPut: true,
+          verbDelete: true
+        }
+      ])
+      .then(login)
+      .then(function (res) {
+        res.should.have.status(200);
+
+        return chai.request(app)
+          .put('/um/roles/' + defaultRole + '/actions/' + actionId)
+          .set('authorization', res.text)
+          .set('cookie', '')
+          .send({
+            pattern: '/test/one/*',
+            name: 'test action',
+            verbGet: true,
+            verbPost: true,
+            verbPut: true,
+            verbDelete: false
+          });
+      })
+      .then(function (res) {
+        res.should.have.status(200);
+
+        should.exist(res.body);
+        res.body.should.have.property('success', true);
+
+        return findRole(defaultRole);
+      })
+      .then(function (role) {
+        should.exist(role);
+
+        role.actions.should.have.length(1);
+        role.actions[0].should.have.property('pattern', '/test/one/*');
+        role.actions[0].should.have.property('verbDelete', false);
+      });
+    });
+
+    it('should replace action', function () {
+      var actionId = mongoose.Types.ObjectId();
+
+      return saveRecordWithActions([
+        {
+          _id: actionId,
+          pattern: '/test/*',
+          name: 'test action',
+          verbGet: true,
+          verbPost: true,
+          verbPut: true,
+          verbDelete: true
+        }
+      ])
+      .then(login)
+      .then(function (res) {
+        res.should.have.status(200);
+
+        return chai.request(app)
+          .put('/um/roles/' + defaultRole + '/actions/' + actionId)
+          .set('authorization', res.text)
+          .set('cookie', '')
+          .send({
+            pattern: '/test/*',
+            name: 'test action',
+            verbGet: true,
+            verbPost: true,
+            verbPut: true,
+            verbDelete: false
+          });
+      })
+      .then(function (res) {
+        res.should.have.status(200);
+
+        should.exist(res.body);
+        res.body.should.have.property('success', true);
+
+        return findRole(defaultRole);
+      })
+      .then(function (role) {
+        should.exist(role);
+
+        role.actions.should.have.length(1);
+        role.actions[0].should.have.property('verbDelete', false);
+      });
     });
   });
 });
