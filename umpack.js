@@ -387,7 +387,23 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 });
 
 router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
-  var promise = Role.findOne({name: req.params.roleName});
+  var promise = Role.findOne({name: req.params.roleName})
+    .then(function (role) {
+      return {
+        name: role.name,
+        actions: role.actions.map(function (action) {
+          return {
+            id: action._id,
+            pattern: action.pattern,
+            name: action.name,
+            verbGet: action.verbGet,
+            verbPost: action.verbPost,
+            verbPut: action.verbPut,
+            verbDelete: action.verbDelete
+          };
+        })
+      };
+    });
 
   sendPromiseResult(promise, req, res, next);
 });
