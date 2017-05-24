@@ -22,7 +22,7 @@ RoleSchema.methods.anotherActionHasSamePattern = function (action) {
   for (var i = 0; i < this.actions.length; i++) {
     var item = this.actions[i];
 
-    if(trimPattern(item.pattern) === trimPattern(action.pattern) && item._id !== action._id) return true;
+    if(trimPattern(item.pattern) === trimPattern(action.pattern) && !item._id.equals(action._id)) return true;
   }
 
   return false;
