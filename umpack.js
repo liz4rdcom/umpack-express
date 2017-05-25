@@ -368,7 +368,7 @@ function decodeRequestToken(req) {
 
     try {
 
-        var cookies = cookie.parse(req.headers.cookie);
+        var cookies = cookie.parse(req.headers.cookie || '');
         var jwtToken = req.headers['authorization'] || cookies[cookieAccessTokenName];
 
         if (!jwtToken) {
