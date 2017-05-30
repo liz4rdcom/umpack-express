@@ -2,8 +2,6 @@ var chai = require('chai');
 var chaiHttp = require('chai-http');
 var should = chai.should();
 
-var express = require('express');
-var bodyParser = require('body-parser');
 var config = require('config');
 var Promise = require('bluebird');
 var crypto = require('crypto');
@@ -22,18 +20,7 @@ global.Promise = Promise;
 
 describe('service API', function() {
 
-  var app = express();
-
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({
-    extended: false
-  }));
-
-  app.use('/um', umpack.router);
-
-  app.listen(config.get('port'), function() {
-    console.log('listening');
-  });
+  var app = require('./helpers/app');
 
   function login() {
     return chai.request(app)

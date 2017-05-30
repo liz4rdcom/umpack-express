@@ -28,8 +28,11 @@ var INTERNAL_STATUS = {
     INVALID_JWT: { code: 607, message: 'Invalid JWT Token' },
     JWT_TOKEN_EXPIRED: { code: 608, message: 'Token Expired' },
     ACCESS_DENIDE: { code: 609, message: 'Access Denied' },
-    WRONG_ROLE_NAME: { code: 701, message: 'Wrong Role Name' }
-}
+    WRONG_ROLE_NAME: { code: 701, message: 'Wrong Role Name' },
+    ROLE_ALREADY_EXISTS: {code: 702, message: 'Role Already Exists'},
+    INVALID_ACTION_PATTERN: {code: 703, message: 'Invalid Action Pattern'},
+    ACTION_PATTERN_ALREADY_EXISTS: {code: 704, message: 'Action Pattern Already Exists'}
+};
 
 var User = mongoose.model('user', {
     userName: String,
@@ -45,10 +48,7 @@ var User = mongoose.model('user', {
     metaData: {}
 });
 
-var Role = mongoose.model('roleactions', {
-    name: String,
-    actions: []
-});
+var Role = require('./models/role');
 
 
 router.post('/login', function(req, res, next) {
@@ -363,6 +363,165 @@ router.get('/metadata', isAuthorized, function (req, res, next) {
 
 });
 
+router.post('/roles', isAuthorized, function (req, res, next) {
+
+  var role = new Role({
+    name: req.body.name,
+    actions: []
+  });
+
+  var promise = Role.findOne({name: role.name})
+    .then(function (roleResult) {
+      if(roleResult) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+
+});
+
+router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
+  var promise = Role.findOne({name: req.params.roleName})
+    .then(function (role) {
+      return {
+        name: role.name,
+        actions: role.actions.map(function (action) {
+          return {
+            id: action._id,
+            pattern: action.pattern,
+            name: action.name,
+            verbGet: action.verbGet,
+            verbPost: action.verbPost,
+            verbPut: action.verbPut,
+            verbDelete: action.verbDelete
+          };
+        })
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/roles/:roleName', isAuthorized, function (req, res, next) {
+  var promise = Role.findOneAndRemove({name: req.params.roleName})
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/roles/:roleName/actions', isAuthorized, function (req, res, next) {
+  var action = {
+    _id: mongoose.Types.ObjectId(),
+    pattern: req.body.pattern,
+    name: req.body.name,
+    verbGet: req.body.verbGet || false,
+    verbPost: req.body.verbPost || false,
+    verbPut: req.body.verbPut || false,
+    verbDelete: req.body.verbDelete || false
+  };
+
+  var roleName = req.params.roleName;
+
+  var promise = Promise.try(function () {
+      if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+
+      return Role.findOne({name: roleName});
+    })
+    .then(function (role) {
+
+      checkPattern(role, action);
+
+      role.addAction(action);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true,
+        actionId: action._id
+      };
+    });
+
+    sendPromiseResult(promise, req, res, next);
+
+});
+
+router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
+  var roleName = req.params.roleName;
+  var actionId = req.params.actionId;
+
+  var action = {
+    _id: mongoose.Types.ObjectId(actionId),
+    pattern: req.body.pattern,
+    name: req.body.name,
+    verbGet: req.body.verbGet || false,
+    verbPost: req.body.verbPost || false,
+    verbPut: req.body.verbPut || false,
+    verbDelete: req.body.verbDelete || false
+  };
+
+  var promise = Promise.try(function () {
+      if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+
+      return Role.findOne({name: roleName});
+    })
+    .then(function (role) {
+
+      checkPattern(role, action);
+
+      role.updateAction(action);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+    sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
+  var roleName = req.params.roleName;
+  var actionId = req.params.actionId;
+
+  var promise = Role.findOne({name: roleName})
+    .then(function (role) {
+      role.deleteAction(actionId);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+    sendPromiseResult(promise, req, res, next);
+});
+
+function checkPattern(role, action) {
+  if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
+}
+
+function apiError(status) {
+  var err = new Error(status.message);
+
+  err.internalStatus = status.code;
+
+  return err;
+}
 
 function decodeRequestToken(req) {
 
