@@ -131,6 +131,75 @@ request - data/body : {
 response - { success: true, message: 'metadata key: {fieldName} updated' }
 ```
 
+### Create New Role
+```js
+POST : {baseurl}/roles
+request - data/body : {
+  name: 'admin'
+}
+response - { success: true }
+```
+
+### Get Role Full Object
+```js
+GET : {baseurl}/roles/{roleName}
+response - {
+  name: 'admin',
+  actions: [{
+    id: '464sadfsdf6',
+    pattern: '/api/*',
+    name: 'action name',
+    verbGet: true,
+    verbPost: true,
+    verbPut: true,
+    verbDelete: true
+  }]
+}
+```
+
+### Delete Role
+```js
+DELETE : {baseurl}/roles/{roleName}
+response: { success: true }
+```
+
+### Permit Action to Role
+```js
+POST : {baseurl}/roles/{roleName}/actions
+request - data/body : {
+  pattern: '/api/*',
+  name: 'name',
+  verbGet: true,
+  verbPost: true,
+  verbPut: true,
+  verbDelete: true
+}
+response - {
+  success: true,
+  actionId: 'action id'
+}
+```
+
+### Edit Role's Action
+```js
+PUT : {baseurl}/roles/{roleName}/actions/{actionId}
+request - data/body : {
+  pattern: '/api/something',
+  name: 'name',
+  verbGet: true,
+  verbPost: true,
+  verbPut: true,
+  verbDelete: false
+}
+response - { success : true }
+```
+
+### Remove Permitted Action From Role
+```js
+DELETE : {baseurl}/roles/{roleName}/actions/{actionId}
+response - { success: true }
+```
+
 ### API Response Internal Statuses
 * Every response with status 400/401 has also internal status for example :
 ```js
