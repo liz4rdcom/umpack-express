@@ -1,5 +1,5 @@
 # umpack
-
+[![npm version](https://badge.fury.io/js/umpack-express.svg)](https://badge.fury.io/js/umpack-express)
 ## Install Guide
 
 ### Install npm package
