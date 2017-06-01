@@ -311,6 +311,23 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
 });
 
+router.get('/users/:id', isAuthorized, function (req, res, next) {
+  var promise = User.findById(req.params.id);
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/users/:id', isAuthorized, function (req, res, next) {
+  var promise = User.findByIdAndRemove(req.params.id)
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function (req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function (decoded) {
