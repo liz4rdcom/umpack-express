@@ -328,6 +328,26 @@ router.delete('/users/:id', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.put('/users/:id/info', isAuthorized, function (req, res, next) {
+  var info = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    phone: req.body.phone,
+    address: req.body.address,
+    additionalInfo: req.body.additionalInfo
+  };
+
+  var promise = User.findByIdAndUpdate(req.params.id, info)
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function (req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function (decoded) {
