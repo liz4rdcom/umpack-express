@@ -311,6 +311,59 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
 });
 
+router.get('/users/:id', isAuthorized, function (req, res, next) {
+  var promise = User.findById(req.params.id)
+    .then(function (user) {
+      return {
+        id: user._id,
+        userName: user.userName,
+        password: user.password,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        additionalInfo: user.additionalInfo,
+        metaData: user.metaData,
+        isActivated: user.isActivated,
+        roles: user.roles
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/users/:id', isAuthorized, function (req, res, next) {
+  var promise = User.findByIdAndRemove(req.params.id)
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.put('/users/:id/info', isAuthorized, function (req, res, next) {
+  var info = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    phone: req.body.phone,
+    address: req.body.address,
+    additionalInfo: req.body.additionalInfo
+  };
+
+  var promise = User.findByIdAndUpdate(req.params.id, info)
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function (req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function (decoded) {
