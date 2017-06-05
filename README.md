@@ -110,6 +110,46 @@ response - {
             }
 ```
 
+### Get User Object
+```js
+GET : {baseurl}/users/{userId}
+response - {
+  id: '',
+  userName: 'name',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'test@email.com',
+  phone: '',
+  address: '',
+  additionalInfo: '',
+  isActivated: true/false,
+  roles: ['user', 'admin'],
+  metaData: {}
+}
+```
+
+### Change User Info
+```js
+PUT : {baseurl}/users/{userId}
+request - data/body : {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  address: '',
+  additionalInfo: ''
+}
+response - {success : true}
+```
+
+### Delete User
+```js
+DELETE : {baseurl}/users/{userId}
+response - {
+  success: true
+}
+```
+
 ### Get metadata
 ```js
 GET : {baseurl}/metadata
