@@ -97,6 +97,8 @@ describe('service api users administrative routes', function() {
           res.body.should.have.property('userName', defaultUser);
           res.body.should.have.property('email', 'test@test.com');
           res.body.should.have.property('firstName', 'test');
+          res.body.should.have.property('id');
+          res.body.should.not.have.property('_id');
         });
     });
   });

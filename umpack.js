@@ -312,7 +312,23 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 });
 
 router.get('/users/:id', isAuthorized, function (req, res, next) {
-  var promise = User.findById(req.params.id);
+  var promise = User.findById(req.params.id)
+    .then(function (user) {
+      return {
+        id: user._id,
+        userName: user.userName,
+        password: user.password,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        additionalInfo: user.additionalInfo,
+        metaData: user.metaData,
+        isActivated: user.isActivated,
+        roles: user.roles
+      };
+    });
 
   sendPromiseResult(promise, req, res, next);
 });
