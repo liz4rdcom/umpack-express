@@ -129,6 +129,11 @@ describe('service api users administrative routes', function() {
 
           should.exist(res.body);
           res.body.should.have.property('success', true);
+
+          return findUser(id);
+        })
+        .then(function (user) {
+          should.not.exist(user);
         });
     });
   });
