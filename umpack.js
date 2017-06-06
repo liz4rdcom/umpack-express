@@ -34,19 +34,7 @@ var INTERNAL_STATUS = {
     ACTION_PATTERN_ALREADY_EXISTS: {code: 704, message: 'Action Pattern Already Exists'}
 };
 
-var User = mongoose.model('user', {
-    userName: String,
-    password: String,
-    firstName: String,
-    lastName: String,
-    email: String,
-    phone: String,
-    address: String,
-    additionalInfo: String,
-    isActivated: Boolean,
-    roles: [String],
-    metaData: {}
-});
+var User = require('./models/user');
 
 var Role = require('./models/role');
 
@@ -55,7 +43,7 @@ router.post('/login', function(req, res, next) {
 
     var userData = req.body;
 
-    dbPromise = User.findOne({ 'userName': userData.userName }).exec();
+    dbPromise = User.findByUserName(userData.userName);
 
     dbPromise
         .then(function(user) {
@@ -159,7 +147,7 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
     //oldPassword
     //newPassword
 
-    var dbPromise = User.findOne({ 'userName': userData.userName }).exec();
+    var dbPromise = User.findByUserName(userData.userName);
 
     dbPromise
         .then(function(user) {
@@ -718,7 +706,7 @@ function handleOptions(options) {
 
 function updateUserMetaData(userName, metaDataObject) {
 
-    var dbPromise = User.findOne({ 'userName': userName }).exec();
+    var dbPromise = User.findByUserName(userName);
 
     return dbPromise.then(function(user) {
         user.metaData = metaDataObject;
@@ -728,7 +716,7 @@ function updateUserMetaData(userName, metaDataObject) {
 
 function getUserMetaDataByUserName(userName) {
 
-    var dbPromise = User.findOne({ 'userName': userName }).exec();
+    var dbPromise = User.findByUserName(userName);
 
     return dbPromise
         .then(function(user) {
@@ -741,7 +729,7 @@ function getUserMetaDataByRequest(req) {
 
     return decodeRequestToken(req)
         .then(function(decoded) {
-            return User.findOne({ 'userName': decoded.user }).exec();
+            return User.findByUserName(decoded.user);
         })
         .then(function(user) {
             return user.metaData;
@@ -779,7 +767,7 @@ function toFullUserObject(user) {
 
 function getFullName(userName) {
 
-    var dbPromise = User.findOne({ 'userName': userName }).exec();
+    var dbPromise = User.findByUserName(userName);
 
     return dbPromise
         .then(function(user) {
@@ -797,7 +785,7 @@ function getFullUserObjectFromRequest(req) {
 
 function getFullUserObject(userName) {
 
-    var dbPromise = User.findOne({ 'userName': userName }).exec();
+    var dbPromise = User.findByUserName(userName);
 
     return dbPromise
         .then(toFullUserObject);
@@ -805,7 +793,7 @@ function getFullUserObject(userName) {
 
 function getUserRolesByUserName(userName) {
 
-    var dbPromise = User.findOne({ 'userName': userName }).exec();
+    var dbPromise = User.findByUserName(userName);
 
     return dbPromise
         .then(function(user) {
