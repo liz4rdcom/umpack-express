@@ -84,6 +84,39 @@ describe('service Api roleaction routes', function() {
           res.body.actions.should.have.length(0);
         });
     });
+
+    it('should get role with actions', function () {
+      return saveRecordWithActions([{
+        _id: new ObjectId(),
+        pattern: '/roles/*/actions',
+        name: 'actions',
+        verbGet: true,
+        verbPost: true,
+        verbPut: true,
+        verbDelete: false
+      }])
+        .then(login)
+        .then(function (res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .get('/um/roles/' + defaultRole)
+            .set('authorization', res.text);
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('name', defaultRole);
+          res.body.should.have.property('actions');
+
+          res.body.actions.should.have.length(1);
+          res.body.actions[0].should.have.property('id');
+          res.body.actions[0].should.have.property('name');
+          res.body.actions[0].should.have.property('verbGet');
+        });
+    });
   });
 
   describe('POST roles/', function() {
@@ -252,6 +285,33 @@ describe('service Api roleaction routes', function() {
 
           should.exist(err.response.body);
           err.response.body.should.have.property('internalStatus', 704);
+        });
+    });
+
+    it('should return INVALID_ACTION_PATTERN on empty pattern field', function () {
+      return saveRecordWithActions()
+        .then(login)
+        .then(function (res) {
+          return chai.request(app)
+            .post('/um/roles/' + defaultRole + '/actions')
+            .set('authorization', res.text)
+            .send({
+              pattern: '',
+              name: 'test route two',
+              verbGet: true
+            });
+        })
+        .then(function (res) {
+          res.should.have.status(400);
+        })
+        .catch(function (err) {
+          if (err instanceof chai.AssertionError) throw err;
+
+          err.should.have.status(400);
+
+          should.exist(err.response.body);
+
+          err.response.body.should.have.property('internalStatus', 703);
         });
     });
   });
