@@ -486,13 +486,13 @@ router.post('/roles/:roleName/actions', isAuthorized, function (req, res, next) 
   var roleName = req.params.roleName;
 
   var promise = Promise.try(function () {
-      if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+      checkOnInvalidPattern(action);
 
       return Role.findOne({name: roleName});
     })
     .then(function (role) {
 
-      checkPattern(role, action);
+      checkOnPatternExists(role, action);
 
       role.addAction(action);
 
@@ -524,13 +524,13 @@ router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, re
   };
 
   var promise = Promise.try(function () {
-      if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+      checkOnInvalidPattern(action);
 
       return Role.findOne({name: roleName});
     })
     .then(function (role) {
 
-      checkPattern(role, action);
+      checkOnPatternExists(role, action);
 
       role.updateAction(action);
 
@@ -564,8 +564,12 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req,
     sendPromiseResult(promise, req, res, next);
 });
 
-function checkPattern(role, action) {
+function checkOnPatternExists(role, action) {
   if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
+}
+
+function checkOnInvalidPattern(action) {
+  if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
 }
 
 function apiError(status) {
