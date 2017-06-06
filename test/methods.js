@@ -242,6 +242,31 @@ describe('umpack methods', function() {
     });
 
   });
+
+  describe('#getFullName()', function () {
+    it('should get full name', function () {
+      var firstname = 'firstname';
+      var lastname = 'last name';
+
+      return insertUser({
+          userName: username,
+          password: utils.passwordHash(password),
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user'],
+          firstName: firstname,
+          lastName: lastname
+        })
+        .then(function () {
+          return umpack.getFullName(username);
+        })
+        .then(function (name) {
+          should.exist(name);
+
+          name.should.equal(firstname + ' ' + lastname);
+        });
+    });
+  });
 });
 
 function insertUser(user) {
