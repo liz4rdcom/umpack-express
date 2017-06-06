@@ -137,6 +137,111 @@ describe('umpack methods', function() {
 
   });
 
+  describe('#filterUsersByMetaData()', function () {
+
+    it('should filter users on first level key and return list', function () {
+      var users = [{
+          metaData: {},
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user'],
+          '__v': 0
+        },
+        {
+          userName: 'two',
+          password: utils.passwordHash(password),
+          email: 'two@test.com',
+          isActivated: true,
+          roles: ['user'],
+          '__v': 0
+        },
+        {
+          userName: 'three',
+          password: utils.passwordHash(password),
+          email: 'three@test.com',
+          isActivated: true,
+          roles: ['test'],
+          metaData: {key: 1, other: 2},
+          '__v': 0
+        },
+        {
+          userName: 'four',
+          password: utils.passwordHash(password),
+          email: 'four@test.com',
+          isActivated: true,
+          roles: [],
+          metaData: {key: 2, other: 2},
+          '__v': 0
+        }
+      ];
+
+      return insertUsers(users)
+        .then(function () {
+          return umpack.filterUsersByMetaData('key', 1);
+        })
+        .then(function (users) {
+          should.exist(users);
+
+          users.should.have.length(1);
+
+          users[0].userName.should.equal('three');
+        });
+    });
+
+    it('should filter users on deep level key and return list', function () {
+      var users = [{
+          metaData: {},
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user'],
+          '__v': 0
+        },
+        {
+          userName: 'two',
+          password: utils.passwordHash(password),
+          email: 'two@test.com',
+          isActivated: true,
+          roles: ['user'],
+          '__v': 0
+        },
+        {
+          userName: 'three',
+          password: utils.passwordHash(password),
+          email: 'three@test.com',
+          isActivated: true,
+          roles: ['test'],
+          metaData: {key: 1, other: 2},
+          '__v': 0
+        },
+        {
+          userName: 'four',
+          password: utils.passwordHash(password),
+          email: 'four@test.com',
+          isActivated: true,
+          roles: [],
+          metaData: { key: 2, complex: {two: 2} },
+          '__v': 0
+        }
+      ];
+
+      return insertUsers(users)
+        .then(function () {
+          return umpack.filterUsersByMetaData('complex.two', 2);
+        })
+        .then(function (users) {
+          should.exist(users);
+
+          users.should.have.length(1);
+
+          users[0].userName.should.equal('four');
+        });
+    });
+
+  });
 });
 
 function insertUser(user) {
