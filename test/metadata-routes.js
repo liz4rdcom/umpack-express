@@ -66,7 +66,7 @@ describe('metadata routes', function() {
 
     it('should return metadata', function() {
 
-      return saveRecordWithParameters({
+      return utils.saveRecordWithParameters({
           testKey: 'test value'
         })
         .then(utils.login)
@@ -90,7 +90,7 @@ describe('metadata routes', function() {
 
     it('should return empty object on user without metadata', function() {
 
-      return saveRecordWithParameters()
+      return utils.saveRecordWithParameters()
         .then(utils.login)
         .then(function(res) {
 
@@ -117,7 +117,7 @@ describe('metadata routes', function() {
   describe('PUT /metadata', function() {
 
     it('should update metadata', function() {
-      return saveRecordWithParameters()
+      return utils.saveRecordWithParameters()
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -159,7 +159,7 @@ describe('metadata routes', function() {
   describe('PUT /metadata/:key', function() {
 
     it('should set metadata primitive field on empty', function() {
-      return saveRecordWithParameters()
+      return utils.saveRecordWithParameters()
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -187,7 +187,7 @@ describe('metadata routes', function() {
     });
 
     it('should set metadata complex field on empty', function() {
-      return saveRecordWithParameters()
+      return utils.saveRecordWithParameters()
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -220,7 +220,7 @@ describe('metadata routes', function() {
     });
 
     it('should set existing metadata complex field', function() {
-      return saveRecordWithParameters({
+      return utils.saveRecordWithParameters({
           testOne: 1
         })
         .then(utils.login)
@@ -258,20 +258,3 @@ describe('metadata routes', function() {
 
   });
 });
-
-
-function saveRecordWithParameters(metadata, isActivated, roles) {
-  if (isActivated === null || isActivated === undefined) isActivated = true;
-
-  if (!roles) roles = ['user'];
-
-  return mongoose.connection.collection(usersCollection).insert({
-    metaData: metadata,
-    userName: username,
-    password: utils.passwordHash(password),
-    email: "test@test.com",
-    isActivated: isActivated,
-    roles: roles,
-    '__v': 0
-  });
-}
