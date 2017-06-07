@@ -44,6 +44,7 @@
     "gulp-uglify": "^2.0.0",
     "istanbul": "^0.4.5",
     "js-yaml": "^3.8.3",
-    "mocha": "^3.3.0"
+    "mocha": "^3.3.0",
+    "node-mocks-http": "^1.6.2"
   }
 }

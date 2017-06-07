@@ -1,5 +1,8 @@
 var chai = require('chai');
 var should = chai.should();
+var chaiHttp = require('chai-http');
+
+var httpMocks = require('node-mocks-http');
 
 var config = require('config');
 var Promise = require('bluebird');
@@ -17,6 +20,7 @@ var username = 'test';
 var password = '123456';
 
 global.Promise = Promise;
+chai.use(chaiHttp);
 
 describe('umpack methods', function() {
 
@@ -316,6 +320,47 @@ describe('umpack methods', function() {
       return umpack.getFullUserObject(username)
         .then(function(user) {
           should.not.exist(user);
+        });
+    });
+  });
+
+  describe('#getFullUserObjectFromRequest()', function() {
+
+    var app = require('./helpers/app');
+
+    it('should return user', function() {
+      return insertUser({
+          userName: username,
+          password: utils.passwordHash(password),
+          isActivated: true,
+          roles: ['user'],
+          firstName: 'test'
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/um/login')
+            .send({
+              userName: username,
+              password: password
+            });
+        })
+        .then(function(res) {
+          var request = httpMocks.createRequest({
+            method: 'GET',
+            url: '/api/something',
+            headers: {
+              authorization: res.text
+            }
+          });
+
+          return umpack.getFullUserObjectFromRequest(request);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('id');
+          user.should.have.property('userName', username);
+          user.should.have.property('firstName', 'test');
         });
     });
   });
