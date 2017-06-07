@@ -123,31 +123,23 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
     //oldPassword
     //newPassword
 
-    var dbPromise = User.findByUserName(userData.userName);
-
-    dbPromise
+    var dbPromise = User.findByUserName(userData.userName)
         .then(function(user) {
 
             var oldPasswordHash = passwordHash(userData.oldPassword);
 
             if (user.password !== oldPasswordHash) {
-                var err = new Error(INTERNAL_STATUS.WRONG_PASSWORD.message);
-                err.internalStatus = INTERNAL_STATUS.WRONG_PASSWORD.code;
-                throw err;
-
+                throw apiError(INTERNAL_STATUS.WRONG_PASSWORD);
             }
 
             user.password = passwordHash(userData.newPassword);
             return user.save();
         })
         .then(function(user) {
-            return res.send({ success: true, message: 'Password Reset Done' });
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
+            return { success: true, message: 'Password Reset Done' };
         });
+
+    sendPromiseResult(dbPromise, req, res, next);
 
 });
 
