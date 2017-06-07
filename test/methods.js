@@ -26,15 +26,6 @@ describe('umpack methods', function() {
 
   var app = require('./helpers/app');
 
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
-
   beforeEach(function() {
 
     return mongoose.connection.db.collection(usersCollection).remove();
@@ -345,7 +336,7 @@ describe('umpack methods', function() {
           roles: ['user'],
           firstName: 'test'
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           var request = httpMocks.createRequest({
             method: 'GET',
@@ -397,7 +388,7 @@ describe('umpack methods', function() {
           password: utils.passwordHash(password),
           roles: ['user']
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           var request = httpMocks.createRequest({
             method: 'GET',

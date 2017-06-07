@@ -23,15 +23,6 @@ describe('service API', function() {
 
   var app = require('./helpers/app');
 
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
-
   before(function() {
 
     return new Promise(function(resolve, reject) {

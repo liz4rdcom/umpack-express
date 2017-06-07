@@ -3,6 +3,13 @@ var crypto = require('crypto');
 
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var Promise = require('bluebird');
+
+chai.use(chaiHttp);
+global.Promise = Promise;
+var app = require('./app');
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
@@ -31,7 +38,17 @@ function saveRecordWithParameters(metadata, isActivated, roles) {
   });
 }
 
+function login() {
+  return chai.request(app)
+    .post('/um/login')
+    .send({
+      userName: username,
+      password: password
+    });
+}
+
 module.exports = {
   passwordHash: passwordHash,
-  saveRecordWithParameters: saveRecordWithParameters
+  saveRecordWithParameters: saveRecordWithParameters,
+  login: login
 };

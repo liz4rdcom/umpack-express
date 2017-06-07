@@ -22,15 +22,6 @@ global.Promise = Promise;
 describe('service Api roleaction routes', function() {
   var app = require('./helpers/app');
 
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
-
   before(function() {
     return mongoose.connection.db.dropCollection(usersCollection)
       .then(function() {
@@ -66,7 +57,7 @@ describe('service Api roleaction routes', function() {
   describe('GET roles/:roleName', function() {
     it('should get role', function() {
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -95,7 +86,7 @@ describe('service Api roleaction routes', function() {
         verbPut: true,
         verbDelete: false
       }])
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 
@@ -122,7 +113,7 @@ describe('service Api roleaction routes', function() {
   describe('POST roles/', function() {
 
     it('should save on actions field null', function() {
-      return login()
+      return utils.login()
         .then(function(res) {
           res.should.have.status(200);
 
@@ -153,7 +144,7 @@ describe('service Api roleaction routes', function() {
 
     it('should return ROLE_ALREADY_EXISTS when saving same role', function() {
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -185,7 +176,7 @@ describe('service Api roleaction routes', function() {
   describe('DELETE roles/:roleName', function () {
     it('should delete role', function () {
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 
@@ -214,7 +205,7 @@ describe('service Api roleaction routes', function() {
     it('should add action to role', function () {
 
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 
@@ -261,7 +252,7 @@ describe('service Api roleaction routes', function() {
         verbPut: false,
         verbDelete: false
       }])
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 
@@ -290,7 +281,7 @@ describe('service Api roleaction routes', function() {
 
     it('should return INVALID_ACTION_PATTERN on empty pattern field', function () {
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           return chai.request(app)
             .post('/um/roles/' + defaultRole + '/actions')
@@ -331,7 +322,7 @@ describe('service Api roleaction routes', function() {
           verbDelete: true
         }
       ])
-      .then(login)
+      .then(utils.login)
       .then(function (res) {
         res.should.have.status(200);
 
@@ -379,7 +370,7 @@ describe('service Api roleaction routes', function() {
           verbDelete: true
         }
       ])
-      .then(login)
+      .then(utils.login)
       .then(function (res) {
         res.should.have.status(200);
 
@@ -426,7 +417,7 @@ describe('service Api roleaction routes', function() {
         verbPut: true,
         verbDelete: true
       }])
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 
@@ -454,7 +445,7 @@ describe('service Api roleaction routes', function() {
       var actionId = mongoose.Types.ObjectId();
 
       return saveRecordWithActions()
-        .then(login)
+        .then(utils.login)
         .then(function (res) {
           res.should.have.status(200);
 

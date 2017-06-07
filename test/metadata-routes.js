@@ -23,15 +23,6 @@ global.Promise = Promise;
 describe('metadata routes', function() {
   var app = require('./helpers/app');
 
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
-
   before(function() {
 
     return new Promise(function(resolve, reject) {
@@ -78,7 +69,7 @@ describe('metadata routes', function() {
       return saveRecordWithParameters({
           testKey: 'test value'
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
 
           res.should.have.status(200);
@@ -100,7 +91,7 @@ describe('metadata routes', function() {
     it('should return empty object on user without metadata', function() {
 
       return saveRecordWithParameters()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
 
           res.should.have.status(200);
@@ -127,7 +118,7 @@ describe('metadata routes', function() {
 
     it('should update metadata', function() {
       return saveRecordWithParameters()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -169,7 +160,7 @@ describe('metadata routes', function() {
 
     it('should set metadata primitive field on empty', function() {
       return saveRecordWithParameters()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -197,7 +188,7 @@ describe('metadata routes', function() {
 
     it('should set metadata complex field on empty', function() {
       return saveRecordWithParameters()
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -232,7 +223,7 @@ describe('metadata routes', function() {
       return saveRecordWithParameters({
           testOne: 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 

@@ -82,7 +82,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -118,7 +118,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -155,7 +155,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
