@@ -80,15 +80,10 @@ router.post('/signup', function(req, res, next) {
 
     var dbPromise = User.findOne({
         $or: [{ 'userName': userData.userName }, { 'email': userData.email }]
-    }).exec();
-
-    dbPromise
+    }).exec()
         .then(function(result) {
             if (result) {
-                var err = new Error(INTERNAL_STATUS.USER_ALREADY_EXISTS.message);
-                err.internalStatus = INTERNAL_STATUS.USER_ALREADY_EXISTS.code;
-                throw err;
-
+                throw apiError(INTERNAL_STATUS.USER_ALREADY_EXISTS);
             }
         })
         .then(function() {
@@ -113,14 +108,10 @@ router.post('/signup', function(req, res, next) {
             return newUser.save();
         })
         .then(function() {
-            res.send({ success: true, message: 'Thanks for signUp' });
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
-
+            return { success: true, message: 'Thanks for signUp' };
         });
+
+    sendPromiseResult(dbPromise, req, res, next);
 
 });
 
