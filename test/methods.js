@@ -385,6 +385,49 @@ describe('umpack methods', function() {
         });
     });
   });
+
+  describe('#getUserRolesFromRequest()', function() {
+
+    var app = require('./helpers/app');
+
+    it('should return userName and roles', function() {
+
+      return insertUser({
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['user']
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/um/login')
+            .send({
+              userName: username,
+              password: password
+            });
+        })
+        .then(function(res) {
+          var request = httpMocks.createRequest({
+            method: 'GET',
+            url: '/api/test',
+            headers: {
+              authorization: res.text
+            }
+          });
+
+          return umpack.getUserRolesFromRequest(request);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('userName', username);
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+        });
+
+    });
+
+  });
 });
 
 function insertUser(user) {
