@@ -142,4 +142,52 @@ describe('service API', function() {
       return utils.shouldBeBadRequest(promise, 602);
     });
   });
+
+  describe('POST /resetpass', function () {
+
+    it('should change password', function () {
+      return utils.saveRecordWithParameters(null, true, ['user'])
+        .then(utils.login)
+        .then(function (res) {
+          return chai.request(app)
+            .post('/um/resetpass')
+            .set('authorization', res.text)
+            .send({
+              oldPassword: password,
+              userName: username,
+              newPassword: '123'
+            });
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, username);
+        })
+        .then(function (user) {
+          user.password.should.equal(utils.passwordHash('123'));
+        });
+    });
+
+    it('should return WRONG_PASSWORD on wrong oldPassword', function () {
+      var promise = utils.saveRecordWithParameters()
+        .then(utils.login)
+        .then(function (res) {
+          return chai.request(app)
+            .post('/um/resetpass')
+            .set('authorization', res.text)
+            .send({
+              oldPassword: '122',
+              userName: username,
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 604);
+    });
+  });
 });
