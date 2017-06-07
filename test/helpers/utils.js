@@ -6,6 +6,7 @@ var ObjectId = require('mongodb').ObjectID;
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var Promise = require('bluebird');
+var should = chai.should();
 
 chai.use(chaiHttp);
 global.Promise = Promise;
@@ -47,8 +48,25 @@ function login() {
     });
 }
 
+function shouldBeBadRequest(promise, internalStatus) {
+  return promise
+    .then(function(res) {
+      res.should.have.status(400);
+    })
+    .catch(function(err) {
+      if (err instanceof chai.AssertionError) throw err;
+
+      err.should.have.status(400);
+
+      should.exist(err.response.body);
+
+      err.response.body.should.have.property('internalStatus', internalStatus);
+    });
+}
+
 module.exports = {
   passwordHash: passwordHash,
   saveRecordWithParameters: saveRecordWithParameters,
-  login: login
+  login: login,
+  shouldBeBadRequest: shouldBeBadRequest
 };
