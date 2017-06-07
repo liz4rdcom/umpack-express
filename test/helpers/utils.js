@@ -65,9 +65,23 @@ function shouldBeBadRequest(promise, internalStatus) {
     });
 }
 
+function findUser(id, username) {
+  if (id) {
+    return mongoose.connection.db.collection(usersCollection)
+      .findOne({_id: id});
+  }
+
+  return mongoose.connection.db.collection(usersCollection)
+    .findOne({
+      userName: username
+    });
+
+}
+
 module.exports = {
   passwordHash: passwordHash,
   saveRecordWithParameters: saveRecordWithParameters,
   login: login,
-  shouldBeBadRequest: shouldBeBadRequest
+  shouldBeBadRequest: shouldBeBadRequest,
+  findUser: findUser
 };

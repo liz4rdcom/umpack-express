@@ -98,7 +98,48 @@ describe('service API', function() {
 
   describe('POST /signup', function () {
 
-    
+    it('should save user', function () {
 
+      return chai.request(app)
+        .post('/um/signup')
+        .send({
+          userName: username,
+          password: password,
+          email: 'test@test.com',
+          metaData: {one: 1}
+        })
+        .then(function (res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, username);
+        })
+        .then(function (user) {
+          should.exist(user);
+
+          user.should.have.property('email', 'test@test.com');
+          user.should.have.property('metaData');
+        });
+
+    });
+
+    it('should return USER_ALREADY_EXISTS when user exists', function () {
+      var promise = utils.saveRecordWithParameters()
+        .then(function () {
+          return chai.request(app)
+            .post('/um/signup')
+            .send({
+              userName: username,
+              password: password,
+              emails: 'test@test.com'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 602);
+    });
   });
 });
