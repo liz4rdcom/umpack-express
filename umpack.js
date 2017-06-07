@@ -750,6 +750,8 @@ function filterUsersByMetaData(key, value) {
 }
 
 function toFullUserObject(user) {
+  if (!user) return user;
+
   return {
       id: user._id,
       userName: user.userName,
