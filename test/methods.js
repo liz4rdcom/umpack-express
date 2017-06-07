@@ -24,6 +24,17 @@ chai.use(chaiHttp);
 
 describe('umpack methods', function() {
 
+  var app = require('./helpers/app');
+
+  function login() {
+    return chai.request(app)
+      .post('/um/login')
+      .send({
+        userName: username,
+        password: password
+      });
+  }
+
   beforeEach(function() {
 
     return mongoose.connection.db.collection(usersCollection).remove();
@@ -326,8 +337,6 @@ describe('umpack methods', function() {
 
   describe('#getFullUserObjectFromRequest()', function() {
 
-    var app = require('./helpers/app');
-
     it('should return user', function() {
       return insertUser({
           userName: username,
@@ -336,14 +345,7 @@ describe('umpack methods', function() {
           roles: ['user'],
           firstName: 'test'
         })
-        .then(function() {
-          return chai.request(app)
-            .post('/um/login')
-            .send({
-              userName: username,
-              password: password
-            });
-        })
+        .then(login)
         .then(function(res) {
           var request = httpMocks.createRequest({
             method: 'GET',
@@ -388,8 +390,6 @@ describe('umpack methods', function() {
 
   describe('#getUserRolesFromRequest()', function() {
 
-    var app = require('./helpers/app');
-
     it('should return userName and roles', function() {
 
       return insertUser({
@@ -397,14 +397,7 @@ describe('umpack methods', function() {
           password: utils.passwordHash(password),
           roles: ['user']
         })
-        .then(function() {
-          return chai.request(app)
-            .post('/um/login')
-            .send({
-              userName: username,
-              password: password
-            });
-        })
+        .then(login)
         .then(function(res) {
           var request = httpMocks.createRequest({
             method: 'GET',
