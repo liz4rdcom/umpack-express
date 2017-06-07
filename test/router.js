@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var crypto = require('crypto');
 
 var umpack = require('./helpers/umpack');
+var utils = require('./helpers/utils');
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
 
@@ -67,12 +68,6 @@ describe('service API', function() {
 
 });
 
-function passwordHash(password) {
-  return crypto.createHmac('sha256', config.get('umpack.passwordHashSecret'))
-    .update(password)
-    .digest('hex');
-}
-
 function saveRecordWithParameters(metadata, isActivated, roles) {
   if (isActivated === null || isActivated === undefined) isActivated = true;
 
@@ -81,7 +76,7 @@ function saveRecordWithParameters(metadata, isActivated, roles) {
   return mongoose.connection.collection(usersCollection).insert({
     metaData: metadata,
     userName: username,
-    password: passwordHash(password),
+    password: utils.passwordHash(password),
     email: "test@test.com",
     isActivated: isActivated,
     roles: roles,
