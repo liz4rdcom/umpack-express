@@ -57,20 +57,43 @@ describe('service API', function() {
 
   });
 
-});
+  describe('POST /login', function () {
 
-function saveRecordWithParameters(metadata, isActivated, roles) {
-  if (isActivated === null || isActivated === undefined) isActivated = true;
+    it('should return token', function () {
+      return utils.saveRecordWithParameters()
+        .then(utils.login)
+        .then(function (res) {
+          res.should.have.status(200);
 
-  if (!roles) roles = ['user'];
+          should.exist(res.text);
+        });
+    });
 
-  return mongoose.connection.collection(usersCollection).insert({
-    metaData: metadata,
-    userName: username,
-    password: utils.passwordHash(password),
-    email: "test@test.com",
-    isActivated: isActivated,
-    roles: roles,
-    '__v': 0
+    it('should return USER_NOT_EXISTS when no user by that username', function () {
+      var promise = utils.login();
+
+      return utils.shouldBeBadRequest(promise, 605);
+    });
+
+    it('should return USER_NOT_ACTIVE when user is not activated', function () {
+      var promise = utils.saveRecordWithParameters({}, false)
+        .then(utils.login);
+
+      return utils.shouldBeBadRequest(promise, 601);
+    });
+
+    it('should return WRONG_USER_CREDENTIALS on incorrect password', function () {
+      var promise =  mongoose.connection.db.collection(usersCollection)
+        .insert({
+          userName: username,
+          password: utils.passwordHash('122'),
+          isActivated: true,
+          roles: ['user']
+        })
+        .then(utils.login);
+
+      return utils.shouldBeBadRequest(promise, 603);
+    });
   });
-}
+
+});
