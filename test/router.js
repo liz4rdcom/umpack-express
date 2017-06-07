@@ -96,4 +96,9 @@ describe('service API', function() {
     });
   });
 
+  describe('POST /signup', function () {
+
+    
+
+  });
 });

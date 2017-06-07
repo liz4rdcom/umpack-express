@@ -24,15 +24,6 @@ describe('service api users administrative routes', function() {
 
   var app = require('./helpers/app');
 
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
-
   before(function() {
     return mongoose.connection.db.dropCollection(rolesCollection)
       .then(function() {

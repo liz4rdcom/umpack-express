@@ -143,7 +143,7 @@ describe('service Api roleaction routes', function() {
     });
 
     it('should return ROLE_ALREADY_EXISTS when saving same role', function() {
-      return saveRecordWithActions()
+      var promise = saveRecordWithActions()
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -155,19 +155,9 @@ describe('service Api roleaction routes', function() {
             .send({
               name: defaultRole
             });
-        })
-        .then(function (res) {
-          res.should.have.status(400);
-        })
-        .catch(function(err) {
-          if (err instanceof chai.AssertionError) throw err;
-
-          err.should.have.status(400);
-
-          should.exist(err.response.body);
-          err.response.body.should.have.property('internalStatus', 702);
-          err.response.body.should.have.property('message');
         });
+
+      return utils.shouldBeBadRequest(promise, 702)  ;
     });
 
 
@@ -243,7 +233,7 @@ describe('service Api roleaction routes', function() {
     });
 
     it('should return PATTERN_ALREADY_EXISTS on same pattern', function () {
-      return saveRecordWithActions([{
+      var promise = saveRecordWithActions([{
         _id: mongoose.Types.ObjectId(),
         pattern: '/test/*',
         name: 'test route',
@@ -265,22 +255,13 @@ describe('service Api roleaction routes', function() {
               name: 'test route two',
               verbGet: true
             });
-        })
-        .then(function (res) {
-          res.should.have.status(400);
-        })
-        .catch(function (err) {
-          if (err instanceof chai.AssertionError) throw err;
-
-          err.should.have.status(400);
-
-          should.exist(err.response.body);
-          err.response.body.should.have.property('internalStatus', 704);
         });
+
+      return utils.shouldBeBadRequest(promise, 704);
     });
 
     it('should return INVALID_ACTION_PATTERN on empty pattern field', function () {
-      return saveRecordWithActions()
+      var promise = saveRecordWithActions()
         .then(utils.login)
         .then(function (res) {
           return chai.request(app)
@@ -291,19 +272,9 @@ describe('service Api roleaction routes', function() {
               name: 'test route two',
               verbGet: true
             });
-        })
-        .then(function (res) {
-          res.should.have.status(400);
-        })
-        .catch(function (err) {
-          if (err instanceof chai.AssertionError) throw err;
-
-          err.should.have.status(400);
-
-          should.exist(err.response.body);
-
-          err.response.body.should.have.property('internalStatus', 703);
         });
+
+      return utils.shouldBeBadRequest(promise, 703);
     });
   });
 

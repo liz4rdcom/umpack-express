@@ -61,6 +61,7 @@ function shouldBeBadRequest(promise, internalStatus) {
       should.exist(err.response.body);
 
       err.response.body.should.have.property('internalStatus', internalStatus);
+      err.response.body.should.have.property('message');
     });
 }
 
