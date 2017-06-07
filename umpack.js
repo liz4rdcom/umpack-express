@@ -43,30 +43,20 @@ router.post('/login', function(req, res, next) {
 
     var userData = req.body;
 
-    dbPromise = User.findByUserName(userData.userName);
-
-    dbPromise
+    var dbPromise = User.findByUserName(userData.userName)
         .then(function(user) {
 
             if (!user) {
-                var err = new Error(INTERNAL_STATUS.USER_NOT_EXISTS.message);
-                err.internalStatus = INTERNAL_STATUS.USER_NOT_EXISTS.code;
-                throw err;
+                throw apiError(INTERNAL_STATUS.USER_NOT_EXISTS);
             }
 
             if (user.isActivated === false) {
-                var err = new Error(INTERNAL_STATUS.USER_NOT_ACTIVE.message);
-                err.internalStatus = INTERNAL_STATUS.USER_NOT_ACTIVE.code;
-                throw err;
-
+                throw apiError(INTERNAL_STATUS.USER_NOT_ACTIVE);
             }
 
             if (!user || user.password !== passwordHash(userData.password)) {
-                var err = new Error(INTERNAL_STATUS.WRONG_USER_CREDENTIALS.message);
-                err.internalStatus = INTERNAL_STATUS.WRONG_USER_CREDENTIALS.code;
-                throw err;
+                throw apiError(INTERNAL_STATUS.WRONG_USER_CREDENTIALS);
             }
-
 
 
             var accesKey = jwt.sign({
@@ -76,16 +66,11 @@ router.post('/login', function(req, res, next) {
                 expiresIn: accessTokenExpiresIn
             });
 
-            res.send(accesKey);
+            return accesKey;
 
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
-
+    sendPromiseResult(dbPromise, req, res, next);
 });
 
 
