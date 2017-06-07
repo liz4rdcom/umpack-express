@@ -364,6 +364,27 @@ describe('umpack methods', function() {
         });
     });
   });
+
+  describe('#getUserRolesByUserName()', function() {
+    it('should return userName and roles', function() {
+      return insertUser({
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['user', 'admin']
+        })
+        .then(function() {
+          return umpack.getUserRolesByUserName(username);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('userName', username);
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(2);
+        });
+    });
+  });
 });
 
 function insertUser(user) {
