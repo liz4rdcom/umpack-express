@@ -61,7 +61,7 @@ describe('service API', function() {
 
   beforeEach(function() {
 
-    return mongoose.connection.db.dropCollection(usersCollection);
+    return mongoose.connection.db.collection(usersCollection).remove();
 
   });
 
