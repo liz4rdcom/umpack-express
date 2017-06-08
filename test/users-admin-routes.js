@@ -269,6 +269,109 @@ describe('service api users administrative routes', function() {
     });
 
   });
+
+  describe('POST /updateUserRoles', function() {
+
+    var userId = new ObjectId();
+
+    it('should enable role', function() {
+
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: null
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: true
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          return findUser(userId);
+        })
+        .then(function(user) {
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+
+          user.roles[0].should.equal('user');
+        });
+
+    });
+
+    it('should disable role', function() {
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user', 'admin']
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: false
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          return findUser(userId);
+        })
+        .then(function(user) {
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+
+          user.roles[0].should.equal('admin');
+        });
+    });
+
+    it('should return WRONG_ROLE_NAME when disabling incorrect role', function () {
+      var promise = mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['admin']
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: false
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 701);
+    });
+  });
 });
 
 function findUser(id, username) {
