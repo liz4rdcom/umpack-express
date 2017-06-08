@@ -192,20 +192,16 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
 router.get('/roles', isAuthorized, function(req, res, next) {
 
-    var dbPromise = Role.find({}, 'name').exec();
-
-    dbPromise
+    var dbPromise = Role.find({}, 'name').exec()
         .then(function(result) {
             var roles = result.map(function(item) {
                 return { name: item.name };
-            })
-            res.send(roles);
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
-        })
+            });
+
+            return roles;
+        });
+
+    sendPromiseResult(dbPromise, req, res, next);
 
 });
 
