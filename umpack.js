@@ -172,29 +172,22 @@ router.get('/users', isAuthorized, function(req, res, next) {
 
 router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
-    var dbPromise = User.findById(req.body.id).exec();
-
-    dbPromise
+    var dbPromise = User.findById(req.body.id).exec()
         .then(function(user) {
-
             user.isActivated = req.body.isActivated;
+
             return user.save();
         })
         .then(function(user) {
-            res.send({
+            return {
                 id: user._id,
                 isActivated: user.isActivated,
                 userName: user.userName,
                 roles: user.roles
-            });
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
-        })
+            };
+        });
 
-
+    sendPromiseResult(dbPromise, req, res, next);
 });
 
 router.get('/roles', isAuthorized, function(req, res, next) {
