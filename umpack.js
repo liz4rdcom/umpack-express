@@ -210,8 +210,7 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
     var reqData = req.body;
 
 
-    var dbPromise = User.findById(reqData.userId).exec();
-    dbPromise
+    var dbPromise = User.findById(reqData.userId).exec()
         .then(function(user) {
 
             if (!user.roles)
@@ -225,29 +224,24 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
             var roleIndex = user.roles.indexOf(reqData.roleName);
 
             if (roleIndex === -1) {
-                var err = new Error(INTERNAL_STATUS.WRONG_ROLE_NAME.message);
-                err.internalStatus = INTERNAL_STATUS.WRONG_ROLE_NAME.code;
-                throw err;
+                throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
             }
 
             user.roles.splice(roleIndex, 1);
-            return user.save();
 
+            return user.save();
 
         })
         .then(function(user) {
-            res.send({
+            return {
                 id: user._id,
                 userName: user.userName,
                 isActivated: user.isActivated,
                 roles: user.roles
-            })
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
+            };
         });
+
+    sendPromiseResult(dbPromise, req, res, next);
 
 });
 
