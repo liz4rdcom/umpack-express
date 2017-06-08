@@ -229,6 +229,46 @@ describe('service api users administrative routes', function() {
     });
 
   });
+
+  describe('POST /updateUserStatus', function() {
+
+    it('should update status', function() {
+
+      var id = new ObjectId();
+
+      return insertUsers([{
+          _id: id,
+          userName: 'one',
+          email: 'one@email.com',
+          isActivated: false
+        }])
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserStatus')
+            .set('authorization', res.text)
+            .send({
+              id: id,
+              isActivated: true
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('id');
+          res.body.should.have.property('isActivated', true);
+
+          return findUser(id);
+        })
+        .then(function(user) {
+          user.isActivated.should.equal(true);
+        });
+
+    });
+
+  });
 });
 
 function findUser(id, username) {
