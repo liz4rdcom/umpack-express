@@ -217,7 +217,7 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
             if (!user.roles)
                 user.roles = [];
 
-            if (reqData.enable === 'true') {
+            if (reqData.enable === true) {
                 user.roles.push(reqData.roleName);
                 return user.save();
             }
