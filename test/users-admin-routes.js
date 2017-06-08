@@ -12,9 +12,9 @@ var ObjectId = require('mongodb').ObjectID;
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
-var username = 'admin';
+var username = 'test';
 var password = '123456';
-var defaultUser = 'test';
+var defaultUser = 'defaultUser';
 
 chai.use(chaiHttp);
 global.Promise = Promise;
@@ -23,15 +23,6 @@ global.Promise = Promise;
 describe('service api users administrative routes', function() {
 
   var app = require('./helpers/app');
-
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
 
   before(function() {
     return mongoose.connection.db.dropCollection(rolesCollection)
@@ -82,7 +73,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -118,7 +109,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -155,7 +146,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -211,7 +202,7 @@ describe('service api users administrative routes', function() {
             roles: ['user']
           }
         ])
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           return chai.request(app)
             .get('/um/users')
