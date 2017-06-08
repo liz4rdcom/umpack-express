@@ -57,48 +57,52 @@ describe('service API', function() {
 
   });
 
-  describe('POST /login', function () {
+  describe('POST /login', function() {
 
-    it('should return token', function () {
+    it('should return token', function() {
       return utils.saveRecordWithParameters()
         .then(utils.login)
-        .then(function (res) {
+        .then(function(res) {
           res.should.have.status(200);
 
           should.exist(res.text);
         });
     });
 
-    it('should return USER_NOT_EXISTS when no user by that username', function () {
-      var promise = utils.login();
+    it('should return USER_NOT_EXISTS when no user by that username',
+      function() {
+        var promise = utils.login();
 
-      return utils.shouldBeBadRequest(promise, 605);
-    });
+        return utils.shouldBeBadRequest(promise, 605);
+      });
 
-    it('should return USER_NOT_ACTIVE when user is not activated', function () {
-      var promise = utils.saveRecordWithParameters({}, false)
-        .then(utils.login);
+    it('should return USER_NOT_ACTIVE when user is not activated',
+      function() {
+        var promise = utils.saveRecordWithParameters({}, false)
+          .then(utils.login);
 
-      return utils.shouldBeBadRequest(promise, 601);
-    });
+        return utils.shouldBeBadRequest(promise, 601);
+      });
 
-    it('should return WRONG_USER_CREDENTIALS on incorrect password', function () {
-      var promise =  mongoose.connection.db.collection(usersCollection)
-        .insert({
-          userName: username,
-          password: utils.passwordHash('122'),
-          isActivated: true,
-          roles: ['user']
-        })
-        .then(utils.login);
+    it('should return WRONG_USER_CREDENTIALS on incorrect password',
+      function() {
+        var promise = mongoose.connection.db.collection(
+            usersCollection)
+          .insert({
+            userName: username,
+            password: utils.passwordHash('122'),
+            isActivated: true,
+            roles: ['user']
+          })
+          .then(utils.login);
 
-      return utils.shouldBeBadRequest(promise, 603);
-    });
+        return utils.shouldBeBadRequest(promise, 603);
+      });
   });
 
-  describe('POST /signup', function () {
+  describe('POST /signup', function() {
 
-    it('should save user', function () {
+    it('should save user', function() {
 
       return chai.request(app)
         .post('/um/signup')
@@ -106,9 +110,11 @@ describe('service API', function() {
           userName: username,
           password: password,
           email: 'test@test.com',
-          metaData: {one: 1}
+          metaData: {
+            one: 1
+          }
         })
-        .then(function (res) {
+        .then(function(res) {
           res.should.have.status(200);
 
           should.exist(res.body);
@@ -118,7 +124,7 @@ describe('service API', function() {
 
           return utils.findUser(null, username);
         })
-        .then(function (user) {
+        .then(function(user) {
           should.exist(user);
 
           user.should.have.property('email', 'test@test.com');
@@ -127,9 +133,9 @@ describe('service API', function() {
 
     });
 
-    it('should return USER_ALREADY_EXISTS when user exists', function () {
+    it('should return USER_ALREADY_EXISTS when user exists', function() {
       var promise = utils.saveRecordWithParameters()
-        .then(function () {
+        .then(function() {
           return chai.request(app)
             .post('/um/signup')
             .send({
@@ -143,12 +149,12 @@ describe('service API', function() {
     });
   });
 
-  describe('POST /resetpass', function () {
+  describe('POST /resetpass', function() {
 
-    it('should change password', function () {
+    it('should change password', function() {
       return utils.saveRecordWithParameters(null, true, ['user'])
         .then(utils.login)
-        .then(function (res) {
+        .then(function(res) {
           return chai.request(app)
             .post('/um/resetpass')
             .set('authorization', res.text)
@@ -158,7 +164,7 @@ describe('service API', function() {
               newPassword: '123'
             });
         })
-        .then(function (res) {
+        .then(function(res) {
           res.should.have.status(200);
 
           should.exist(res.body);
@@ -168,15 +174,15 @@ describe('service API', function() {
 
           return utils.findUser(null, username);
         })
-        .then(function (user) {
+        .then(function(user) {
           user.password.should.equal(utils.passwordHash('123'));
         });
     });
 
-    it('should return WRONG_PASSWORD on wrong oldPassword', function () {
+    it('should return WRONG_PASSWORD on wrong oldPassword', function() {
       var promise = utils.saveRecordWithParameters()
         .then(utils.login)
-        .then(function (res) {
+        .then(function(res) {
           return chai.request(app)
             .post('/um/resetpass')
             .set('authorization', res.text)
@@ -190,4 +196,61 @@ describe('service API', function() {
       return utils.shouldBeBadRequest(promise, 604);
     });
   });
+
+  describe('GET /users', function() {
+
+    it('should return users', function() {
+
+      return insertUsers([
+        {
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user']
+        },
+        {
+          userName: 'two',
+          password: utils.passwordHash(password),
+          email: 'two@test.com',
+          isActivated: false,
+          roles: ['user']
+        },
+        {
+          userName: username,
+          password: utils.passwordHash(password),
+          email: 'test@test.com',
+          isActivated: true,
+          roles: ['admin', 'user']
+        }
+      ])
+      .then(utils.login)
+      .then(function (res) {
+        return chai.request(app)
+          .get('/um/users')
+          .set('authorization', res.text);
+      })
+      .then(function (res) {
+        res.should.have.status(200);
+
+        should.exist(res.body);
+
+        res.body.should.have.length(3);
+
+        res.body.forEach(function (user) {
+          user.should.have.all.keys(['id', 'userName', 'isActivated', 'roles']);
+
+          user.userName.should.be.oneOf(['one', 'two', username]);
+        });
+      });
+
+    });
+
+  });
 });
+
+function insertUsers(users) {
+  return Promise.map(users, function(user) {
+    return mongoose.connection.db.collection(usersCollection).insert(user);
+  });
+}
