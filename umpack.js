@@ -151,9 +151,7 @@ function passwordHash(password) {
 
 router.get('/users', isAuthorized, function(req, res, next) {
 
-    var dbPromise = User.find({}).exec();
-
-    dbPromise
+    var dbPromise = User.find({}).exec()
         .then(function(result) {
             var userList = result.map(function(item) {
                 return {
@@ -161,17 +159,14 @@ router.get('/users', isAuthorized, function(req, res, next) {
                     userName: item.userName,
                     isActivated: item.isActivated,
                     roles: item.roles
-                }
-            })
-            res.send(userList);
+                };
+            });
 
+            return userList;
 
-        })
-        .catch(function(err) {
-            if (!err.internalStatus)
-                return res.status(500).send({ message: err.message });
-            return res.status(400).send({ message: err.message, internalStatus: err.internalStatus });
-        })
+        });
+
+    sendPromiseResult(dbPromise, req, res, next);
 
 });
 
