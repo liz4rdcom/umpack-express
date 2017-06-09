@@ -6,7 +6,6 @@ var httpMocks = require('node-mocks-http');
 
 var config = require('config');
 var Promise = require('bluebird');
-var crypto = require('crypto');
 
 var umpack = require('./helpers/umpack');
 var mongoose = require('mongoose');

@@ -78,10 +78,31 @@ function findUser(id, username) {
 
 }
 
+function createResponseMock(callback) {
+  var resMock = {
+    statusCode: null
+  };
+
+  resMock.status = function(code) {
+    this.statusCode = code;
+
+    return this;
+  };
+
+  resMock.send = function(object) {
+    callback(this.statusCode, object);
+  };
+
+  resMock.json = resMock.send;
+
+  return resMock;
+}
+
 module.exports = {
   passwordHash: passwordHash,
   saveRecordWithParameters: saveRecordWithParameters,
   login: login,
   shouldBeBadRequest: shouldBeBadRequest,
-  findUser: findUser
+  findUser: findUser,
+  createResponseMock: createResponseMock
 };
