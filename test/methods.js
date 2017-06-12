@@ -411,6 +411,49 @@ describe('umpack methods', function() {
     });
 
   });
+
+  describe('#isAuthorized()', function() {
+    var isAuthorized = umpack.isAuthorized;
+
+    it(
+      'should return JWT_NOT_EXISTS when not pass authorization and cookie headers',
+      function() {
+        var reqStub = {
+          headers: {}
+        };
+
+        var resMock;
+
+        return new Promise(function(resolve, reject) {
+
+          resMock = utils.createResponseMock(function(status,
+            object) {
+            resolve({
+              status: status,
+              data: object
+            });
+          });
+
+          isAuthorized(reqStub, resMock, function() {
+            reject(new chai.AssertionError(
+              'next() function should not be called'));
+          });
+
+        })
+        .then(function (result) {
+          should.exist(result.status);
+
+          result.status.should.equal(401);
+
+          should.exist(result.data);
+
+          result.data.should.have.property('message');
+          result.data.should.have.property('internalStatus', 606);
+        });
+      });
+
+    
+  });
 });
 
 function insertUser(user) {
