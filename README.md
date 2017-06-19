@@ -101,7 +101,7 @@ POST : {baseurl}/updateUserRoles
 request - data/body : {
         userId: 'user id',
         roleName: 'admin',
-        enable: 'true/false'
+        enable: true/false
     }
 response - {
                 id: 'user id',
