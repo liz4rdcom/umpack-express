@@ -6,6 +6,7 @@ var httpMocks = require('node-mocks-http');
 
 var config = require('config');
 var Promise = require('bluebird');
+var jwt = require('jsonwebtoken');
 
 var umpack = require('./helpers/umpack');
 var mongoose = require('mongoose');
@@ -415,6 +416,24 @@ describe('umpack methods', function() {
   describe('#isAuthorized()', function() {
     var isAuthorized = umpack.isAuthorized;
 
+    var nextCallError = new chai.AssertionError(
+      'next() function should not be called');
+
+    function statusMethodShouldBeCalled(result) {
+      should.exist(result.status);
+    }
+
+    function shouldBeUnauthorized(result) {
+      result.status.should.equal(401);
+    }
+
+    function shouldReturnErrorWithStatus(result, internalStatus) {
+      should.exist(result.data);
+
+      result.data.should.have.property('message');
+      result.data.should.have.property('internalStatus', internalStatus);
+    }
+
     it(
       'should return JWT_NOT_EXISTS when not pass authorization and cookie headers',
       function() {
@@ -426,33 +445,86 @@ describe('umpack methods', function() {
 
         return new Promise(function(resolve, reject) {
 
-          resMock = utils.createResponseMock(function(status,
-            object) {
-            resolve({
-              status: status,
-              data: object
+            resMock = utils.createResponseMock(resolve);
+
+            isAuthorized(reqStub, resMock, function() {
+              reject(nextCallError);
             });
+
+          })
+          .then(function(result) {
+            statusMethodShouldBeCalled(result);
+
+            shouldBeUnauthorized(result);
+
+            shouldReturnErrorWithStatus(result, 606);
+
           });
-
-          isAuthorized(reqStub, resMock, function() {
-            reject(new chai.AssertionError(
-              'next() function should not be called'));
-          });
-
-        })
-        .then(function (result) {
-          should.exist(result.status);
-
-          result.status.should.equal(401);
-
-          should.exist(result.data);
-
-          result.data.should.have.property('message');
-          result.data.should.have.property('internalStatus', 606);
-        });
       });
 
-    
+    it(
+      'should return INVALID_JWT when passed authorization header witj some string',
+      function() {
+        var reqStub = {
+          headers: {
+            authorization: 'some strinnng'
+          }
+        };
+
+        var resMock;
+
+        return new Promise(function(resolve, reject) {
+            resMock = utils.createResponseMock(resolve);
+
+            isAuthorized(reqStub, resMock, function() {
+              reject(nextCallError);
+            });
+          })
+          .then(function(result) {
+            statusMethodShouldBeCalled(result);
+
+            shouldBeUnauthorized(result);
+
+            shouldReturnErrorWithStatus(result, 607);
+          });
+      });
+
+    it('should return JWT_TOKEN_EXPIRED when passed expired token',
+      function() {
+
+        var token = jwt.sign({
+          user: 'root',
+          roles: ['admin']
+        }, config.get('umpack.accessTokenSecret'), {
+          expiresIn: 0
+        });
+
+        var reqStub = {
+          headers: {
+            authorization: token
+          }
+        };
+
+        var resMock;
+
+        return new Promise(function(resolve, reject) {
+
+            resMock = utils.createResponseMock(resolve);
+
+            isAuthorized(reqStub, resMock, function() {
+              reject(nextCallError);
+            });
+
+          })
+          .then(function(result) {
+            statusMethodShouldBeCalled(result);
+
+            shouldBeUnauthorized(result);
+
+            shouldReturnErrorWithStatus(result, 608);
+          });
+
+      });
   });
 });
 
