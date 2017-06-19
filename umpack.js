@@ -27,7 +27,7 @@ var INTERNAL_STATUS = {
     JWT_NOT_EXISTS: { code: 606, message: 'Can\'t Find JWT Token Inside The Request Header' },
     INVALID_JWT: { code: 607, message: 'Invalid JWT Token' },
     JWT_TOKEN_EXPIRED: { code: 608, message: 'Token Expired' },
-    ACCESS_DENIDE: { code: 609, message: 'Access Denied' },
+    ACCESS_DENIED: { code: 609, message: 'Access Denied' },
     WRONG_ROLE_NAME: { code: 701, message: 'Wrong Role Name' },
     ROLE_ALREADY_EXISTS: {code: 702, message: 'Role Already Exists'},
     INVALID_ACTION_PATTERN: {code: 703, message: 'Invalid Action Pattern'},
@@ -614,8 +614,8 @@ function isAuthorized(req, res, next) {
             })
             .then(function(actions) {
                 if (!urlMatch(actions, requestUrl)) {
-                    var err = new Error(INTERNAL_STATUS.ACCESS_DENIDE.message);
-                    err.internalStatus = INTERNAL_STATUS.ACCESS_DENIDE.code;
+                    var err = new Error(INTERNAL_STATUS.ACCESS_DENIED.message);
+                    err.internalStatus = INTERNAL_STATUS.ACCESS_DENIED.code;
                     throw err;
 
                 }
