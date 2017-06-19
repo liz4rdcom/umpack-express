@@ -90,7 +90,10 @@ function createResponseMock(callback) {
   };
 
   resMock.send = function(object) {
-    callback(this.statusCode, object);
+    callback({
+      status: this.statusCode,
+      data: object
+    });
   };
 
   resMock.json = resMock.send;

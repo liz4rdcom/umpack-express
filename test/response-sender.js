@@ -25,12 +25,7 @@ describe('responseSender', function() {
 
       return new Promise(function(resolve, reject) {
 
-          resMock = utils.createResponseMock(function(status, object) {
-            resolve({
-              status: status,
-              data: object
-            });
-          });
+          resMock = utils.createResponseMock(resolve);
 
           sendPromiseResult(promise, reqStub, resMock, function() {
             reject(new chai.AssertionError('next() function should not be called'));
