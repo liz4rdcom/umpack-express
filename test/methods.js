@@ -434,6 +434,20 @@ describe('umpack methods', function() {
       result.data.should.have.property('internalStatus', internalStatus);
     }
 
+    function callMockedIsAuthorized(reqStub) {
+      var resMock;
+
+      return new Promise(function(resolve, reject) {
+
+          resMock = utils.createResponseMock(resolve);
+
+          isAuthorized(reqStub, resMock, function() {
+            reject(nextCallError);
+          });
+
+        });
+    }
+
     it(
       'should return JWT_NOT_EXISTS when not pass authorization and cookie headers',
       function() {
@@ -441,17 +455,7 @@ describe('umpack methods', function() {
           headers: {}
         };
 
-        var resMock;
-
-        return new Promise(function(resolve, reject) {
-
-            resMock = utils.createResponseMock(resolve);
-
-            isAuthorized(reqStub, resMock, function() {
-              reject(nextCallError);
-            });
-
-          })
+        return callMockedIsAuthorized(reqStub)
           .then(function(result) {
             statusMethodShouldBeCalled(result);
 
@@ -471,15 +475,7 @@ describe('umpack methods', function() {
           }
         };
 
-        var resMock;
-
-        return new Promise(function(resolve, reject) {
-            resMock = utils.createResponseMock(resolve);
-
-            isAuthorized(reqStub, resMock, function() {
-              reject(nextCallError);
-            });
-          })
+        return callMockedIsAuthorized(reqStub)
           .then(function(result) {
             statusMethodShouldBeCalled(result);
 
@@ -505,17 +501,7 @@ describe('umpack methods', function() {
           }
         };
 
-        var resMock;
-
-        return new Promise(function(resolve, reject) {
-
-            resMock = utils.createResponseMock(resolve);
-
-            isAuthorized(reqStub, resMock, function() {
-              reject(nextCallError);
-            });
-
-          })
+        return callMockedIsAuthorized(reqStub)
           .then(function(result) {
             statusMethodShouldBeCalled(result);
 
@@ -525,6 +511,30 @@ describe('umpack methods', function() {
           });
 
       });
+
+    it('should return ACCESS_DENIED when url does not match any pattern', function () {
+      var token = jwt.sign({
+        user: 'root',
+        roles: ['admin']
+      }, config.get('umpack.accessTokenSecret'), {expiresIn: '1h'});
+
+      var reqStub = {
+        headers: {
+          authorization: token
+        },
+        method: 'GET',
+        originalUrl: '/some/something'
+      };
+
+      return callMockedIsAuthorized(reqStub)
+        .then(function (result) {
+          statusMethodShouldBeCalled(result);
+
+          // TODO: status should be 403 but is 401.
+
+          shouldReturnErrorWithStatus(result, 609);
+        });
+    });
   });
 });
 
