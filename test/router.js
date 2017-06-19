@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var crypto = require('crypto');
 
 var umpack = require('./helpers/umpack');
+var utils = require('./helpers/utils');
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
 
@@ -21,15 +22,6 @@ global.Promise = Promise;
 describe('service API', function() {
 
   var app = require('./helpers/app');
-
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
 
   before(function() {
 
@@ -61,226 +53,147 @@ describe('service API', function() {
 
   beforeEach(function() {
 
-    return mongoose.connection.db.dropCollection(usersCollection);
+    return mongoose.connection.db.collection(usersCollection).remove();
 
   });
 
-  describe('GET /metadata', function() {
+  describe('POST /login', function() {
 
-    it('should return metadata', function() {
-
-      return saveRecordWithParameters({
-          testKey: 'test value'
-        })
-        .then(login)
+    it('should return token', function() {
+      return utils.saveRecordWithParameters()
+        .then(utils.login)
         .then(function(res) {
-
           res.should.have.status(200);
 
-          return chai.request(app)
-            .get('/um/metadata')
-            .set('authorization', res.text)
-            .set('cookie', '');
+          should.exist(res.text);
+        });
+    });
+
+    it('should return USER_NOT_EXISTS when no user by that username',
+      function() {
+        var promise = utils.login();
+
+        return utils.shouldBeBadRequest(promise, 605);
+      });
+
+    it('should return USER_NOT_ACTIVE when user is not activated',
+      function() {
+        var promise = utils.saveRecordWithParameters({}, false)
+          .then(utils.login);
+
+        return utils.shouldBeBadRequest(promise, 601);
+      });
+
+    it('should return WRONG_USER_CREDENTIALS on incorrect password',
+      function() {
+        var promise = mongoose.connection.db.collection(
+            usersCollection)
+          .insert({
+            userName: username,
+            password: utils.passwordHash('122'),
+            isActivated: true,
+            roles: ['user']
+          })
+          .then(utils.login);
+
+        return utils.shouldBeBadRequest(promise, 603);
+      });
+  });
+
+  describe('POST /signup', function() {
+
+    it('should save user', function() {
+
+      return chai.request(app)
+        .post('/um/signup')
+        .send({
+          userName: username,
+          password: password,
+          email: 'test@test.com',
+          metaData: {
+            one: 1
+          }
         })
         .then(function(res) {
           res.should.have.status(200);
 
           should.exist(res.body);
-          res.body.should.have.property('testKey');
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, username);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('email', 'test@test.com');
+          user.should.have.property('metaData');
         });
 
     });
 
-    it('should return empty object on user without metadata', function() {
-
-      return saveRecordWithParameters()
-        .then(login)
-        .then(function(res) {
-
-          res.should.have.status(200);
-
+    it('should return USER_ALREADY_EXISTS when user exists', function() {
+      var promise = utils.saveRecordWithParameters()
+        .then(function() {
           return chai.request(app)
-            .get('/um/metadata')
+            .post('/um/signup')
+            .send({
+              userName: username,
+              password: password,
+              emails: 'test@test.com'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 602);
+    });
+  });
+
+  describe('POST /resetpass', function() {
+
+    it('should change password', function() {
+      return utils.saveRecordWithParameters(null, true, ['user'])
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/resetpass')
             .set('authorization', res.text)
-            .set('cookie', '');
+            .send({
+              oldPassword: password,
+              userName: username,
+              newPassword: '123'
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
 
           should.exist(res.body);
-          res.body.should.be.an('object');
-          Object.keys(res.body).should.have.length(0);
 
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, username);
+        })
+        .then(function(user) {
+          user.password.should.equal(utils.passwordHash('123'));
         });
-
     });
 
+    it('should return WRONG_PASSWORD on wrong oldPassword', function() {
+      var promise = utils.saveRecordWithParameters()
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/resetpass')
+            .set('authorization', res.text)
+            .send({
+              oldPassword: '122',
+              userName: username,
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 604);
+    });
   });
-
-  describe('PUT /metadata', function() {
-
-    it('should update metadata', function() {
-      return saveRecordWithParameters()
-        .then(login)
-        .then(function(res) {
-          res.should.have.status(200);
-
-          return chai.request(app)
-            .put('/um/metadata')
-            .set('authorization', res.text)
-            .set('cookie', '')
-            .send({
-              one: 1,
-              text: 'text',
-              complex: {
-                two: 2,
-                textTwo: 'text'
-              }
-            });
-        })
-        .then(function(res) {
-          res.should.have.status(200);
-
-          res.body.success.should.equal(true);
-
-          return umpack.getUserMetaDataByUserName(username);
-        })
-        .then(function(metadata) {
-
-          metadata.should.have.property('one', 1);
-          metadata.should.have.property('text', 'text');
-          metadata.should.have.property('complex');
-
-          metadata.complex.should.have.property('two', 2);
-          metadata.complex.should.have.property('textTwo', 'text');
-
-        });
-    });
-
-  });
-
-  describe('PUT /metadata/:key', function() {
-
-    it('should set metadata primitive field on empty', function() {
-      return saveRecordWithParameters()
-        .then(login)
-        .then(function(res) {
-          res.should.have.status(200);
-
-          return chai.request(app)
-            .put('/um/metadata/one')
-            .set('authorization', res.text)
-            .set('cookie', '')
-            .send({
-              value: 1
-            });
-        })
-        .then(function(res) {
-          res.should.have.status(200);
-
-          res.body.success.should.equal(true);
-
-          return umpack.getUserMetaDataByUserName(username);
-        })
-        .then(function(metadata) {
-
-          metadata.should.have.property('one', 1);
-
-        });
-    });
-
-    it('should set metadata complex field on empty', function() {
-      return saveRecordWithParameters()
-        .then(login)
-        .then(function(res) {
-          res.should.have.status(200);
-
-          return chai.request(app)
-            .put('/um/metadata/complex')
-            .set('authorization', res.text)
-            .set('cookie', '')
-            .send({
-              value: {
-                one: 1,
-                two: 2
-              }
-            });
-        })
-        .then(function(res) {
-          res.should.have.status(200);
-
-          res.body.success.should.equal(true);
-
-          return umpack.getUserMetaDataByUserName(username);
-        })
-        .then(function(metadata) {
-
-          metadata.should.have.property('complex');
-          metadata.complex.should.have.property('one', 1);
-          metadata.complex.should.have.property('two', 2);
-
-        });
-    });
-
-    it('should set existing metadata complex field', function() {
-      return saveRecordWithParameters({
-          testOne: 1
-        })
-        .then(login)
-        .then(function(res) {
-          res.should.have.status(200);
-
-          return chai.request(app)
-            .put('/um/metadata/complex')
-            .set('authorization', res.text)
-            .set('cookie', '')
-            .send({
-              value: {
-                one: 1,
-                two: 2
-              }
-            });
-        })
-        .then(function(res) {
-          res.should.have.status(200);
-
-          res.body.success.should.equal(true);
-
-          return umpack.getUserMetaDataByUserName(username);
-        })
-        .then(function(metadata) {
-
-          metadata.should.have.property('complex');
-          metadata.complex.should.have.property('one', 1);
-          metadata.complex.should.have.property('two', 2);
-
-          metadata.should.have.property('testOne', 1);
-
-        });
-    });
-
-  });
-
 });
-
-function passwordHash(password) {
-  return crypto.createHmac('sha256', config.get('umpack.passwordHashSecret'))
-    .update(password)
-    .digest('hex');
-}
-
-function saveRecordWithParameters(metadata, isActivated, roles) {
-  if (isActivated === null || isActivated === undefined) isActivated = true;
-
-  if (!roles) roles = ['user'];
-
-  return mongoose.connection.collection(usersCollection).insert({
-    metaData: metadata,
-    userName: username,
-    password: passwordHash(password),
-    email: "test@test.com",
-    isActivated: isActivated,
-    roles: roles,
-    '__v': 0
-  });
-}

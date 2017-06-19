@@ -12,9 +12,9 @@ var ObjectId = require('mongodb').ObjectID;
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
-var username = 'admin';
+var username = 'test';
 var password = '123456';
-var defaultUser = 'test';
+var defaultUser = 'defaultUser';
 
 chai.use(chaiHttp);
 global.Promise = Promise;
@@ -23,15 +23,6 @@ global.Promise = Promise;
 describe('service api users administrative routes', function() {
 
   var app = require('./helpers/app');
-
-  function login() {
-    return chai.request(app)
-      .post('/um/login')
-      .send({
-        userName: username,
-        password: password
-      });
-  }
 
   before(function() {
     return mongoose.connection.db.dropCollection(rolesCollection)
@@ -82,7 +73,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -118,7 +109,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -134,7 +125,7 @@ describe('service api users administrative routes', function() {
 
           return findUser(id);
         })
-        .then(function (user) {
+        .then(function(user) {
           should.not.exist(user);
         });
     });
@@ -155,7 +146,7 @@ describe('service api users administrative routes', function() {
           firstName: 'test',
           '__v': 1
         })
-        .then(login)
+        .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
 
@@ -192,12 +183,203 @@ describe('service api users administrative routes', function() {
     });
   });
 
+  describe('GET /users', function() {
+
+    it('should return users', function() {
+
+      return insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            email: 'one@test.com',
+            isActivated: true,
+            roles: ['user']
+          },
+          {
+            userName: 'two',
+            password: utils.passwordHash(password),
+            email: 'two@test.com',
+            isActivated: false,
+            roles: ['user']
+          }
+        ])
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .get('/um/users')
+            .set('authorization', res.text);
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.length(3);
+
+          res.body.forEach(function(user) {
+            user.should.have.all.keys(['id', 'userName',
+              'isActivated', 'roles'
+            ]);
+
+            user.userName.should.be.oneOf(['one', 'two',
+              username
+            ]);
+          });
+        });
+
+    });
+
+  });
+
+  describe('POST /updateUserStatus', function() {
+
+    it('should update status', function() {
+
+      var id = new ObjectId();
+
+      return insertUsers([{
+          _id: id,
+          userName: 'one',
+          email: 'one@email.com',
+          isActivated: false
+        }])
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserStatus')
+            .set('authorization', res.text)
+            .send({
+              id: id,
+              isActivated: true
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('id');
+          res.body.should.have.property('isActivated', true);
+
+          return findUser(id);
+        })
+        .then(function(user) {
+          user.isActivated.should.equal(true);
+        });
+
+    });
+
+  });
+
+  describe('POST /updateUserRoles', function() {
+
+    var userId = new ObjectId();
+
+    it('should enable role', function() {
+
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: null
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: true
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          return findUser(userId);
+        })
+        .then(function(user) {
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+
+          user.roles[0].should.equal('user');
+        });
+
+    });
+
+    it('should disable role', function() {
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['user', 'admin']
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: false
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          return findUser(userId);
+        })
+        .then(function(user) {
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+
+          user.roles[0].should.equal('admin');
+        });
+    });
+
+    it('should return WRONG_ROLE_NAME when disabling incorrect role', function () {
+      var promise = mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: userId,
+          userName: 'one',
+          email: 'one@test.com',
+          isActivated: true,
+          roles: ['admin']
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .post('/um/updateUserRoles')
+            .set('authorization', res.text)
+            .send({
+              userId: userId,
+              roleName: 'user',
+              enable: false
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 701);
+    });
+  });
 });
 
 function findUser(id, username) {
   if (id) {
     return mongoose.connection.db.collection(usersCollection)
-      .findOne({_id: id});
+      .findOne({
+        _id: id
+      });
   }
 
   return mongoose.connection.db.collection(usersCollection)
@@ -205,4 +387,10 @@ function findUser(id, username) {
       userName: username
     });
 
+}
+
+function insertUsers(users) {
+  return Promise.map(users, function(user) {
+    return mongoose.connection.db.collection(usersCollection).insert(user);
+  });
 }
