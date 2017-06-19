@@ -519,27 +519,19 @@ function decodeRequestToken(req) {
     try {
 
         var cookies = cookie.parse(req.headers.cookie || '');
-        var jwtToken = req.headers['authorization'] || cookies[cookieAccessTokenName];
+        var jwtToken = req.headers.authorization || cookies[cookieAccessTokenName];
 
         if (!jwtToken) {
-            var err = new Error(INTERNAL_STATUS.JWT_NOT_EXISTS.message);
-            err.internalStatus = INTERNAL_STATUS.JWT_NOT_EXISTS.code;
-            throw err;
-
+            throw apiError(INTERNAL_STATUS.JWT_NOT_EXISTS);
         }
 
         return jwtVerifyAsync(jwtToken, accessTokenSecret)
             .catch(function(err) {
                 if (err instanceof jwt.TokenExpiredError) {
-                    var err = new Error(INTERNAL_STATUS.JWT_TOKEN_EXPIRED.message);
-                    err.internalStatus = INTERNAL_STATUS.JWT_TOKEN_EXPIRED.code;
-                    throw err;
-
+                    throw apiError(INTERNAL_STATUS.JWT_TOKEN_EXPIRED);
                 }
 
-                var err = new Error(INTERNAL_STATUS.INVALID_JWT.message);
-                err.internalStatus = INTERNAL_STATUS.INVALID_JWT.code;
-                throw err;
+                throw apiError(INTERNAL_STATUS.INVALID_JWT);
             });
 
 
