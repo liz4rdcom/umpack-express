@@ -131,7 +131,7 @@ response - {
 
 ### Change User Info
 ```js
-PUT : {baseurl}/users/{userId}
+PUT : {baseurl}/users/{userId}/info
 request - data/body : {
   firstName: '',
   lastName: '',
