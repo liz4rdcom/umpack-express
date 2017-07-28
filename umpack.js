@@ -564,6 +564,11 @@ function isAuthorized(req, res, next) {
         })
         .catch(function(err) {
 
+            if (err.internalStatus === INTERNAL_STATUS.ACCESS_DENIED.code) return res.status(403).send({
+              message: err.message,
+              internalStatus: err.internalStatus
+            });
+
             return res.status(401).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
