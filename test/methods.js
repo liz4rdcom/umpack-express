@@ -427,6 +427,10 @@ describe('umpack methods', function() {
       result.status.should.equal(401);
     }
 
+    function shouldBeForbidden(result) {
+      result.status.should.equal(403);
+    }
+
     function shouldReturnErrorWithStatus(result, internalStatus) {
       should.exist(result.data);
 
@@ -530,7 +534,7 @@ describe('umpack methods', function() {
         .then(function (result) {
           statusMethodShouldBeCalled(result);
 
-          // TODO: status should be 403 but is 401.
+          shouldBeForbidden(result);
 
           shouldReturnErrorWithStatus(result, 609);
         });
