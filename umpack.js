@@ -6,6 +6,7 @@ var crypto = require('crypto');
 var urlMatch = require('./urlMatch');
 var Promise = require('bluebird');
 var sendPromiseResult = require('./responseSender').sendPromiseResult;
+var Password = require('./domain/password');
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -292,6 +293,28 @@ router.put('/users/:id/info', isAuthorized, function (req, res, next) {
     .then(function () {
       return {
         success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
+  var promise = User.findById(req.params.id)
+    .then(function (user) {
+      var password = new Password(passwordHashSecret);
+
+      user.setNewPassword(password);
+
+      return user.save()
+        .then(function () {
+          return password;
+        });
+    })
+    .then(function (password) {
+      return {
+        success: true,
+        password: password.original
       };
     });
 
