@@ -21,4 +21,8 @@ UserSchema.statics.findByUserName = function (userName) {
   return this.findOne({ 'userName': userName }).exec();
 };
 
+UserSchema.methods.setNewPassword = function (password) {
+  this.password = password.hash;
+};
+
 module.exports = mongoose.model('user', UserSchema);

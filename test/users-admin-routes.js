@@ -348,28 +348,68 @@ describe('service api users administrative routes', function() {
         });
     });
 
-    it('should return WRONG_ROLE_NAME when disabling incorrect role', function () {
-      var promise = mongoose.connection.db.collection(usersCollection)
-        .insert({
-          _id: userId,
-          userName: 'one',
-          email: 'one@test.com',
-          isActivated: true,
-          roles: ['admin']
-        })
+    it('should return WRONG_ROLE_NAME when disabling incorrect role',
+      function() {
+        var promise = mongoose.connection.db.collection(
+            usersCollection)
+          .insert({
+            _id: userId,
+            userName: 'one',
+            email: 'one@test.com',
+            isActivated: true,
+            roles: ['admin']
+          })
+          .then(utils.login)
+          .then(function(res) {
+            return chai.request(app)
+              .post('/um/updateUserRoles')
+              .set('authorization', res.text)
+              .send({
+                userId: userId,
+                roleName: 'user',
+                enable: false
+              });
+          });
+
+        return utils.shouldBeBadRequest(promise, 701);
+      });
+  });
+
+  describe('DELETE /users/:id/password', function() {
+    it('should reset password', function() {
+      var id = new ObjectId();
+
+      return insertUsers([{
+          _id: id,
+          userName: defaultUser,
+          password: utils.passwordHash(password),
+          email: 'defaultUser@test.com',
+          roles: ['user'],
+          isActivated: true
+        }])
         .then(utils.login)
         .then(function(res) {
           return chai.request(app)
-            .post('/um/updateUserRoles')
-            .set('authorization', res.text)
-            .send({
-              userId: userId,
-              roleName: 'user',
-              enable: false
+            .delete('/um/users/' + id + '/password')
+            .set('authorization', res.text);
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('password');
+
+          return res.body.password;
+        })
+        .then(function(password) {
+          return findUser(id)
+            .then(function(user) {
+              user.password.should.equal(utils.passwordHash(
+                password));
             });
         });
-
-      return utils.shouldBeBadRequest(promise, 701);
     });
   });
 });
