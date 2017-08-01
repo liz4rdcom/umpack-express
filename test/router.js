@@ -196,4 +196,58 @@ describe('service API', function() {
       return utils.shouldBeBadRequest(promise, 604);
     });
   });
+
+  describe('POST /initialization', function() {
+    var umBaseUrl = '/um';
+
+    it('should save admin role', function() {
+      return chai.request(app)
+        .post('/um/initialization')
+        .send({
+          umBaseUrl: umBaseUrl
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+
+          return utils.findRole('admin');
+        })
+        .then(function(role) {
+          should.exist(role);
+
+          role.should.have.property('actions');
+
+          role.actions.should.have.length(1);
+
+          role.actions[0].pattern.should.equal('/um/*');
+        });
+    });
+
+    it('should save root user', function () {
+      return chai.request(app)
+        .post('/um/initialization')
+        .send({
+          umBaseUrl: umBaseUrl
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('password');
+
+          return utils.findUser(null, 'root');
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('isActivated', true);
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(1);
+
+          user.roles[0].should.equal('admin');
+        });
+    });
+  });
 });
