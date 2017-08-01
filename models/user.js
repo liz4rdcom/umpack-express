@@ -1,7 +1,10 @@
 var mongoose = require('mongoose');
 var Promise = require('bluebird');
+var Password = require('../domain/password');
 
 mongoose.Promise = require('bluebird');
+
+var defaultUserName = 'root';
 
 var UserSchema = new mongoose.Schema({
     userName: String,
@@ -19,6 +22,29 @@ var UserSchema = new mongoose.Schema({
 
 UserSchema.statics.findByUserName = function (userName) {
   return this.findOne({ 'userName': userName }).exec();
+};
+
+UserSchema.statics.createDefaultUser = function (password) {
+  return new this({
+    userName: defaultUserName,
+    password: password.hash,
+    isActivated: true,
+    roles: ['admin']
+  });
+};
+
+UserSchema.statics.initAndSaveDefaultUser = function (passwordSecret) {
+  return this.findByUserName(defaultUserName)
+    .then(function (user) {
+      if (user) return;
+
+      var password = new Password(passwordSecret);
+
+      return this.createDefaultUser(password).save()
+        .then(function () {
+          return password;
+        });
+    }.bind(this));
 };
 
 UserSchema.methods.setNewPassword = function (password) {
