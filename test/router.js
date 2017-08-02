@@ -23,14 +23,12 @@ describe('service API', function() {
 
   var app = require('./helpers/app');
 
-  before(function() {
+  beforeEach(function() {
 
-    return new Promise(function(resolve, reject) {
-
-        resolve(mongoose.connection.db.dropCollection(
-          rolesCollection));
-
-      })
+    return Promise.all([
+        mongoose.connection.db.collection(rolesCollection).remove(),
+        mongoose.connection.db.collection(usersCollection).remove()
+      ])
       .then(function() {
 
         return mongoose.connection.collection(rolesCollection).insert({
@@ -48,12 +46,6 @@ describe('service API', function() {
         });
 
       });
-
-  });
-
-  beforeEach(function() {
-
-    return mongoose.connection.db.collection(usersCollection).remove();
 
   });
 
@@ -224,7 +216,7 @@ describe('service API', function() {
         });
     });
 
-    it('should save root user', function () {
+    it('should save root user', function() {
       return chai.request(app)
         .post('/um/initialization')
         .send({
@@ -247,6 +239,69 @@ describe('service API', function() {
           user.roles.should.have.length(1);
 
           user.roles[0].should.equal('admin');
+        });
+    });
+
+    it('should not save new role when it exists', function() {
+
+      return mongoose.connection.collection(rolesCollection).insert({
+          name: 'admin',
+          actions: []
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/um/initialization')
+            .send({
+              umBaseUrl: umBaseUrl
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+
+          return utils.findRole('admin');
+        })
+        .then(function(role) {
+          should.exist(role);
+
+          role.should.have.property('actions');
+
+          role.actions.should.have.length(0);
+        });
+    });
+
+    it('should not save new user when it exists', function() {
+
+      return mongoose.connection.db.collection(usersCollection).insert({
+        userName: 'root',
+        password: utils.passwordHash(password),
+        isActivated: false,
+        roles: ['admin', 'user']
+      })
+        .then(function() {
+          return chai.request(app)
+            .post('/um/initialization')
+            .send({
+              umBaseUrl: umBaseUrl
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+
+          should.not.exist(res.body.password);
+
+          return utils.findUser(null, 'root');
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('isActivated', false);
+          user.should.have.property('roles');
+
+          user.roles.should.have.length(2);
         });
     });
   });
