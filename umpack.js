@@ -521,6 +521,24 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req,
     sendPromiseResult(promise, req, res, next);
 });
 
+router.post('/initialization', function (req, res, next) {
+  var promise = Promise.join(
+    User.initAndSaveDefaultUser(passwordHashSecret),
+    Role.initAndSaveDefaultRole(req.body.umBaseUrl),
+    function (password) {
+      var result = {
+        success: true
+      };
+
+      if (password) result.password = password.hash;
+
+      return result;
+    }
+  );
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 function checkOnPatternExists(role, action) {
   if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
 }

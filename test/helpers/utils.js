@@ -101,11 +101,18 @@ function createResponseMock(callback) {
   return resMock;
 }
 
+function findRole(role) {
+  return mongoose.connection.db.collection(rolesCollection).findOne({
+    name: role
+  });
+}
+
 module.exports = {
   passwordHash: passwordHash,
   saveRecordWithParameters: saveRecordWithParameters,
   login: login,
   shouldBeBadRequest: shouldBeBadRequest,
   findUser: findUser,
-  createResponseMock: createResponseMock
+  createResponseMock: createResponseMock,
+  findRole: findRole
 };
