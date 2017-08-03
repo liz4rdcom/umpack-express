@@ -530,7 +530,7 @@ router.post('/initialization', function (req, res, next) {
         success: true
       };
 
-      if (password) result.password = password.hash;
+      if (password) result.password = password.original;
 
       return result;
     }
