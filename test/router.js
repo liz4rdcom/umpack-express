@@ -228,17 +228,21 @@ describe('service API', function() {
           res.body.should.have.property('success', true);
           res.body.should.have.property('password');
 
-          return utils.findUser(null, 'root');
-        })
-        .then(function(user) {
-          should.exist(user);
+          console.log(res.body.password);
 
-          user.should.have.property('isActivated', true);
-          user.should.have.property('roles');
+          return utils.findUser(null, 'root')
+            .then(function(user) {
+              should.exist(user);
 
-          user.roles.should.have.length(1);
+              user.should.have.property('isActivated', true);
+              user.should.have.property('roles');
 
-          user.roles[0].should.equal('admin');
+              user.roles.should.have.length(1);
+
+              user.roles[0].should.equal('admin');
+
+              utils.passwordHash(res.body.password).should.equal(user.password);
+            });
         });
     });
 
@@ -274,11 +278,11 @@ describe('service API', function() {
     it('should not save new user when it exists', function() {
 
       return mongoose.connection.db.collection(usersCollection).insert({
-        userName: 'root',
-        password: utils.passwordHash(password),
-        isActivated: false,
-        roles: ['admin', 'user']
-      })
+          userName: 'root',
+          password: utils.passwordHash(password),
+          isActivated: false,
+          roles: ['admin', 'user']
+        })
         .then(function() {
           return chai.request(app)
             .post('/um/initialization')
