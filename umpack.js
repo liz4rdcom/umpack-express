@@ -299,6 +299,23 @@ router.put('/users/:id/info', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
+
+  var promise = User.findOne({userName: req.body.userName})
+    .then(function (user) {
+      if (user) throw apiError(INTERNAL_STATUS.USER_ALREADY_EXISTS);
+
+      return User.findByIdAndUpdate(req.params.id, {userName: req.body.userName});
+    })
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
   var promise = User.findById(req.params.id)
     .then(function (user) {
