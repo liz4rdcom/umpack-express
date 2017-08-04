@@ -193,10 +193,10 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
 router.get('/roles', isAuthorized, function(req, res, next) {
 
-    var dbPromise = Role.find({}, 'name').exec()
+    var dbPromise = Role.find({}, 'name description').exec()
         .then(function(result) {
             var roles = result.map(function(item) {
-                return { name: item.name };
+                return { name: item.name, description: item.description };
             });
 
             return roles;
@@ -377,6 +377,7 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 
   var role = new Role({
     name: req.body.name,
+    description: req.body.description,
     actions: []
   });
 
@@ -401,6 +402,7 @@ router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
     .then(function (role) {
       return {
         name: role.name,
+        description: role.description,
         actions: role.actions.map(function (action) {
           return {
             id: action._id,

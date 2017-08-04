@@ -7,6 +7,7 @@ mongoose.Promise = require('bluebird');
 
 var RoleSchema = new mongoose.Schema({
   name: String,
+  description: String,
   actions: []
 });
 
