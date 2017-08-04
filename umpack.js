@@ -420,6 +420,34 @@ router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
+  var roleInfo = {
+    name: req.body.name,
+    description: req.body.description
+  };
+
+  var promise = Role.findOne({name: roleInfo.name})
+    .then(function (role) {
+      if (role) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
+
+      return Role.findOne(req.params.roleName);
+    })
+    .then(function (role) {
+      if (!role) throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
+
+      role.editInfo(roleInfo);
+
+      return role.save();
+    })
+    .then(function () {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.delete('/roles/:roleName', isAuthorized, function (req, res, next) {
   var promise = Role.findOneAndRemove({name: req.params.roleName})
     .then(function () {

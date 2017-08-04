@@ -87,4 +87,9 @@ RoleSchema.methods.deleteAction = function(actionId) {
   this.actions.splice(index, 1);
 };
 
+RoleSchema.methods.editInfo = function (roleInfo) {
+  this.name = roleInfo.name;
+  this.description = roleInfo.description;
+};
+
 module.exports = mongoose.model('roleactions', RoleSchema);
