@@ -79,7 +79,7 @@ response - {
 ### Get all roles
 ```js
 GET : {baseurl}/roles
-response - [{name:'admin'},{name:'user'},{name:'provider'},{name:'root'},{name:'organizationUser'}]
+response - [{name:'admin', description: ''},{name:'user', description: ''},{name:'provider', description: ''},{name:'root', description: ''},{name:'organizationUser', description: ''}]
 ```
 ### Update user status (Activate / Deactivate)
 ```js
@@ -129,6 +129,16 @@ response - {
 }
 ```
 
+### Change User's userName
+```js
+PUT : {baseurl}/users/{userId}/username
+request - data/body : {
+  userName: 'userName'
+}
+response - {success : true}
+```
+
+
 ### Change User Info
 ```js
 PUT : {baseurl}/users/{userId}/info
@@ -177,7 +187,8 @@ response - { success: true, message: 'metadata key: {fieldName} updated' }
 ```js
 POST : {baseurl}/roles
 request - data/body : {
-  name: 'admin'
+  name: 'admin',
+  description: 'description'
 }
 response - { success: true }
 ```
@@ -187,6 +198,7 @@ response - { success: true }
 GET : {baseurl}/roles/{roleName}
 response - {
   name: 'admin',
+  description: 'description',
   actions: [{
     id: '464sadfsdf6',
     pattern: '/api/*',
@@ -197,6 +209,16 @@ response - {
     verbDelete: true
   }]
 }
+```
+
+### Change Role's name and description
+```js
+PUT : {baseurl}/roles/{roleName}
+request - data/body : {
+  name: 'role name',
+  description: 'role description'
+}
+response - { success: true }
 ```
 
 ### Delete Role
