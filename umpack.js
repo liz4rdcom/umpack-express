@@ -193,10 +193,10 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
 router.get('/roles', isAuthorized, function(req, res, next) {
 
-    var dbPromise = Role.find({}, 'name description').exec()
+    var dbPromise = Role.find({}, 'name').exec()
         .then(function(result) {
             var roles = result.map(function(item) {
-                return { name: item.name, description: item.description };
+                return { name: item.name };
             });
 
             return roles;
@@ -299,23 +299,6 @@ router.put('/users/:id/info', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
-
-  var promise = User.findOne({userName: req.body.userName})
-    .then(function (user) {
-      if (user) throw apiError(INTERNAL_STATUS.USER_ALREADY_EXISTS);
-
-      return User.findByIdAndUpdate(req.params.id, {userName: req.body.userName});
-    })
-    .then(function () {
-      return {
-        success: true
-      };
-    });
-
-  sendPromiseResult(promise, req, res, next);
-});
-
 router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
   var promise = User.findById(req.params.id)
     .then(function (user) {
@@ -394,7 +377,6 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 
   var role = new Role({
     name: req.body.name,
-    description: req.body.description,
     actions: []
   });
 
@@ -419,7 +401,6 @@ router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
     .then(function (role) {
       return {
         name: role.name,
-        description: role.description,
         actions: role.actions.map(function (action) {
           return {
             id: action._id,
@@ -431,34 +412,6 @@ router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
             verbDelete: action.verbDelete
           };
         })
-      };
-    });
-
-  sendPromiseResult(promise, req, res, next);
-});
-
-router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
-  var roleInfo = {
-    name: req.body.name,
-    description: req.body.description
-  };
-
-  var promise = Role.findOne({name: roleInfo.name})
-    .then(function (role) {
-      if (role) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
-
-      return Role.findOne(req.params.roleName);
-    })
-    .then(function (role) {
-      if (!role) throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
-
-      role.editInfo(roleInfo);
-
-      return role.save();
-    })
-    .then(function () {
-      return {
-        success: true
       };
     });
 
