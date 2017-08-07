@@ -169,6 +169,39 @@ describe('service Api roleaction routes', function() {
 
   });
 
+  describe('PUT roles/:roleName', function () {
+    it('should change role when new role does not exist', function () {
+      return saveRecordWithActions([], 'some description')
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/' + defaultRole)
+            .set('authorization', res.text)
+            .send({name: 'new', description: 'description'});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return Promise.join(
+            findRole('new'),
+            findRole(defaultRole),
+            function (role, oldRole) {
+              should.exist(role);
+              should.not.exist(oldRole);
+
+              role.should.have.property('description', 'description');
+            }
+          );
+        });
+    });
+  });
+
   describe('DELETE roles/:roleName', function() {
     it('should delete role', function() {
       return saveRecordWithActions()
