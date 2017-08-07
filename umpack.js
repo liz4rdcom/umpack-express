@@ -447,7 +447,7 @@ router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
     .then(function (role) {
       if (role) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
 
-      return Role.findOne(req.params.roleName);
+      return Role.findOne({name: req.params.roleName});
     })
     .then(function (role) {
       if (!role) throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
