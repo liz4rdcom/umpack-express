@@ -7,7 +7,6 @@ mongoose.Promise = require('bluebird');
 
 var RoleSchema = new mongoose.Schema({
   name: String,
-  description: String,
   actions: []
 });
 
@@ -85,11 +84,6 @@ RoleSchema.methods.deleteAction = function(actionId) {
   if (index === -1) return;
 
   this.actions.splice(index, 1);
-};
-
-RoleSchema.methods.editInfo = function (roleInfo) {
-  this.name = roleInfo.name;
-  this.description = roleInfo.description;
 };
 
 module.exports = mongoose.model('roleactions', RoleSchema);
