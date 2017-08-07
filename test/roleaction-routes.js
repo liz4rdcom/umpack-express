@@ -169,8 +169,8 @@ describe('service Api roleaction routes', function() {
 
   });
 
-  describe('PUT roles/:roleName', function () {
-    it('should change role when new role does not exist', function () {
+  describe('PUT roles/:roleName', function() {
+    it('should change role when new role does not exist', function() {
       return saveRecordWithActions([], 'some description')
         .then(utils.login)
         .then(function(res) {
@@ -179,7 +179,10 @@ describe('service Api roleaction routes', function() {
           return chai.request(app)
             .put('/um/roles/' + defaultRole)
             .set('authorization', res.text)
-            .send({name: 'new', description: 'description'});
+            .send({
+              name: 'new',
+              description: 'description'
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
@@ -191,7 +194,7 @@ describe('service Api roleaction routes', function() {
           return Promise.join(
             findRole('new'),
             findRole(defaultRole),
-            function (role, oldRole) {
+            function(role, oldRole) {
               should.exist(role);
               should.not.exist(oldRole);
 
@@ -199,6 +202,55 @@ describe('service Api roleaction routes', function() {
             }
           );
         });
+    });
+
+    it('should return ROLE_ALREADY_EXISTS when new role already exists', function() {
+      var promise = insertRoles([
+        {
+          name: 'one',
+          description: 'one'
+        },
+        {
+          name: 'two'
+        }
+      ])
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/one')
+            .set('authorization', res.text)
+            .send({
+              name: 'two',
+              description: 'description'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 702);
+    });
+
+    it('should return WRONG_ROLE_NAME when role to change not found', function () {
+      var promise = insertRoles([
+        {
+          name: 'one',
+          description: 'one'
+        }
+      ])
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/other')
+            .set('authorization', res.text)
+            .send({
+              name: 'two',
+              description: 'description'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 701);
     });
   });
 
@@ -545,5 +597,11 @@ function saveRecordWithActions(actions, description) {
 function findRole(role) {
   return mongoose.connection.db.collection(rolesCollection).findOne({
     name: role
+  });
+}
+
+function insertRoles(roles) {
+  return Promise.map(roles, function(role) {
+    return mongoose.connection.db.collection(rolesCollection).insert(role);
   });
 }
