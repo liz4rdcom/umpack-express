@@ -40,6 +40,7 @@ describe('service Api roleaction routes', function() {
       .then(function() {
         return mongoose.connection.collection(rolesCollection).insert({
           "name": "user",
+          "description": "user",
           "actions": [{
             "_id": new ObjectId("58a301b880a92f3930ebfef4"),
             "pattern": "/um/*",
@@ -56,7 +57,7 @@ describe('service Api roleaction routes', function() {
 
   describe('GET roles/:roleName', function() {
     it('should get role', function() {
-      return saveRecordWithActions()
+      return saveRecordWithActions([], 'some description')
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -71,6 +72,7 @@ describe('service Api roleaction routes', function() {
 
           should.exist(res.body);
           res.body.should.have.property('name', defaultRole);
+          res.body.should.have.property('description', 'some description');
           res.body.should.have.property('actions');
           res.body.actions.should.have.length(0);
         });
@@ -122,7 +124,8 @@ describe('service Api roleaction routes', function() {
             .set('authorization', res.text)
             .set('cookie', '')
             .send({
-              name: defaultRole
+              name: defaultRole,
+              description: 'description'
             });
         })
         .then(function(res) {
@@ -136,6 +139,8 @@ describe('service Api roleaction routes', function() {
         .then(function(role) {
           should.exist(role);
 
+          role.should.have.property('name', defaultRole);
+          role.should.have.property('description', 'description');
           role.should.have.property('actions');
 
           role.actions.should.have.length(0);
@@ -162,6 +167,91 @@ describe('service Api roleaction routes', function() {
       });
 
 
+  });
+
+  describe('PUT roles/:roleName', function() {
+    it('should change role when new role does not exist', function() {
+      return saveRecordWithActions([], 'some description')
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/' + defaultRole)
+            .set('authorization', res.text)
+            .send({
+              name: 'new',
+              description: 'description'
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return Promise.join(
+            findRole('new'),
+            findRole(defaultRole),
+            function(role, oldRole) {
+              should.exist(role);
+              should.not.exist(oldRole);
+
+              role.should.have.property('description', 'description');
+            }
+          );
+        });
+    });
+
+    it('should return ROLE_ALREADY_EXISTS when new role already exists', function() {
+      var promise = insertRoles([
+        {
+          name: 'one',
+          description: 'one'
+        },
+        {
+          name: 'two'
+        }
+      ])
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/one')
+            .set('authorization', res.text)
+            .send({
+              name: 'two',
+              description: 'description'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 702);
+    });
+
+    it('should return WRONG_ROLE_NAME when role to change not found', function () {
+      var promise = insertRoles([
+        {
+          name: 'one',
+          description: 'one'
+        }
+      ])
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/other')
+            .set('authorization', res.text)
+            .send({
+              name: 'two',
+              description: 'description'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 701);
+    });
   });
 
   describe('DELETE roles/:roleName', function() {
@@ -454,10 +544,12 @@ describe('service Api roleaction routes', function() {
 
       var roles = [{
           name: 'one',
+          description: 'one',
           actions: []
         },
         {
           name: 'two',
+          description: 'two',
           actions: []
         }
       ];
@@ -483,8 +575,10 @@ describe('service Api roleaction routes', function() {
 
           res.body.forEach(function(role) {
             role.should.have.property('name');
+            role.should.have.property('description');
 
             role.name.should.be.oneOf(['one', 'two', 'user']);
+            role.description.should.be.oneOf(['one', 'two', 'user']);
           });
         });
     });
@@ -492,9 +586,10 @@ describe('service Api roleaction routes', function() {
   });
 });
 
-function saveRecordWithActions(actions) {
+function saveRecordWithActions(actions, description) {
   return mongoose.connection.db.collection(rolesCollection).insert({
     name: defaultRole,
+    description: description,
     actions: actions || []
   });
 }
@@ -502,5 +597,11 @@ function saveRecordWithActions(actions) {
 function findRole(role) {
   return mongoose.connection.db.collection(rolesCollection).findOne({
     name: role
+  });
+}
+
+function insertRoles(roles) {
+  return Promise.map(roles, function(role) {
+    return mongoose.connection.db.collection(rolesCollection).insert(role);
   });
 }

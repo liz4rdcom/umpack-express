@@ -131,6 +131,83 @@ describe('service api users administrative routes', function() {
     });
   });
 
+  describe('PUT /users/:id/userName', function () {
+    it('should change userName when new userName not exists', function () {
+      var id = new ObjectId();
+
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: id,
+          userName: defaultUser,
+          password: utils.passwordHash(password),
+          isActivated: true,
+          roles: ['admin'],
+          email: 'test@test.com',
+          firstName: 'test',
+          '__v': 1
+        })
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/users/' + id + '/userName')
+            .set('authorization', res.text)
+            .send({userName: 'changed'});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return findUser(id);
+        })
+        .then(function (user) {
+          user.userName.should.equal('changed');
+        });
+    });
+
+    it('should return USER_ALREADY_EXISTS when new userName matches another existing userName', function () {
+      var id = new ObjectId();
+
+      var promise = insertUsers([
+        {
+          _id: id,
+          userName: defaultUser,
+          password: utils.passwordHash(password),
+          isActivated: true,
+          roles: ['admin'],
+          email: 'test@test.com',
+          firstName: 'test',
+          '__v': 1
+        },
+        {
+          _id: new ObjectId(),
+          userName: 'other',
+          password: utils.passwordHash(password),
+          isActivated: true,
+          roles: ['user'],
+          email: 'other@test.com',
+          firstName: 'test',
+          '__v': 1
+        }
+      ])
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/users/' + id + '/userName')
+            .set('authorization', res.text)
+            .send({userName: 'other'});
+        });
+
+        return utils.shouldBeBadRequest(promise, 602);
+    });
+  });
+
   describe('PUT users/:id/info', function() {
     it('should update', function() {
       var id = new ObjectId();
