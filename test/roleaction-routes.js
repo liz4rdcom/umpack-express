@@ -252,6 +252,36 @@ describe('service Api roleaction routes', function() {
 
       return utils.shouldBeBadRequest(promise, 701);
     });
+
+    it('should change description, when onlu description change is requested', function () {
+      return saveRecordWithActions([], 'some description')
+        .then(utils.login)
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return chai.request(app)
+            .put('/um/roles/' + defaultRole)
+            .set('authorization', res.text)
+            .send({
+              name: defaultRole,
+              description: 'description'
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return findRole(defaultRole);
+        })
+        .then(function (role) {
+          should.exist(role);
+
+          role.should.have.property('description', 'description');
+        });
+    });
   });
 
   describe('DELETE roles/:roleName', function() {
