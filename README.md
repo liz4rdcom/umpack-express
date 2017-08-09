@@ -129,6 +129,24 @@ response - {
 }
 ```
 
+### Get User Object By userName
+```js
+GET : {baseurl}/users/{userName}/full
+response - {
+  id: '',
+  userName: 'name',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'test@email.com',
+  phone: '',
+  address: '',
+  additionalInfo: '',
+  isActivated: true/false,
+  roles: ['user', 'admin'],
+  metaData: {}
+}
+```
+
 ### Change User's userName
 ```js
 PUT : {baseurl}/users/{userId}/username
