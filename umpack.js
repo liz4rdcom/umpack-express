@@ -268,6 +268,28 @@ router.get('/users/:id', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.get('/users/:userName/full', function(req, res, next) {
+  var promise = User.findOne({
+      userName: req.params.userName
+    })
+    .then(function(user) {
+      var userObject = user.toObject();
+
+      return Object.keys(userObject).filter(function(key) {
+          return key !== '_id' && key !== 'id';
+        })
+        .reduce(function(accumulator, key) {
+          accumulator[key] = userObject[key];
+
+          return accumulator;
+        }, {
+          id: userObject._id
+        });
+    });
+
+    sendPromiseResult(promise, req, res, next);
+});
+
 router.delete('/users/:id', isAuthorized, function (req, res, next) {
   var promise = User.findByIdAndRemove(req.params.id)
     .then(function () {
