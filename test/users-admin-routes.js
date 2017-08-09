@@ -94,6 +94,45 @@ describe('service api users administrative routes', function() {
     });
   });
 
+  describe('GET users/:userName/full', function() {
+    it('should return full object', function() {
+      return mongoose.connection.db.collection(usersCollection)
+        .insert({
+          _id: new ObjectId(),
+          userName: defaultUser,
+          password: utils.passwordHash(password),
+          isActivated: true,
+          roles: ['user'],
+          email: 'test@test.com',
+          firstName: 'test',
+          '__v': 1
+        })
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .get('/um/users/' + defaultUser + '/full')
+            .set('authorization', res.text);
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+          res.body.should.have.property('userName', defaultUser);
+          res.body.should.have.property('email', 'test@test.com');
+          res.body.should.have.property('firstName', 'test');
+          res.body.should.have.property('id');
+          res.body.should.not.have.property('_id');
+          res.body.should.have.property('roles');
+          res.body.should.have.property('isActivated');
+        })
+        .catch(function (err) {
+          console.log(err);
+
+          throw err;
+        });
+    });
+  });
+
   describe('DELETE users/:id', function() {
     it('should remove user', function() {
       var id = new ObjectId();
@@ -131,8 +170,8 @@ describe('service api users administrative routes', function() {
     });
   });
 
-  describe('PUT /users/:id/userName', function () {
-    it('should change userName when new userName not exists', function () {
+  describe('PUT /users/:id/userName', function() {
+    it('should change userName when new userName not exists', function() {
       var id = new ObjectId();
 
       return mongoose.connection.db.collection(usersCollection)
@@ -153,7 +192,9 @@ describe('service api users administrative routes', function() {
           return chai.request(app)
             .put('/um/users/' + id + '/userName')
             .set('authorization', res.text)
-            .send({userName: 'changed'});
+            .send({
+              userName: 'changed'
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
@@ -164,36 +205,35 @@ describe('service api users administrative routes', function() {
 
           return findUser(id);
         })
-        .then(function (user) {
+        .then(function(user) {
           user.userName.should.equal('changed');
         });
     });
 
-    it('should return USER_ALREADY_EXISTS when new userName matches another existing userName', function () {
+    it('should return USER_ALREADY_EXISTS when new userName matches another existing userName', function() {
       var id = new ObjectId();
 
-      var promise = insertUsers([
-        {
-          _id: id,
-          userName: defaultUser,
-          password: utils.passwordHash(password),
-          isActivated: true,
-          roles: ['admin'],
-          email: 'test@test.com',
-          firstName: 'test',
-          '__v': 1
-        },
-        {
-          _id: new ObjectId(),
-          userName: 'other',
-          password: utils.passwordHash(password),
-          isActivated: true,
-          roles: ['user'],
-          email: 'other@test.com',
-          firstName: 'test',
-          '__v': 1
-        }
-      ])
+      var promise = insertUsers([{
+            _id: id,
+            userName: defaultUser,
+            password: utils.passwordHash(password),
+            isActivated: true,
+            roles: ['admin'],
+            email: 'test@test.com',
+            firstName: 'test',
+            '__v': 1
+          },
+          {
+            _id: new ObjectId(),
+            userName: 'other',
+            password: utils.passwordHash(password),
+            isActivated: true,
+            roles: ['user'],
+            email: 'other@test.com',
+            firstName: 'test',
+            '__v': 1
+          }
+        ])
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -201,10 +241,12 @@ describe('service api users administrative routes', function() {
           return chai.request(app)
             .put('/um/users/' + id + '/userName')
             .set('authorization', res.text)
-            .send({userName: 'other'});
+            .send({
+              userName: 'other'
+            });
         });
 
-        return utils.shouldBeBadRequest(promise, 602);
+      return utils.shouldBeBadRequest(promise, 602);
     });
   });
 
