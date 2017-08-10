@@ -338,7 +338,7 @@ router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
 router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
   var promise = User.findById(req.params.id)
     .then(function (user) {
-      var password = new Password(config.passwordHashSecret);
+      var password = new Password();
 
       user.setNewPassword(password);
 
@@ -589,7 +589,7 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req,
 
 router.post('/initialization', function (req, res, next) {
   var promise = Promise.join(
-    User.initAndSaveDefaultUser(config.passwordHashSecret),
+    User.initAndSaveDefaultUser(),
     Role.initAndSaveDefaultRole(req.body.umBaseUrl),
     function (password) {
       var result = {

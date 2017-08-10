@@ -1,5 +1,6 @@
 var random = require('randomstring');
 var crypto = require('crypto');
+var config = require('../config');
 
 var accessors = {
   'original': {
@@ -21,17 +22,17 @@ function randomPassword() {
   });
 }
 
-function passwordHash(password, secret) {
-  return crypto.createHmac('sha256', secret)
+function passwordHash(password) {
+  return crypto.createHmac('sha256', config.passwordHashSecret)
     .update(password)
     .digest('hex');
 }
 
-function Password(secret, password) {
+function Password(password) {
   if (password) this._password = password;
   else this._password = randomPassword();
 
-  this._hash = passwordHash(this._password, secret);
+  this._hash = passwordHash(this._password);
 
   Object.defineProperties(this, accessors);
 }
