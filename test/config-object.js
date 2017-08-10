@@ -2,16 +2,10 @@ var chai = require('chai');
 var should = chai.should();
 
 describe('config object', function() {
-  var config = require('../config');
-
-  var firstStateConfig = Object.assign({}, config);
-
-  afterEach(function() {
-    Object.assign(config, firstStateConfig);
-  });
-
   describe('#handleOptions()', function() {
     it('should save config fields', function() {
+      var config = Object.assign({}, require('../config'));
+
       var options = {
         accessTokenSecret: 'access',
         passwordHashSecret: 'password',
@@ -28,6 +22,8 @@ describe('config object', function() {
     });
 
     it('should use default values if not set', function() {
+      var config = Object.assign({}, require('../config'));
+
       var options = {
         accessTokenSecret: 'access',
         passwordHashSecret: 'password'
@@ -41,6 +37,8 @@ describe('config object', function() {
     });
 
     it('should have default values if options not passed', function() {
+      var config = Object.assign({}, require('../config'));
+
       config.handleOptions();
 
       config.should.have.property('accessTokenExpiresIn', '1h');
