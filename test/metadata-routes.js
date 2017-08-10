@@ -25,17 +25,7 @@ describe('metadata routes', function() {
 
   before(function() {
 
-    return new Promise(function(resolve, reject) {
-
-        mongoose.connection.once('connected', function() {
-
-          resolve(mongoose.connection.db.dropCollection(
-            rolesCollection));
-
-        });
-
-
-      })
+    return mongoose.connection.db.dropCollection(rolesCollection)
       .then(function() {
 
         return mongoose.connection.collection(rolesCollection).insert({
