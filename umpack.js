@@ -13,8 +13,6 @@ var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
 mongoose.Promise = require('bluebird');
 
-var accessTokenExpiresIn = '1h';
-var cookieAccessTokenName = 'accessToken';
 
 var INTERNAL_STATUS = {
 
@@ -63,7 +61,7 @@ router.post('/login', function(req, res, next) {
                 user: user.userName,
                 roles: user.roles
             }, config.accessTokenSecret, {
-                expiresIn: accessTokenExpiresIn
+                expiresIn: config.accessTokenExpiresIn
             });
 
             return accesKey;
@@ -628,7 +626,7 @@ function decodeRequestToken(req) {
     try {
 
         var cookies = cookie.parse(req.headers.cookie || '');
-        var jwtToken = req.headers.authorization || cookies[cookieAccessTokenName];
+        var jwtToken = req.headers.authorization || cookies[config.cookieAccessTokenName];
 
         if (!jwtToken) {
             throw apiError(INTERNAL_STATUS.JWT_NOT_EXISTS);
@@ -745,11 +743,6 @@ function handleOptions(options) {
         mongoose.connect(options.mongodbConnectionString);
 
     config.handleOptions(options);
-
-    if (options.accessTokenExpiresIn)
-        accessTokenExpiresIn = options.accessTokenExpiresIn;
-    if(options.cookieAccessTokenName)
-        cookieAccessTokenName=options.cookieAccessTokenName;
 }
 
 
