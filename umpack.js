@@ -13,7 +13,6 @@ var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
 mongoose.Promise = require('bluebird');
 
-var passwordHashSecret;
 var accessTokenExpiresIn = '1h';
 var cookieAccessTokenName = 'accessToken';
 
@@ -145,7 +144,7 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
 });
 
 function passwordHash(password) {
-    return crypto.createHmac('sha256', passwordHashSecret)
+    return crypto.createHmac('sha256', config.passwordHashSecret)
         .update(password)
         .digest('hex');
 }
@@ -341,7 +340,7 @@ router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
 router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
   var promise = User.findById(req.params.id)
     .then(function (user) {
-      var password = new Password(passwordHashSecret);
+      var password = new Password(config.passwordHashSecret);
 
       user.setNewPassword(password);
 
@@ -592,7 +591,7 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req,
 
 router.post('/initialization', function (req, res, next) {
   var promise = Promise.join(
-    User.initAndSaveDefaultUser(passwordHashSecret),
+    User.initAndSaveDefaultUser(config.passwordHashSecret),
     Role.initAndSaveDefaultRole(req.body.umBaseUrl),
     function (password) {
       var result = {
@@ -747,8 +746,6 @@ function handleOptions(options) {
 
     config.handleOptions(options);
 
-    if (options.passwordHashSecret)
-        passwordHashSecret = options.passwordHashSecret;
     if (options.accessTokenExpiresIn)
         accessTokenExpiresIn = options.accessTokenExpiresIn;
     if(options.cookieAccessTokenName)
