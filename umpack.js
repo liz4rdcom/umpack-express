@@ -15,8 +15,6 @@ mongoose.Promise = require('bluebird');
 
 
 var INTERNAL_STATUS = {
-
-    OK: { code: 600, message: 'OK' },
     USER_NOT_ACTIVE: { code: 601, message: 'User Is Not Activated' },
     USER_ALREADY_EXISTS: { code: 602, message: 'User Name Or Email Already Exists' },
     WRONG_USER_CREDENTIALS: { code: 603, message: 'Wrong User Name Or Password' },
