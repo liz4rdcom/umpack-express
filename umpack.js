@@ -8,6 +8,7 @@ var Promise = require('bluebird');
 var sendPromiseResult = require('./responseSender').sendPromiseResult;
 var Password = require('./domain/password');
 var config = require('./config');
+var API_ERRORS = require('./exceptions/apiErrorsEnum')
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -43,15 +44,15 @@ router.post('/login', function(req, res, next) {
         .then(function(user) {
 
             if (!user) {
-                throw apiError(INTERNAL_STATUS.USER_NOT_EXISTS);
+                throw API_ERRORS.USER_NOT_EXISTS;
             }
 
             if (user.isActivated === false) {
-                throw apiError(INTERNAL_STATUS.USER_NOT_ACTIVE);
+                throw API_ERRORS.USER_NOT_ACTIVE;
             }
 
             if (!user || user.password !== passwordHash(userData.password)) {
-                throw apiError(INTERNAL_STATUS.WRONG_USER_CREDENTIALS);
+                throw API_ERRORS.WRONG_USER_CREDENTIALS;
             }
 
 
@@ -79,7 +80,7 @@ router.post('/signup', function(req, res, next) {
     }).exec()
         .then(function(result) {
             if (result) {
-                throw apiError(INTERNAL_STATUS.USER_ALREADY_EXISTS);
+                throw API_ERRORS.USER_ALREADY_EXISTS;
             }
         })
         .then(function() {
@@ -125,7 +126,7 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
             var oldPasswordHash = passwordHash(userData.oldPassword);
 
             if (user.password !== oldPasswordHash) {
-                throw apiError(INTERNAL_STATUS.WRONG_PASSWORD);
+                throw API_ERRORS.WRONG_PASSWORD;
             }
 
             user.password = passwordHash(userData.newPassword);
@@ -220,7 +221,7 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
             var roleIndex = user.roles.indexOf(reqData.roleName);
 
             if (roleIndex === -1) {
-                throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
+                throw API_ERRORS.WRONG_ROLE_NAME;
             }
 
             user.roles.splice(roleIndex, 1);
@@ -320,7 +321,7 @@ router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
 
   var promise = User.findOne({userName: req.body.userName})
     .then(function (user) {
-      if (user) throw apiError(INTERNAL_STATUS.USER_ALREADY_EXISTS);
+      if (user) throw API_ERRORS.USER_ALREADY_EXISTS;
 
       return User.findByIdAndUpdate(req.params.id, {userName: req.body.userName});
     })
@@ -417,7 +418,7 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 
   var promise = Role.findOne({name: role.name})
     .then(function (roleResult) {
-      if(roleResult) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
+      if(roleResult) throw API_ERRORS.ROLE_ALREADY_EXISTS;
 
       return role.save();
     })
@@ -462,12 +463,12 @@ router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
 
   var promise = Role.findOne({name: roleInfo.name})
     .then(function (role) {
-      if (role  && roleInfo.name !== req.params.roleName) throw apiError(INTERNAL_STATUS.ROLE_ALREADY_EXISTS);
+      if (role  && roleInfo.name !== req.params.roleName) throw API_ERRORS.ROLE_ALREADY_EXISTS;
 
       return Role.findOne({name: req.params.roleName});
     })
     .then(function (role) {
-      if (!role) throw apiError(INTERNAL_STATUS.WRONG_ROLE_NAME);
+      if (!role) throw API_ERRORS.WRONG_ROLE_NAME;
 
       role.editInfo(roleInfo);
 
@@ -604,11 +605,11 @@ router.post('/initialization', function (req, res, next) {
 });
 
 function checkOnPatternExists(role, action) {
-  if(role.anotherActionHasSamePattern(action)) throw apiError(INTERNAL_STATUS.ACTION_PATTERN_ALREADY_EXISTS);
+  if(role.anotherActionHasSamePattern(action)) throw API_ERRORS.ACTION_PATTERN_ALREADY_EXISTS;
 }
 
 function checkOnInvalidPattern(action) {
-  if(!action.pattern) throw apiError(INTERNAL_STATUS.INVALID_ACTION_PATTERN);
+  if(!action.pattern) throw API_ERRORS.INVALID_ACTION_PATTERN;
 }
 
 function apiError(status) {
@@ -627,16 +628,16 @@ function decodeRequestToken(req) {
         var jwtToken = req.headers.authorization || cookies[config.cookieAccessTokenName];
 
         if (!jwtToken) {
-            throw apiError(INTERNAL_STATUS.JWT_NOT_EXISTS);
+            throw API_ERRORS.JWT_NOT_EXISTS;
         }
 
         return jwtVerifyAsync(jwtToken, config.accessTokenSecret)
             .catch(function(err) {
                 if (err instanceof jwt.TokenExpiredError) {
-                    throw apiError(INTERNAL_STATUS.JWT_TOKEN_EXPIRED);
+                    throw API_ERRORS.JWT_TOKEN_EXPIRED;
                 }
 
-                throw apiError(INTERNAL_STATUS.INVALID_JWT);
+                throw API_ERRORS.INVALID_JWT;
             });
 
 
@@ -724,10 +725,7 @@ function isAuthorized(req, res, next) {
             })
             .then(function(actions) {
                 if (!urlMatch(actions, requestUrl)) {
-                    var err = new Error(INTERNAL_STATUS.ACCESS_DENIED.message);
-                    err.internalStatus = INTERNAL_STATUS.ACCESS_DENIED.code;
-                    throw err;
-
+                    throw API_ERRORS.ACCESS_DENIED;
                 }
             });
     }
