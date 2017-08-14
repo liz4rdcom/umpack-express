@@ -228,8 +228,6 @@ describe('service API', function() {
           res.body.should.have.property('success', true);
           res.body.should.have.property('password');
 
-          console.log(res.body.password);
-
           return utils.findUser(null, 'root')
             .then(function(user) {
               should.exist(user);
