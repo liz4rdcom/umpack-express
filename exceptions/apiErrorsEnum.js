@@ -55,9 +55,17 @@ var INTERNAL_STATUS = {
   }
 };
 
+var forbiddenStatusCodes = [609];
+
+var unauthorizedStatusCodes = [606, 607, 608];
+
 var API_ERRORS = Object.keys(INTERNAL_STATUS)
   .reduce(function(accumulator, key) {
     accumulator[key] = new ApiError(INTERNAL_STATUS[key]);
+
+    if (forbiddenStatusCodes.indexOf(accumulator[key].internalStatus) > -1) accumulator[key].responseStatus = 403;
+
+    if (unauthorizedStatusCodes.indexOf(accumulator[key].internalStatus) > -1) accumulator[key].responseStatus = 401;
 
     return accumulator;
   }, {});
