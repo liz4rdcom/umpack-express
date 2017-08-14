@@ -14,23 +14,6 @@ var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
 mongoose.Promise = require('bluebird');
 
-
-var INTERNAL_STATUS = {
-    USER_NOT_ACTIVE: { code: 601, message: 'User Is Not Activated' },
-    USER_ALREADY_EXISTS: { code: 602, message: 'User Name Or Email Already Exists' },
-    WRONG_USER_CREDENTIALS: { code: 603, message: 'Wrong User Name Or Password' },
-    WRONG_PASSWORD: { code: 604, message: 'Wrong Password' },
-    USER_NOT_EXISTS: { code: 605, message: 'User Does Not Exists' },
-    JWT_NOT_EXISTS: { code: 606, message: 'Can\'t Find JWT Token Inside The Request Header' },
-    INVALID_JWT: { code: 607, message: 'Invalid JWT Token' },
-    JWT_TOKEN_EXPIRED: { code: 608, message: 'Token Expired' },
-    ACCESS_DENIED: { code: 609, message: 'Access Denied' },
-    WRONG_ROLE_NAME: { code: 701, message: 'Wrong Role Name' },
-    ROLE_ALREADY_EXISTS: {code: 702, message: 'Role Already Exists'},
-    INVALID_ACTION_PATTERN: {code: 703, message: 'Invalid Action Pattern'},
-    ACTION_PATTERN_ALREADY_EXISTS: {code: 704, message: 'Action Pattern Already Exists'}
-};
-
 var User = require('./models/user');
 
 var Role = require('./models/role');
@@ -669,13 +652,7 @@ function isAuthorized(req, res, next) {
 
         })
         .catch(function(err) {
-
-            if (err.internalStatus === INTERNAL_STATUS.ACCESS_DENIED.code) return res.status(403).send({
-              message: err.message,
-              internalStatus: err.internalStatus
-            });
-
-            return res.status(401).send({ message: err.message, internalStatus: err.internalStatus });
+            return res.status(err.responseStatus).send({ message: err.message, internalStatus: err.internalStatus });
         });
 
     function checkRole(verb, requestUrl, userInfo) {
