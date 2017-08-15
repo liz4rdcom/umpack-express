@@ -8,7 +8,6 @@ var User = require('../models/user');
 exports.login = function(userData) {
   return User.findByUserName(userData.userName)
     .then(function(user) {
-
       if (!user) {
         throw API_ERRORS.USER_NOT_EXISTS;
       }
@@ -20,7 +19,6 @@ exports.login = function(userData) {
       if (!user || !user.hasSamePassword(new Password(userData.password))) {
         throw API_ERRORS.WRONG_USER_CREDENTIALS;
       }
-
 
       var accesKey = jwt.sign({
         user: user.userName,
@@ -47,7 +45,6 @@ exports.signup = function(userData) {
       }
     })
     .then(function() {
-
       var newUser = new User({
         userName: userData.userName,
         firstName: userData.firstName,

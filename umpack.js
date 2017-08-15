@@ -24,9 +24,10 @@ router.post('/login', function(req, res, next) {
 
   var userData = req.body;
 
-  var dbPromise = credentialsInteractor.login(userData);
+  var promise = credentialsInteractor.login(userData);
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
+
 });
 
 
@@ -34,7 +35,7 @@ router.post('/signup', function(req, res, next) {
 
   var userData = req.body;
 
-  var dbPromise = credentialsInteractor.signup(userData)
+  var promise = credentialsInteractor.signup(userData)
     .then(function() {
       return {
         success: true,
@@ -42,7 +43,7 @@ router.post('/signup', function(req, res, next) {
       };
     });
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
@@ -54,7 +55,7 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
   //oldPassword
   //newPassword
 
-  var dbPromise = credentialsInteractor.changePassword(userData)
+  var promise = credentialsInteractor.changePassword(userData)
     .then(function(user) {
       return {
         success: true,
@@ -62,7 +63,7 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
       };
     });
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
