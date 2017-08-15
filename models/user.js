@@ -51,4 +51,8 @@ UserSchema.methods.setNewPassword = function (password) {
   this.password = password.hash;
 };
 
+UserSchema.methods.hasSamePassword = function (password) {
+  return this.password === password.hash;
+}
+
 module.exports = mongoose.model('user', UserSchema);

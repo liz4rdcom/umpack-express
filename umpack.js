@@ -2,7 +2,6 @@ var router = require('express').Router();
 var cookie = require('cookie');
 var jwt = require('jsonwebtoken');
 var mongoose = require('mongoose');
-var crypto = require('crypto');
 var urlMatch = require('./urlMatch');
 var Promise = require('bluebird');
 var sendPromiseResult = require('./responseSender').sendPromiseResult;
@@ -34,7 +33,7 @@ router.post('/login', function(req, res, next) {
                 throw API_ERRORS.USER_NOT_ACTIVE;
             }
 
-            if (!user || user.password !== passwordHash(userData.password)) {
+            if (!user || !user.hasSamePassword(new Password(userData.password))) {
                 throw API_ERRORS.WRONG_USER_CREDENTIALS;
             }
 
@@ -70,7 +69,6 @@ router.post('/signup', function(req, res, next) {
 
             var newUser = new User({
                 userName: userData.userName,
-                password: passwordHash(userData.password),
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 email: userData.email,
@@ -80,6 +78,8 @@ router.post('/signup', function(req, res, next) {
                 isActivated: false,
                 roles: []
             });
+
+            newUser.setNewPassword(new Password(userData.password));
 
             if (userData.metaData) {
                 newUser.metaData = userData.metaData;
@@ -105,14 +105,12 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
 
     var dbPromise = User.findByUserName(userData.userName)
         .then(function(user) {
-
-            var oldPasswordHash = passwordHash(userData.oldPassword);
-
-            if (user.password !== oldPasswordHash) {
+            if (!user.hasSamePassword(new Password(userData.oldPassword))) {
                 throw API_ERRORS.WRONG_PASSWORD;
             }
 
-            user.password = passwordHash(userData.newPassword);
+            user.setNewPassword(new Password(userData.newPassword));
+
             return user.save();
         })
         .then(function(user) {
@@ -122,12 +120,6 @@ router.post('/resetpass',isAuthorized, function(req, res, next) {
     sendPromiseResult(dbPromise, req, res, next);
 
 });
-
-function passwordHash(password) {
-    return crypto.createHmac('sha256', config.passwordHashSecret)
-        .update(password)
-        .digest('hex');
-}
 
 router.get('/users', isAuthorized, function(req, res, next) {
 
