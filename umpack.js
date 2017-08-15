@@ -17,107 +17,52 @@ var User = require('./models/user');
 
 var Role = require('./models/role');
 
+var credentialsInteractor = require('./interactors/credentialsInteractor');
+
 
 router.post('/login', function(req, res, next) {
 
-    var userData = req.body;
+  var userData = req.body;
 
-    var dbPromise = User.findByUserName(userData.userName)
-        .then(function(user) {
+  var dbPromise = credentialsInteractor.login(userData);
 
-            if (!user) {
-                throw API_ERRORS.USER_NOT_EXISTS;
-            }
-
-            if (user.isActivated === false) {
-                throw API_ERRORS.USER_NOT_ACTIVE;
-            }
-
-            if (!user || !user.hasSamePassword(new Password(userData.password))) {
-                throw API_ERRORS.WRONG_USER_CREDENTIALS;
-            }
-
-
-            var accesKey = jwt.sign({
-                user: user.userName,
-                roles: user.roles
-            }, config.accessTokenSecret, {
-                expiresIn: config.accessTokenExpiresIn
-            });
-
-            return accesKey;
-
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 });
 
 
 router.post('/signup', function(req, res, next) {
 
-    var userData = req.body;
+  var userData = req.body;
 
-    var dbPromise = User.findOne({
-        $or: [{ 'userName': userData.userName }, { 'email': userData.email }]
-    }).exec()
-        .then(function(result) {
-            if (result) {
-                throw API_ERRORS.USER_ALREADY_EXISTS;
-            }
-        })
-        .then(function() {
+  var dbPromise = credentialsInteractor.signup(userData)
+    .then(function() {
+      return {
+        success: true,
+        message: 'Thanks for signUp'
+      };
+    });
 
-            var newUser = new User({
-                userName: userData.userName,
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                email: userData.email,
-                phone: userData.phone,
-                address: userData.address,
-                additionalInfo: userData.additionalInfo,
-                isActivated: false,
-                roles: []
-            });
-
-            newUser.setNewPassword(new Password(userData.password));
-
-            if (userData.metaData) {
-                newUser.metaData = userData.metaData;
-            }
-
-            return newUser.save();
-        })
-        .then(function() {
-            return { success: true, message: 'Thanks for signUp' };
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 
 });
 
-router.post('/resetpass',isAuthorized, function(req, res, next) {
+router.post('/resetpass', isAuthorized, function(req, res, next) {
 
-    var userData = req.body;
+  var userData = req.body;
 
-    //userName
-    //oldPassword
-    //newPassword
+  //userName
+  //oldPassword
+  //newPassword
 
-    var dbPromise = User.findByUserName(userData.userName)
-        .then(function(user) {
-            if (!user.hasSamePassword(new Password(userData.oldPassword))) {
-                throw API_ERRORS.WRONG_PASSWORD;
-            }
+  var dbPromise = credentialsInteractor.changePassword(userData)
+    .then(function(user) {
+      return {
+        success: true,
+        message: 'Password Reset Done'
+      };
+    });
 
-            user.setNewPassword(new Password(userData.newPassword));
-
-            return user.save();
-        })
-        .then(function(user) {
-            return { success: true, message: 'Password Reset Done' };
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 
 });
 
