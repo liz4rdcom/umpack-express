@@ -428,149 +428,82 @@ function handleOptions(options) {
     config.handleOptions(options);
 }
 
-
 function updateUserMetaData(userName, metaDataObject) {
-
-    var dbPromise = User.findByUserName(userName);
-
-    return dbPromise.then(function(user) {
-        user.metaData = metaDataObject;
-        return user.save();
-    });
+  return userInteractor.updateUserMetaData(userName, metaDataObject);
 }
 
 function getUserMetaDataByUserName(userName) {
-
-    var dbPromise = User.findByUserName(userName);
-
-    return dbPromise
-        .then(function(user) {
-            return user.metaData;
-        });
+  return userInteractor.getUserMetaDataByUserName(userName);
 }
 
 function getUserMetaDataByRequest(req) {
-
-
-    return decodeRequestToken(req)
-        .then(function(decoded) {
-            return User.findByUserName(decoded.user);
-        })
-        .then(function(user) {
-            return user.metaData;
-        });
+  return decodeRequestToken(req)
+    .then(function(decoded) {
+      return getUserMetaDataByUserName(decoded.user);
+    });
 }
 
 function filterUsersByMetaData(key, value) {
-
-    var metaObject = {};
-    metaObject['metaData.' + key] = value;
-
-    var dbPromise = User.find(metaObject).exec();
-
-    return dbPromise
-        .then(function(result) {
-            return result.map(toFullUserObject);
-        });
+  return userInteractor.filterUsersMetaData(key, value);
 }
 
 function toFullUserObject(user) {
   if (!user) return user;
 
   return {
-      id: user._id,
-      userName: user.userName,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      isActivated: user.isActivated,
-      additionalInfo: user.additionalInfo,
-      address: user.address,
-      email: user.email,
-      phone: user.phone,
-      roles: user.roles,
-      metaData: user.metaData
+    id: user._id,
+    userName: user.userName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    isActivated: user.isActivated,
+    additionalInfo: user.additionalInfo,
+    address: user.address,
+    email: user.email,
+    phone: user.phone,
+    roles: user.roles,
+    metaData: user.metaData
   };
-}
-
-function getFullName(userName) {
-
-    var dbPromise = User.findByUserName(userName);
-
-    return dbPromise
-        .then(function(user) {
-            return user.firstName + ' ' + user.lastName;
-        });
 }
 
 function getFullUserObjectFromRequest(req) {
 
-    return decodeRequestToken(req)
-        .then(function(decoded) {
-            return getFullUserObject(decoded.user);
-        });
+  return decodeRequestToken(req)
+    .then(function(decoded) {
+      return getFullUserObject(decoded.user);
+    });
 }
 
 function getFullUserObject(userName) {
-
-    var dbPromise = User.findByUserName(userName);
-
-    return dbPromise
-        .then(toFullUserObject);
+  return userInteractor.getFullUserObject(userName);
 }
-
-function getUserRolesByUserName(userName) {
-
-    var dbPromise = User.findByUserName(userName);
-
-    return dbPromise
-        .then(function(user) {
-            return {
-                userName: user.userName,
-                roles: user.roles
-            };
-
-        });
-}
-
 
 function getUserRolesFromRequest(req) {
 
-    return decodeRequestToken(req)
-        .then(function(decoded) {
-            return {
-                userName: decoded.user,
-                roles: decoded.roles
-            };
-        });
-}
-
-function filterUsersByRole(role) {
-  var dbPromise = User.find({'roles': role}).exec();
-
-  return dbPromise
-    .then(function (result) {
-      return result.map(toFullUserObject);
+  return decodeRequestToken(req)
+    .then(function(decoded) {
+      return {
+        userName: decoded.user,
+        roles: decoded.roles
+      };
     });
 }
 
 
 
-
-
 module.exports = function(options) {
-    handleOptions(options);
-    return {
-        router: router,
-        isAuthorized: isAuthorized,
-        updateUserMetaData: updateUserMetaData,
-        getUserMetaDataByUserName: getUserMetaDataByUserName,
-        getUserMetaDataByRequest: getUserMetaDataByRequest,
-        filterUsersByMetaData: filterUsersByMetaData,
-        getFullName: getFullName,
-        getUserRolesByUserName: getUserRolesByUserName,
-        getUserRolesFromRequest: getUserRolesFromRequest,
-        getFullUserObject: getFullUserObject,
-        getFullUserObjectFromRequest: getFullUserObjectFromRequest,
-        filterUsersByRole: filterUsersByRole
-    }
+  handleOptions(options);
+  return {
+    router: router,
+    isAuthorized: isAuthorized,
+    updateUserMetaData: updateUserMetaData,
+    getUserMetaDataByUserName: getUserMetaDataByUserName,
+    getUserMetaDataByRequest: getUserMetaDataByRequest,
+    filterUsersByMetaData: filterUsersByMetaData,
+    getFullName: userInteractor.getFullName,
+    getUserRolesByUserName: userInteractor.getUserRolesByUserName,
+    getUserRolesFromRequest: getUserRolesFromRequest,
+    getFullUserObject: getFullUserObject,
+    getFullUserObjectFromRequest: getFullUserObjectFromRequest,
+    filterUsersByRole: userInteractor.filterUsersByRole
+  }
 }

@@ -154,3 +154,77 @@ exports.resetUserPassword = function(id) {
         });
     });
 };
+
+exports.updateUserMetaData = function(userName, metaDataObject) {
+  return User.findByUserName(userName)
+    .then(function(user) {
+      user.metaData = metaDataObject;
+      return user.save();
+    });
+};
+
+exports.getUserMetaDataByUserName = function(userName) {
+  return User.findByUserName(userName)
+    .then(function(user) {
+      return user.metaData;
+    });
+};
+
+exports.filterUsersMetaData = function(key, value) {
+  var metaObject = {};
+  metaObject['metaData.' + key] = value;
+
+  return User.find(metaObject).exec()
+    .then(function(result) {
+      return result.map(toFullUserObject);
+    });
+};
+
+exports.getFullName = function(userName) {
+  return User.findByUserName(userName)
+    .then(function(user) {
+      return user.firstName + ' ' + user.lastName;
+    });
+};
+
+exports.getFullUserObject = function(userName) {
+  return User.findByUserName(userName)
+    .then(toFullUserObject);
+};
+
+exports.getUserRolesByUserName = function(userName) {
+  return User.findByUserName(userName)
+    .then(function(user) {
+      return {
+        userName: user.userName,
+        roles: user.roles
+      };
+    });
+};
+
+exports.filterUsersByRole = function(role) {
+  return User.find({
+      'roles': role
+    }).exec()
+    .then(function(result) {
+      return result.map(toFullUserObject);
+    });
+};
+
+function toFullUserObject(user) {
+  if (!user) return user;
+
+  return {
+    id: user._id,
+    userName: user.userName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    isActivated: user.isActivated,
+    additionalInfo: user.additionalInfo,
+    address: user.address,
+    email: user.email,
+    phone: user.phone,
+    roles: user.roles,
+    metaData: user.metaData
+  };
+}
