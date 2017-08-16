@@ -19,6 +19,7 @@ var Role = require('./models/role');
 
 var credentialsInteractor = require('./interactors/credentialsInteractor');
 var userInteractor = require('./interactors/userInteractor');
+var roleInteractor = require('./interactors/roleInteractor');
 
 
 router.post('/login', function(req, res, next) {
@@ -85,19 +86,9 @@ router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
 router.get('/roles', isAuthorized, function(req, res, next) {
 
-  var dbPromise = Role.find({}, 'name description').exec()
-    .then(function(result) {
-      var roles = result.map(function(item) {
-        return {
-          name: item.name,
-          description: item.description
-        };
-      });
+  var promise = roleInteractor.getRoles();
 
-      return roles;
-    });
-
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
@@ -220,21 +211,10 @@ router.get('/metadata', isAuthorized, function (req, res, next) {
 
 });
 
-router.post('/roles', isAuthorized, function (req, res, next) {
+router.post('/roles', isAuthorized, function(req, res, next) {
 
-  var role = new Role({
-    name: req.body.name,
-    description: req.body.description,
-    actions: []
-  });
-
-  var promise = Role.findOne({name: role.name})
-    .then(function (roleResult) {
-      if(roleResult) throw API_ERRORS.ROLE_ALREADY_EXISTS;
-
-      return role.save();
-    })
-    .then(function () {
+  var promise = roleInteractor.createRole(req.body.name, req.body.description)
+    .then(function() {
       return {
         success: true
       };
@@ -244,49 +224,15 @@ router.post('/roles', isAuthorized, function (req, res, next) {
 
 });
 
-router.get('/roles/:roleName', isAuthorized, function (req, res, next) {
-  var promise = Role.findOne({name: req.params.roleName})
-    .then(function (role) {
-      return {
-        name: role.name,
-        description: role.description,
-        actions: role.actions.map(function (action) {
-          return {
-            id: action._id,
-            pattern: action.pattern,
-            name: action.name,
-            verbGet: action.verbGet,
-            verbPost: action.verbPost,
-            verbPut: action.verbPut,
-            verbDelete: action.verbDelete
-          };
-        })
-      };
-    });
+router.get('/roles/:roleName', isAuthorized, function(req, res, next) {
+  var promise = roleInteractor.getRoleByName(req.params.roleName);
 
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
-  var roleInfo = {
-    name: req.body.name,
-    description: req.body.description
-  };
-
-  var promise = Role.findOne({name: roleInfo.name})
-    .then(function (role) {
-      if (role  && roleInfo.name !== req.params.roleName) throw API_ERRORS.ROLE_ALREADY_EXISTS;
-
-      return Role.findOne({name: req.params.roleName});
-    })
-    .then(function (role) {
-      if (!role) throw API_ERRORS.WRONG_ROLE_NAME;
-
-      role.editInfo(roleInfo);
-
-      return role.save();
-    })
-    .then(function () {
+router.put('/roles/:roleName', isAuthorized, function(req, res, next) {
+  var promise = roleInteractor.editRole(req.params.roleName, req.body)
+    .then(function() {
       return {
         success: true
       };
@@ -295,9 +241,9 @@ router.put('/roles/:roleName', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.delete('/roles/:roleName', isAuthorized, function (req, res, next) {
-  var promise = Role.findOneAndRemove({name: req.params.roleName})
-    .then(function () {
+router.delete('/roles/:roleName', isAuthorized, function(req, res, next) {
+  var promise = roleInteractor.deleteRole(req.params.roleName)
+    .then(function() {
       return {
         success: true
       };
@@ -306,96 +252,47 @@ router.delete('/roles/:roleName', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.post('/roles/:roleName/actions', isAuthorized, function (req, res, next) {
-  var action = {
-    _id: mongoose.Types.ObjectId(),
-    pattern: req.body.pattern,
-    name: req.body.name,
-    verbGet: req.body.verbGet || false,
-    verbPost: req.body.verbPost || false,
-    verbPut: req.body.verbPut || false,
-    verbDelete: req.body.verbDelete || false
-  };
-
+router.post('/roles/:roleName/actions', isAuthorized, function(req, res, next) {
   var roleName = req.params.roleName;
 
-  var promise = Promise.try(function () {
-      checkOnInvalidPattern(action);
-
-      return Role.findOne({name: roleName});
-    })
-    .then(function (role) {
-
-      checkOnPatternExists(role, action);
-
-      role.addAction(action);
-
-      return role.save();
-    })
-    .then(function () {
+  var promise = roleInteractor.addActionToRole(roleName, req.body)
+    .then(function(actionId) {
       return {
         success: true,
-        actionId: action._id
+        actionId: actionId
       };
     });
 
-    sendPromiseResult(promise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
-router.put('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
+router.put('/roles/:roleName/actions/:actionId', isAuthorized, function(req, res, next) {
   var roleName = req.params.roleName;
   var actionId = req.params.actionId;
 
-  var action = {
-    _id: mongoose.Types.ObjectId(actionId),
-    pattern: req.body.pattern,
-    name: req.body.name,
-    verbGet: req.body.verbGet || false,
-    verbPost: req.body.verbPost || false,
-    verbPut: req.body.verbPut || false,
-    verbDelete: req.body.verbDelete || false
-  };
-
-  var promise = Promise.try(function () {
-      checkOnInvalidPattern(action);
-
-      return Role.findOne({name: roleName});
-    })
-    .then(function (role) {
-
-      checkOnPatternExists(role, action);
-
-      role.updateAction(action);
-
-      return role.save();
-    })
-    .then(function () {
+  var promise = roleInteractor.editAction(roleName, actionId, req.body)
+    .then(function() {
       return {
         success: true
       };
     });
 
-    sendPromiseResult(promise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 });
 
-router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function (req, res, next) {
+router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, res, next) {
   var roleName = req.params.roleName;
   var actionId = req.params.actionId;
 
-  var promise = Role.findOne({name: roleName})
-    .then(function (role) {
-      role.deleteAction(actionId);
-
-      return role.save();
-    })
-    .then(function () {
+  var promise = roleInteractor.deleteAction(roleName, actionId)
+    .then(function() {
       return {
         success: true
       };
     });
 
-    sendPromiseResult(promise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 });
 
 router.post('/initialization', function (req, res, next) {
@@ -415,22 +312,6 @@ router.post('/initialization', function (req, res, next) {
 
   sendPromiseResult(promise, req, res, next);
 });
-
-function checkOnPatternExists(role, action) {
-  if(role.anotherActionHasSamePattern(action)) throw API_ERRORS.ACTION_PATTERN_ALREADY_EXISTS;
-}
-
-function checkOnInvalidPattern(action) {
-  if(!action.pattern) throw API_ERRORS.INVALID_ACTION_PATTERN;
-}
-
-function apiError(status) {
-  var err = new Error(status.message);
-
-  err.internalStatus = status.code;
-
-  return err;
-}
 
 function decodeRequestToken(req) {
 
