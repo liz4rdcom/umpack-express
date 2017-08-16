@@ -70,17 +70,17 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
 
 router.get('/users', isAuthorized, function(req, res, next) {
 
-  var dbPromise = userInteractor.getUsers();
+  var promise = userInteractor.getUsers();
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
 router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
-  var dbPromise = userInteractor.updateUserStatus(req.body.id, req.body.isActivated);
+  var promise = userInteractor.updateUserStatus(req.body.id, req.body.isActivated);
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 });
 
 router.get('/roles', isAuthorized, function(req, res, next) {
@@ -105,9 +105,9 @@ router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
   var reqData = req.body;
 
-  var dbPromise = userInteractor.updateUserRoles(reqData.userId, reqData.roleName, reqData.enable);
+  var promise = userInteractor.updateUserRoles(reqData.userId, reqData.roleName, reqData.enable);
 
-  sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 
 });
 
