@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 var sendPromiseResult = require('./responseSender').sendPromiseResult;
 var Password = require('./domain/password');
 var config = require('./config');
-var API_ERRORS = require('./exceptions/apiErrorsEnum')
+var API_ERRORS = require('./exceptions/apiErrorsEnum');
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -18,6 +18,7 @@ var User = require('./models/user');
 var Role = require('./models/role');
 
 var credentialsInteractor = require('./interactors/credentialsInteractor');
+var userInteractor = require('./interactors/userInteractor');
 
 
 router.post('/login', function(req, res, next) {
@@ -69,147 +70,62 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
 
 router.get('/users', isAuthorized, function(req, res, next) {
 
-    var dbPromise = User.find({}).exec()
-        .then(function(result) {
-            var userList = result.map(function(item) {
-                return {
-                    id: item._id,
-                    userName: item.userName,
-                    isActivated: item.isActivated,
-                    roles: item.roles
-                };
-            });
+  var dbPromise = userInteractor.getUsers();
 
-            return userList;
-
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 
 });
 
 router.post('/updateUserStatus', isAuthorized, function(req, res, next) {
 
-    var dbPromise = User.findById(req.body.id).exec()
-        .then(function(user) {
-            user.isActivated = req.body.isActivated;
+  var dbPromise = userInteractor.updateUserStatus(req.body.id, req.body.isActivated);
 
-            return user.save();
-        })
-        .then(function(user) {
-            return {
-                id: user._id,
-                isActivated: user.isActivated,
-                userName: user.userName,
-                roles: user.roles
-            };
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 });
 
 router.get('/roles', isAuthorized, function(req, res, next) {
 
-    var dbPromise = Role.find({}, 'name description').exec()
-        .then(function(result) {
-            var roles = result.map(function(item) {
-                return { name: item.name, description: item.description };
-            });
+  var dbPromise = Role.find({}, 'name description').exec()
+    .then(function(result) {
+      var roles = result.map(function(item) {
+        return {
+          name: item.name,
+          description: item.description
+        };
+      });
 
-            return roles;
-        });
+      return roles;
+    });
 
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 
 });
 
 router.post('/updateUserRoles', isAuthorized, function(req, res, next) {
 
-    var reqData = req.body;
+  var reqData = req.body;
 
+  var dbPromise = userInteractor.updateUserRoles(reqData.userId, reqData.roleName, reqData.enable);
 
-    var dbPromise = User.findById(reqData.userId).exec()
-        .then(function(user) {
-
-            if (!user.roles)
-                user.roles = [];
-
-            if (reqData.enable === true) {
-                user.roles.push(reqData.roleName);
-                return user.save();
-            }
-
-            var roleIndex = user.roles.indexOf(reqData.roleName);
-
-            if (roleIndex === -1) {
-                throw API_ERRORS.WRONG_ROLE_NAME;
-            }
-
-            user.roles.splice(roleIndex, 1);
-
-            return user.save();
-
-        })
-        .then(function(user) {
-            return {
-                id: user._id,
-                userName: user.userName,
-                isActivated: user.isActivated,
-                roles: user.roles
-            };
-        });
-
-    sendPromiseResult(dbPromise, req, res, next);
+  sendPromiseResult(dbPromise, req, res, next);
 
 });
 
-router.get('/users/:id', isAuthorized, function (req, res, next) {
-  var promise = User.findById(req.params.id)
-    .then(function (user) {
-      return {
-        id: user._id,
-        userName: user.userName,
-        password: user.password,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        address: user.address,
-        additionalInfo: user.additionalInfo,
-        metaData: user.metaData,
-        isActivated: user.isActivated,
-        roles: user.roles
-      };
-    });
+router.get('/users/:id', isAuthorized, function(req, res, next) {
+  var promise = userInteractor.getUserById(req.params.id);
 
   sendPromiseResult(promise, req, res, next);
 });
 
 router.get('/users/:userName/full', function(req, res, next) {
-  var promise = User.findOne({
-      userName: req.params.userName
-    })
-    .then(function(user) {
-      var userObject = user.toObject();
+  var promise = userInteractor.getUserByUserName(req.params.userName);
 
-      return Object.keys(userObject).filter(function(key) {
-          return key !== '_id' && key !== 'id';
-        })
-        .reduce(function(accumulator, key) {
-          accumulator[key] = userObject[key];
-
-          return accumulator;
-        }, {
-          id: userObject._id
-        });
-    });
-
-    sendPromiseResult(promise, req, res, next);
+  sendPromiseResult(promise, req, res, next);
 });
 
-router.delete('/users/:id', isAuthorized, function (req, res, next) {
-  var promise = User.findByIdAndRemove(req.params.id)
-    .then(function () {
+router.delete('/users/:id', isAuthorized, function(req, res, next) {
+  var promise = userInteractor.deleteUserById(req.params.id)
+    .then(function() {
       return {
         success: true
       };
@@ -218,18 +134,9 @@ router.delete('/users/:id', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/users/:id/info', isAuthorized, function (req, res, next) {
-  var info = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    phone: req.body.phone,
-    address: req.body.address,
-    additionalInfo: req.body.additionalInfo
-  };
-
-  var promise = User.findByIdAndUpdate(req.params.id, info)
-    .then(function () {
+router.put('/users/:id/info', isAuthorized, function(req, res, next) {
+  var promise = userInteractor.changeUserInfo(req.params.id, req.body)
+    .then(function() {
       return {
         success: true
       };
@@ -238,15 +145,9 @@ router.put('/users/:id/info', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
-
-  var promise = User.findOne({userName: req.body.userName})
-    .then(function (user) {
-      if (user) throw API_ERRORS.USER_ALREADY_EXISTS;
-
-      return User.findByIdAndUpdate(req.params.id, {userName: req.body.userName});
-    })
-    .then(function () {
+router.put('/users/:id/userName', isAuthorized, function(req, res, next) {
+  var promise = userInteractor.changeUserName(req.params.id, req.body.userName)
+    .then(function() {
       return {
         success: true
       };
@@ -255,19 +156,9 @@ router.put('/users/:id/userName', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.delete('/users/:id/password', isAuthorized, function (req, res, next) {
-  var promise = User.findById(req.params.id)
-    .then(function (user) {
-      var password = new Password();
-
-      user.setNewPassword(password);
-
-      return user.save()
-        .then(function () {
-          return password;
-        });
-    })
-    .then(function (password) {
+router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
+  var promise = userInteractor.resetUserPassword(req.params.id)
+    .then(function(password) {
       return {
         success: true,
         password: password.original
