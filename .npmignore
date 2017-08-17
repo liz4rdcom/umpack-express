@@ -12,3 +12,4 @@ dist_front
 test
 config
 coverage
+.tern-project

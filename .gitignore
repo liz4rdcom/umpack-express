@@ -3,6 +3,9 @@ logs
 *.log
 npm-debug.log*
 
+# Editor's configuration files
+.tern-project
+
 # Runtime data
 pids
 *.pid
