@@ -447,24 +447,6 @@ function filterUsersByMetaData(key, value) {
   return userInteractor.filterUsersMetaData(key, value);
 }
 
-function toFullUserObject(user) {
-  if (!user) return user;
-
-  return {
-    id: user._id,
-    userName: user.userName,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    isActivated: user.isActivated,
-    additionalInfo: user.additionalInfo,
-    address: user.address,
-    email: user.email,
-    phone: user.phone,
-    roles: user.roles,
-    metaData: user.metaData
-  };
-}
-
 function getFullUserObjectFromRequest(req) {
 
   return decodeRequestToken(req)
