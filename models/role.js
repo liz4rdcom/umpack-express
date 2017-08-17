@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Promise = require('bluebird');
+var Action = require('../domain/action');
 
 var ObjectId = require('mongodb').ObjectID;
 
@@ -36,9 +37,11 @@ RoleSchema.statics.createDefaultRole = function(umBaseUrl) {
   });
 };
 
-RoleSchema.statics.initAndSaveDefaultRole = function (umBaseUrl) {
-  return this.findOne({name: 'admin'})
-    .then(function (role) {
+RoleSchema.statics.initAndSaveDefaultRole = function(umBaseUrl) {
+  return this.findOne({
+      name: 'admin'
+    })
+    .then(function(role) {
       if (role) return;
 
       return this.createDefaultRole(umBaseUrl).save();
@@ -87,9 +90,20 @@ RoleSchema.methods.deleteAction = function(actionId) {
   this.actions.splice(index, 1);
 };
 
-RoleSchema.methods.editInfo = function (roleInfo) {
+RoleSchema.methods.editInfo = function(roleInfo) {
   this.name = roleInfo.name;
   this.description = roleInfo.description;
+};
+
+RoleSchema.methods.filterActionsByVerb = function(verb) {
+  if (!this.actions) return [];
+
+  return this.actions.map(function(item) {
+      return new Action(item);
+    })
+    .filter(function(action) {
+      return action.verbIsPermitted(verb);
+    });
 };
 
 module.exports = mongoose.model('roleactions', RoleSchema);

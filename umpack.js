@@ -352,7 +352,7 @@ function isAuthorized(req, res, next) {
         })
         .then(function(userInfo) {
 
-            return checkRole(req.method, req.originalUrl, userInfo);
+            return roleInteractor.checkRole(req.method, req.originalUrl, userInfo);
 
         })
         .then(function() {
@@ -364,58 +364,6 @@ function isAuthorized(req, res, next) {
         .catch(function(err) {
             return res.status(err.responseStatus).send({ message: err.message, internalStatus: err.internalStatus });
         });
-
-    function checkRole(verb, requestUrl, userInfo) {
-
-        var roleConditionalArray = userInfo.roles.map(function(item) {
-            return { 'name': item };
-        });
-
-        var dbPromise = Role.find({ $or: roleConditionalArray }).exec();
-
-        return dbPromise
-            .then(function(roles) {
-
-                var actions = [];
-
-                roles.map(function(role) {
-                    actions = actions.concat(filterActionsByVerb(role, verb));
-                });
-
-                function filterActionsByVerb(role, verb) {
-
-
-                    var actions = [];
-                    if (!role.actions) return actions;
-
-                    role.actions.forEach(function(item) {
-
-
-                        if (
-                            (verb === 'GET' && !item.verbGet) ||
-                            (verb === 'POST' && !item.verbPost) ||
-                            (verb === 'PUT' && !item.verbPut) ||
-                            (verb === 'DELETE' && !item.verbDelete)
-                        ) {
-
-                            return;
-                        }
-
-                        actions.push(item.pattern);
-
-                    });
-
-                    return actions;
-                }
-
-                return actions;
-            })
-            .then(function(actions) {
-                if (!urlMatch(actions, requestUrl)) {
-                    throw API_ERRORS.ACCESS_DENIED;
-                }
-            });
-    }
 }
 
 function handleOptions(options) {

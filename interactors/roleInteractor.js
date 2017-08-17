@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var Role = require('../models/role');
+var urlMatch = require('../urlMatch');
 
 exports.getRoles = function() {
   return Role.find({}, 'name description').exec()
@@ -156,6 +157,30 @@ exports.deleteAction = function(roleName, actionId) {
       role.deleteAction(actionId);
 
       return role.save();
+    });
+};
+
+exports.checkRole = function (verb, requestUrl, userInfo) {
+  var roleConditionalArray = userInfo.roles.map(function(item) {
+      return { 'name': item };
+  });
+
+  return Role.find({ $or: roleConditionalArray }).exec()
+    .then(function (roles) {
+      return roles.reduce(function(patterns, role) {
+        var actions = role.filterActionsByVerb(verb);
+
+        patterns = patterns.concat(actions.map(function (action) {
+          return action.pattern;
+        }));
+
+        return patterns;
+      }, []);
+    })
+    .then(function(patterns) {
+        if (!urlMatch(patterns, requestUrl)) {
+            throw API_ERRORS.ACCESS_DENIED;
+        }
     });
 };
 
