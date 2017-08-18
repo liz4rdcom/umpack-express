@@ -32,6 +32,10 @@ config.handleOptions = function(options) {
   if (options.passwordMessageFunction) {
     this.passwordMessageFunction = options.passwordMessageFunction;
   }
+
+  if (options.passwordWrongEmailInstruction) {
+    this.passwordWrongEmailInstruction = options.passwordWrongEmailInstruction;
+  }
 };
 
 module.exports = config;

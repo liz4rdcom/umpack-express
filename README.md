@@ -29,6 +29,9 @@ var umpack = require('./umpack')({
     senderEmail: 'sender@email.com',
     passwordMessageFunction: function (key /*password reset key*/) {
       return 'message to send. use key. for example: http://example.com?key=' + key;
+    },
+    passwordWrongEmailInstruction: function (clientIp) {
+      return 'someone with ip: ' + clientIp + ' requested password reset on the site example.com'; //message to send to input email, when user with input email does not exist
     }
 });
 //.....
