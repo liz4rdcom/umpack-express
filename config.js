@@ -1,6 +1,9 @@
 var config = {
   accessTokenExpiresIn: '1h',
-  cookieAccessTokenName: 'accessToken'
+  cookieAccessTokenName: 'accessToken',
+  passwordMessageFunction: function(key) {
+    return 'key: ' + key;
+  }
 };
 
 config.handleOptions = function(options) {
@@ -19,6 +22,16 @@ config.handleOptions = function(options) {
   if (options.cookieAccessTokenName)
     this.cookieAccessTokenName = options.cookieAccessTokenName;
 
+  if (options.smtpData)
+    this.smtpData = options.smtpData;
+
+  if (options.senderEmail) {
+    this.senderEmail = options.senderEmail;
+  }
+
+  if (options.passwordMessageFunction) {
+    this.passwordMessageFunction = options.passwordMessageFunction;
+  }
 };
 
 module.exports = config;
