@@ -17,7 +17,19 @@ var umpack = require('./umpack')({
     accessTokenSecret: 'myrandomstring',
     passwordHashSecret: 'mypasswordsecret',
     accessTokenExpiresIn: '1m',
-    cookieAccessTokenName: 'accessToken'
+    cookieAccessTokenName: 'accessToken',
+    smtpData: {
+      host: 'smtp host',
+      port: 'smtp port. optional',
+      user: 'username for logging into smtp',
+      password: 'password for logging into smtp',
+      timeout: 5000, // number of milliseconds to wait. default 5000
+      ssl: false //boolean or object with fields: key, ca, cert. default false
+    },
+    senderEmail: 'sender@email.com',
+    passwordMessageFunction: function (key /*password reset key*/) {
+      return 'message to send. use key. for example: http://example.com?key=' + key;
+    }
 });
 //.....
 app.use('/um', umpack.router);
