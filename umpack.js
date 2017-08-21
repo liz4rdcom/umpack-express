@@ -69,6 +69,28 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
 
 });
 
+router.post('/users/passwordResetRequest', function(req, res, next) {
+  var promise = credentialsInteractor.passwordResetRequest(req.body.email, req.ip)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/passwordReset', function(req, res, next) {
+  var promise = credentialsInteractor.passwordReset(req.body.resetKey, req.body.newPassword)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.get('/users', isAuthorized, function(req, res, next) {
 
   var promise = userInteractor.getUsers();
@@ -153,28 +175,6 @@ router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
       return {
         success: true,
         password: password.original
-      };
-    });
-
-  sendPromiseResult(promise, req, res, next);
-});
-
-router.post('/users/passwordResetRequest', function(req, res, next) {
-  var promise = userInteractor.passwordResetRequest(req.body.email, req.ip)
-    .then(function() {
-      return {
-        success: true
-      };
-    });
-
-  sendPromiseResult(promise, req, res, next);
-});
-
-router.post('/users/passwordReset', function(req, res, next) {
-  var promise = userInteractor.passwordReset(req.body.resetKey, req.body.newPassword)
-    .then(function() {
-      return {
-        success: true
       };
     });
 
