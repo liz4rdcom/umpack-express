@@ -246,6 +246,34 @@ exports.passwordResetRequest = function(email, clientIp) {
     });
 };
 
+exports.passwordReset = function(resetKey, newPassword) {
+  return ResetRequest.findOne({
+      resetKey: resetKey
+    })
+    .then(function(request) {
+      if (request.isExpired()) throw API_ERRORS.RESET_KEY_EXPIRED;
+
+      return User.findOne({
+        userName: request.userName
+      });
+    })
+    .then(function(user) {
+      return ResetRequest.remove({
+          resetKey: resetKey
+        })
+        .then(function() {
+          return user;
+        });
+    })
+    .then(function(user) {
+      if (!user) throw API_ERRORS.USER_NOT_EXISTS;
+
+      user.setNewPassword(new Password(newPassword));
+
+      return user.save();
+    });
+};
+
 function toFullUserObject(user) {
   if (!user) return user;
 

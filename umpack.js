@@ -170,6 +170,17 @@ router.post('/users/passwordResetRequest', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.post('/users/passwordReset', function(req, res, next) {
+  var promise = userInteractor.passwordReset(req.body.resetKey, req.body.newPassword)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function(req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function(decoded) {

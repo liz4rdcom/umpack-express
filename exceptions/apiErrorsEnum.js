@@ -52,6 +52,10 @@ var INTERNAL_STATUS = {
   ACTION_PATTERN_ALREADY_EXISTS: {
     code: 704,
     message: 'Action Pattern Already Exists'
+  },
+  RESET_KEY_EXPIRED: {
+    code: 800,
+    message: 'password reset key is expired'
   }
 };
 
