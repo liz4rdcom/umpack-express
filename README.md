@@ -27,6 +27,7 @@ var umpack = require('./umpack')({
       ssl: false //boolean or object with fields: key, ca, cert. default false
     },
     senderEmail: 'sender@email.com',
+    resetKeyExpiresIn: '2h', //password reset key expiration
     passwordMessageFunction: function (key /*password reset key*/) {
       return 'message to send. use key. for example: http://example.com?key=' + key;
     },

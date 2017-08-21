@@ -1,6 +1,7 @@
 var config = {
   accessTokenExpiresIn: '1h',
   cookieAccessTokenName: 'accessToken',
+  resetKeyExpiresIn: '2h',
   passwordMessageFunction: function(key) {
     return 'key: ' + key;
   },
@@ -31,6 +32,10 @@ config.handleOptions = function(options) {
 
   if (options.senderEmail) {
     this.senderEmail = options.senderEmail;
+  }
+
+  if (options.resetKeyExpiresIn) {
+    this.resetKeyExpiresIn = options.resetKeyExpiresIn;
   }
 
   if (options.passwordMessageFunction) {
