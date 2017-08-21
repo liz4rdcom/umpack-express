@@ -120,6 +120,7 @@ exports.passwordReset = function(resetKey, newPassword) {
       resetKey: resetKey
     })
     .then(function(request) {
+      if (!request) throw API_ERRORS.INVALID_RESET_KEY;
       if (request.isExpired()) throw API_ERRORS.RESET_KEY_EXPIRED;
 
       return User.findOne({

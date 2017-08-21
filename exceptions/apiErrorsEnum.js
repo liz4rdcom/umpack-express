@@ -56,6 +56,10 @@ var INTERNAL_STATUS = {
   RESET_KEY_EXPIRED: {
     code: 800,
     message: 'password reset key is expired'
+  },
+  INVALID_RESET_KEY: {
+    code: 801,
+    message: 'password reset key is invalid'
   }
 };
 
