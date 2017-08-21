@@ -1,6 +1,7 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var should = chai.should();
+var rewire = require('rewire');
 
 var config = require('config');
 var Promise = require('bluebird');
@@ -21,7 +22,10 @@ global.Promise = Promise;
 
 describe('service API', function() {
 
-  var app = require('./helpers/app');
+  var rewired = initRewired();
+
+  var app = rewired.app;
+  var mailSenderMock = rewired.mailSenderMock;
 
   beforeEach(function() {
 
@@ -307,4 +311,120 @@ describe('service API', function() {
         });
     });
   });
+
+  describe('POST /users/passwordResetRequest', function() {
+
+    it('should send key to email', function() {
+      mailSenderMock.refreshToDefault();
+
+      var email = 'test@email.com';
+
+      return insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: email,
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordResetRequest')
+            .send({
+              email: email
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          mailSenderMock.keyIsSent.should.equal(true);
+          mailSenderMock.to.should.equal(email);
+          mailSenderMock.should.have.property('key');
+        });
+    });
+
+    it('should send instruction to wrong email', function() {
+      mailSenderMock.refreshToDefault();
+
+      var email = 'one@email.com';
+
+      return insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: 'other@email.com',
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordResetRequest')
+            .send({
+              email: email
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          mailSenderMock.instructionIsSent.should.equal(true);
+          mailSenderMock.to.should.equal(email);
+          mailSenderMock.should.have.property('clientIp');
+        });
+    });
+  });
 });
+
+function initRewired() {
+  var mailSenderMock = {
+    keyIsSent: false,
+    instructionIsSent: false,
+    sendKey: function(to, key) {
+      this.keyIsSent = true;
+      this.to = to;
+      this.key = key;
+
+      return Promise.resolve();
+    },
+    sendWrongEmailInstruction: function(to, clientIp) {
+      this.instructionIsSent = true;
+      this.to = to;
+      this.clientIp = clientIp;
+
+      return Promise.resolve();
+    },
+    refreshToDefault: function() {
+      this.keyIsSent = false;
+      this.instructionIsSent = false;
+
+      this.to = null;
+      this.key = null;
+      this.clientIp = null;
+    }
+  };
+
+  var credentialsInteractor = rewire('../interactors/credentialsInteractor');
+
+  credentialsInteractor.__set__('mailSender', mailSenderMock);
+
+  var umpackJs = rewire('../umpack');
+
+  umpackJs.__set__('credentialsInteractor', credentialsInteractor);
+
+  var appConfig = umpackJs.__get__('config');
+  appConfig.handleOptions(config.get('umpack'));
+
+  var app = require('./helpers/app');
+
+  app.use('/otherUm', umpackJs.__get__('router'));
+
+  return {
+    mailSenderMock: mailSenderMock,
+    app: app
+  };
+}
+
+function insertUsers(users) {
+  return Promise.map(users, function(user) {
+    return mongoose.connection.db.collection(usersCollection).insert(user);
+  });
+}
