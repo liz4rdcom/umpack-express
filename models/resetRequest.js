@@ -30,4 +30,4 @@ ResetRequestSchema.methods.isExpired = function() {
   return currentDate > this.expirationDate;
 };
 
-module.exports = mongoose.model('ResetRequest', ResetRequestSchema);
+module.exports = mongoose.model('resetRequest', ResetRequestSchema);
