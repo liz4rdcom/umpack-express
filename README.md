@@ -195,6 +195,26 @@ response - {
 }
 ```
 
+### Lost Password Reset Request
+```js
+POST : {baseurl}/users/passwordResetRequest
+request - data/body : {
+  email: 'test@email.com'
+}
+response - {success : true}
+instructions are sent to the email
+```
+
+### Lost Password Reset
+```js
+POST : {baseurl}/users/passwordReset
+request - data/body : {
+  resetKey: '', //password reset key sent to the email
+  newPassword: 'password'
+}
+response - {success : true}
+```
+
 ### Get metadata
 ```js
 GET : {baseurl}/metadata
