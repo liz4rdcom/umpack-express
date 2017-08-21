@@ -19,7 +19,16 @@ exports.sendKey = function(to, key) {
     text: text,
     from: config.senderEmail,
     to: to,
-    subject: 'password reset'
+    subject: 'password reset',
+    headers: {
+      'X-Request': config.senderEmail
+    },
+    attachment: [
+      {
+        data: text,
+        alternative: true
+      }
+    ]
   };
 
   return server.sendAsync(message);
@@ -34,7 +43,16 @@ exports.sendWrongEmailInstruction = function(to, clientIp) {
     text: text,
     from: config.senderEmail,
     to: to,
-    subject: 'password reset wrong request'
+    subject: 'password reset wrong request',
+    headers: {
+      'X-Request': config.senderEmail
+    },
+    attachment: [
+      {
+        data: text,
+        alternative: true
+      }
+    ]
   };
 
   return server.sendAsync(message);
