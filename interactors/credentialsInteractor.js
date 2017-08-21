@@ -103,15 +103,15 @@ exports.passwordResetRequest = function(email, clientIp) {
           existingRequest.email = email;
 
           return existingRequest;
-        });
-    })
-    .then(function(request) {
-      request.generateKey(config.resetKeyExpiresIn);
+        })
+        .then(function(request) {
+          request.generateKey(config.resetKeyExpiresIn);
 
-      return request.save();
-    })
-    .then(function(request) {
-      return mailSender.sendKey(email, request.resetKey);
+          return request.save();
+        })
+        .then(function(request) {
+          return mailSender.sendKey(email, request.resetKey);
+        });
     });
 };
 
