@@ -3,6 +3,8 @@ var Password = require('../domain/password');
 var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
+var ResetRequest = require('../models/resetRequest');
+var mailSender = require('../infrastructure/mailSender');
 
 exports.getUsers = function() {
   return User.find({}).exec()
@@ -208,6 +210,39 @@ exports.filterUsersByRole = function(role) {
     }).exec()
     .then(function(result) {
       return result.map(toFullUserObject);
+    });
+};
+
+exports.passwordResetRequest = function(email, clientIp) {
+  return User.findOne({
+      email: email
+    }).exec()
+    .then(function(user) {
+      if (!user) return mailSender.sendWrongEmailInstruction(email, clientIp);
+
+      return ResetRequest.findOne({
+          userName: user.userName
+        })
+        .then(function(existingRequest) {
+          if (!existingRequest) {
+            return new ResetRequest({
+              userName: user.userName,
+              email: email
+            });
+          };
+
+          existingRequest.email = email;
+
+          return existingRequest;
+        });
+    })
+    .then(function(request) {
+      request.generateKey(config.resetKeyExpiresIn);
+
+      return request.save();
+    })
+    .then(function(request) {
+      return mailSender.sendKey(email, request.resetKey);
     });
 };
 
