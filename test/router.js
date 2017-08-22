@@ -447,11 +447,7 @@ describe('service API', function() {
 
       var umpackJs = rewired.umpackJs;
       var appConfig = umpackJs.__get__('config');
-      appConfig.handleOptions({
-        passwordResetData: {
-          passwordResetEnabled: false
-        }
-      });
+      appConfig.handleOptions({});
 
       var promise = chai.request(app)
         .post('/otherUm/users/passwordResetRequest')

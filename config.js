@@ -34,6 +34,10 @@ config.handleOptions = function(options) {
 
   if (options.passwordResetData) {
     this.passwordResetData = Object.assign({}, passwordResetDataDefaults, options.passwordResetData);
+    this.passwordResetData.passwordResetEnabled = true;
+  } else {
+    this.passwordResetData = passwordResetDataDefaults;
+    this.passwordResetData.passwordResetEnabled = false;
   }
 };
 
