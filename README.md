@@ -18,21 +18,23 @@ var umpack = require('./umpack')({
     passwordHashSecret: 'mypasswordsecret',
     accessTokenExpiresIn: '1m',
     cookieAccessTokenName: 'accessToken',
-    smtpData: {
-      host: 'smtp host',
-      port: 'smtp port. optional',
-      user: 'username for logging into smtp',
-      password: 'password for logging into smtp',
-      timeout: 5000, // number of milliseconds to wait. default 5000
-      ssl: false //boolean or object with fields: key, ca, cert. default false
-    },
-    senderEmail: 'sender@email.com',
-    resetKeyExpiresIn: '2h', //password reset key expiration
-    passwordMessageFunction: function (key /*password reset key*/) {
-      return 'message to send. use key. for example: http://example.com?key=' + key;
-    },
-    passwordWrongEmailInstruction: function (clientIp) {
-      return 'someone with ip: ' + clientIp + ' requested password reset on the site example.com'; //message to send to input email, when user with input email does not exist
+    passwordResetData: {
+      smtpData: {
+        host: 'smtp host',
+        port: 'smtp port. optional',
+        user: 'username for logging into smtp',
+        password: 'password for logging into smtp',
+        timeout: 5000, // number of milliseconds to wait. default 5000
+        ssl: false //boolean or object with fields: key, ca, cert. default false
+      },
+      senderEmail: 'sender@email.com',
+      resetKeyExpiresIn: '2h', //password reset key expiration
+      passwordMessageFunction: function (key /*password reset key*/) {
+        return 'message to send. use key. for example: http://example.com?key=' + key;
+      },
+      passwordWrongEmailInstruction: function (clientIp) {
+        return 'someone with ip: ' + clientIp + ' requested password reset on the site example.com'; //message to send to input email, when user with input email does not exist
+      }  
     }
 });
 //.....
