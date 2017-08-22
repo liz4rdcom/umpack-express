@@ -139,6 +139,7 @@ exports.passwordReset = function(resetKey, newPassword) {
       if (!user) throw API_ERRORS.USER_NOT_EXISTS;
 
       user.setNewPassword(new Password(newPassword));
+      user.lastPasswordResetDate = new Date();
 
       return user.save();
     });

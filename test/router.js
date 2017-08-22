@@ -494,6 +494,7 @@ describe('service API', function() {
             }),
             function(user, request) {
               user.password.should.equal(utils.passwordHash('123'));
+              user.should.have.property('lastPasswordResetDate');
 
               should.not.exist(request);
             }

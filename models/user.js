@@ -17,7 +17,8 @@ var UserSchema = new mongoose.Schema({
     additionalInfo: String,
     isActivated: Boolean,
     roles: [String],
-    metaData: {}
+    metaData: {},
+    lastPasswordResetDate: Date
 });
 
 UserSchema.statics.findByUserName = function (userName) {
