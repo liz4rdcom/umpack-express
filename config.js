@@ -1,14 +1,18 @@
-var config = {
-  accessTokenExpiresIn: '1h',
-  cookieAccessTokenName: 'accessToken',
+var passwordResetDataDefaults = {
   resetKeyExpiresIn: '2h',
   passwordMessageFunction: function(key) {
     return 'key: ' + key;
   },
   passwordWrongEmailInstruction: function(clientIp) {
     return 'You or someone with ip: ' +
-    clientIp + ' requested password reset. your account with this email is not registered on our site.';
+      clientIp + ' requested password reset. your account with this email is not registered on our site.';
   }
+}
+
+var config = {
+  accessTokenExpiresIn: '1h',
+  cookieAccessTokenName: 'accessToken',
+  passwordResetData: passwordResetDataDefaults
 };
 
 config.handleOptions = function(options) {
@@ -27,23 +31,8 @@ config.handleOptions = function(options) {
   if (options.cookieAccessTokenName)
     this.cookieAccessTokenName = options.cookieAccessTokenName;
 
-  if (options.smtpData)
-    this.smtpData = options.smtpData;
-
-  if (options.senderEmail) {
-    this.senderEmail = options.senderEmail;
-  }
-
-  if (options.resetKeyExpiresIn) {
-    this.resetKeyExpiresIn = options.resetKeyExpiresIn;
-  }
-
-  if (options.passwordMessageFunction) {
-    this.passwordMessageFunction = options.passwordMessageFunction;
-  }
-
-  if (options.passwordWrongEmailInstruction) {
-    this.passwordWrongEmailInstruction = options.passwordWrongEmailInstruction;
+  if (options.passwordResetData) {
+    this.passwordResetData = Object.assign({}, passwordResetDataDefaults, options.passwordResetData);
   }
 };
 

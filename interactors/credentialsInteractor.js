@@ -105,7 +105,7 @@ exports.passwordResetRequest = function(email, clientIp) {
           return existingRequest;
         })
         .then(function(request) {
-          request.generateKey(config.resetKeyExpiresIn);
+          request.generateKey(config.passwordResetData.resetKeyExpiresIn);
 
           return request.save();
         })
