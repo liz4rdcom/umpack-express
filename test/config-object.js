@@ -1,5 +1,6 @@
 var chai = require('chai');
 var should = chai.should();
+var _ = require('lodash');
 
 describe('config object', function() {
   describe('#handleOptions()', function() {
@@ -11,19 +12,21 @@ describe('config object', function() {
         passwordHashSecret: 'password',
         accessTokenExpiresIn: '1m',
         cookieAccessTokenName: 'token',
-        smtpData: {
-          host: 'localhost',
-          port: '25',
-          user: 'user',
-          password: 'password'
-        },
-        senderEmail: 'someone@test.com',
-        resetKeyExpiresIn: '3h',
-        passwordMessageFunction: function (key) {
-          return 'take this ' + key;
-        },
-        passwordWrongEmailInstruction: function (clientIp) {
-          return 'you are not registered with this email';
+        passwordResetData: {
+          smtpData: {
+            host: 'localhost',
+            port: '25',
+            user: 'user',
+            password: 'password'
+          },
+          senderEmail: 'someone@test.com',
+          resetKeyExpiresIn: '3h',
+          passwordMessageFunction: function(key) {
+            return 'take this ' + key;
+          },
+          passwordWrongEmailInstruction: function(clientIp) {
+            return 'you are not registered with this email';
+          }
         }
       };
 
@@ -33,15 +36,17 @@ describe('config object', function() {
       config.should.have.property('passwordHashSecret', 'password');
       config.should.have.property('accessTokenExpiresIn', '1m');
       config.should.have.property('cookieAccessTokenName', 'token');
-      config.should.have.property('smtpData');
-      config.should.have.property('senderEmail', 'someone@test.com');
-      config.should.have.property('resetKeyExpiresIn', '3h');
-      config.should.have.property('passwordMessageFunction');
-      config.should.have.property('passwordWrongEmailInstruction');
+
+      config.should.have.property('passwordResetData');
+      config.passwordResetData.should.have.property('smtpData');
+      config.passwordResetData.should.have.property('senderEmail', 'someone@test.com');
+      config.passwordResetData.should.have.property('resetKeyExpiresIn', '3h');
+      config.passwordResetData.should.have.property('passwordMessageFunction');
+      config.passwordResetData.should.have.property('passwordWrongEmailInstruction');
     });
 
     it('should use default values if not set', function() {
-      var config = Object.assign({}, require('../config'));
+      var config = _.cloneDeep(require('../config'));
 
       var options = {
         accessTokenSecret: 'access',
@@ -53,21 +58,23 @@ describe('config object', function() {
       config.should.have.property('passwordHashSecret', 'password');
       config.should.have.property('accessTokenExpiresIn', '1h');
       config.should.have.property('cookieAccessTokenName', 'accessToken');
-      config.should.have.property('resetKeyExpiresIn', '2h');
-      config.should.have.property('passwordMessageFunction');
-      config.should.have.property('passwordWrongEmailInstruction');
+      config.should.have.property('passwordResetData');
+      config.passwordResetData.should.have.property('resetKeyExpiresIn', '2h');
+      config.passwordResetData.should.have.property('passwordMessageFunction');
+      config.passwordResetData.should.have.property('passwordWrongEmailInstruction');
     });
 
     it('should have default values if options not passed', function() {
-      var config = Object.assign({}, require('../config'));
+      var config = _.cloneDeep(require('../config'));
 
       config.handleOptions();
 
       config.should.have.property('accessTokenExpiresIn', '1h');
       config.should.have.property('cookieAccessTokenName', 'accessToken');
-      config.should.have.property('resetKeyExpiresIn', '2h');
-      config.should.have.property('passwordMessageFunction');
-      config.should.have.property('passwordWrongEmailInstruction');
+      config.should.have.property('passwordResetData');
+      config.passwordResetData.should.have.property('resetKeyExpiresIn', '2h');
+      config.passwordResetData.should.have.property('passwordMessageFunction');
+      config.passwordResetData.should.have.property('passwordWrongEmailInstruction');
     });
   });
 
