@@ -441,6 +441,29 @@ describe('service API', function() {
           mailSenderMock.should.have.property('clientIp');
         });
     });
+
+    it('should return PASSWORD_RESET_NOT_SUPPORTED when passwordResetEnabled is false', function() {
+      mailSenderMock.refreshToDefault();
+
+      var umpackJs = rewired.umpackJs;
+      var appConfig = umpackJs.__get__('config');
+      appConfig.handleOptions({
+        passwordResetData: {
+          passwordResetEnabled: false
+        }
+      });
+
+      var promise = chai.request(app)
+        .post('/otherUm/users/passwordResetRequest')
+        .send({
+          email: 'something@test.com'
+        });
+
+      return utils.shouldBeBadRequest(promise, 802)
+        .then(function() {
+          mailSenderMock.instructionIsSent.should.equal(false);
+        });
+    });
   });
 
   describe('POST /users/passwordReset', function() {
@@ -605,7 +628,8 @@ function initRewired() {
 
   return {
     mailSenderMock: mailSenderMock,
-    app: app
+    app: app,
+    umpackJs: umpackJs
   };
 }
 
