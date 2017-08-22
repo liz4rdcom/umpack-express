@@ -60,6 +60,10 @@ var INTERNAL_STATUS = {
   INVALID_RESET_KEY: {
     code: 801,
     message: 'password reset key is invalid'
+  },
+  PASSWORD_RESET_NOT_SUPPORTED: {
+    code: 802,
+    message: 'password reset is not supported'
   }
 };
 

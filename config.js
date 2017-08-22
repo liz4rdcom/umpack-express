@@ -6,7 +6,8 @@ var passwordResetDataDefaults = {
   passwordWrongEmailInstruction: function(clientIp) {
     return 'You or someone with ip: ' +
       clientIp + ' requested password reset. your account with this email is not registered on our site.';
-  }
+  },
+  passwordResetEnabled: false
 }
 
 var config = {
