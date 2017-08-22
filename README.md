@@ -19,6 +19,7 @@ var umpack = require('./umpack')({
     accessTokenExpiresIn: '1m',
     cookieAccessTokenName: 'accessToken',
     passwordResetData: {
+      passwordResetEnabled: true, // password reset feature enabled/disabled
       smtpData: {
         host: 'smtp host',
         port: 'smtp port. optional',
