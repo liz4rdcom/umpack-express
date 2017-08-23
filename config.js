@@ -39,6 +39,10 @@ config.handleOptions = function(options) {
     this.passwordResetData = passwordResetDataDefaults;
     this.passwordResetData.passwordResetEnabled = false;
   }
+
+  if (options.passwordResetPhoneData) {
+    this.passwordResetPhoneData = options.passwordResetPhoneData;
+  }
 };
 
 module.exports = config;
