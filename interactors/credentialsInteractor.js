@@ -109,7 +109,7 @@ exports.passwordResetRequest = function(email, clientIp) {
           return existingRequest;
         })
         .then(function(request) {
-          request.generateKey(config.passwordResetData.resetKeyExpiresIn);
+          request.generateEmailKey(config.passwordResetData.resetKeyExpiresIn);
 
           return request.save();
         })
@@ -147,4 +147,8 @@ exports.passwordReset = function(resetKey, newPassword) {
 
       return user.save();
     });
+};
+
+exports.passwordResetRequestByPhone = function(userName) {
+  
 };
