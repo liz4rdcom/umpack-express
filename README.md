@@ -34,7 +34,14 @@ var umpack = require('./umpack')({
       },
       passwordWrongEmailInstruction: function (clientIp) {
         return 'someone with ip: ' + clientIp + ' requested password reset on the site example.com'; //message to send to input email, when user with input email does not exist
-      }  
+      }
+    },
+    passwordResetPhoneData: {
+      resetKeyExpiresIn: '2h',
+      sendResetKey: function (phone, resetKey) {
+        // send sms to the phone.
+        // return promise or nothing.
+      }
     }
 });
 //.....
