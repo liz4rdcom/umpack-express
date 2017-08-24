@@ -730,7 +730,120 @@ describe('service API', function() {
   });
 
   describe('POST /users/:userName/passwordResetByPhone', function() {
+    it('should reset password and delete reset request', function() {
+      var phone = '598';
+      var key = '1313';
 
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return Promise.join(
+            mongoose.connection.db.collection(usersCollection)
+            .findOne({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection)
+            .findOne({
+              userName: 'one',
+              resetKey: key
+            }),
+            function(user, request) {
+              user.password.should.equal(utils.passwordHash('123'));
+              user.should.have.property('lastPasswordResetDate');
+
+              should.not.exist(request);
+            }
+          );
+        });
+    });
+
+    it('should return INVALID_RESET_KEY when not exists with key', function() {
+      var phone = '591';
+
+      var promise = insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          phone: phone,
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: '3232',
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 801);
+    });
+
+    it('should return RESET_KEY_EXPIRED when key expired', function() {
+      var phone = '599';
+      var key = '1313';
+
+      var promise = Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: new Date()
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 800);
+    });
   });
 });
 
@@ -793,7 +906,7 @@ function initWithMockedConfig() {
     },
     refreshToDefault: function() {
       this.phone = null;
-      this.email = null;
+      this.resetKey = null;
 
       this.resetKeyExpiresIn = '2h';
     }
