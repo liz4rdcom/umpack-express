@@ -224,6 +224,24 @@ request - data/body : {
 response - {success : true}
 ```
 
+### Lost Password Reset By Phone Request
+```js
+POST : {baseurl}/users/{userName}/passwordResetRequestByPhone
+request - data/body : {} //empty object
+response - {success : true}
+password reset key is sent to the user phone
+```
+
+### Lost Password Reset By Phone
+```js
+POST : {baseurl}/users/{userName}/passwordResetByPhone
+request - data/body : {
+  resetKey: '', //key sent to the phone
+  newPassword: 'password'
+}
+response - {success : true}
+```
+
 ### Get metadata
 ```js
 GET : {baseurl}/metadata
