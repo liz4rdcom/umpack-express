@@ -61,9 +61,13 @@ var INTERNAL_STATUS = {
     code: 801,
     message: 'password reset key is invalid'
   },
-  PASSWORD_RESET_NOT_SUPPORTED: {
+  PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED: {
     code: 802,
-    message: 'password reset is not supported'
+    message: 'password reset by email is not supported'
+  },
+  PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED: {
+    code: 803,
+    message: 'password reset by phone is not supported'
   }
 };
 

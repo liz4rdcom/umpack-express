@@ -84,7 +84,7 @@ exports.changePassword = function(userData) {
 
 exports.passwordResetRequest = function(email, clientIp) {
   return Promise.try(function() {
-      if (!config.passwordResetData.passwordResetEnabled) throw API_ERRORS.PASSWORD_RESET_NOT_SUPPORTED;
+      if (!config.passwordResetData.passwordResetEnabled) throw API_ERRORS.PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED;
 
       return User.findOne({
         email: email
@@ -150,5 +150,5 @@ exports.passwordReset = function(resetKey, newPassword) {
 };
 
 exports.passwordResetRequestByPhone = function(userName) {
-  
+
 };
