@@ -124,8 +124,7 @@ exports.passwordReset = function(resetKey, newPassword) {
       resetKey: resetKey
     })
     .then(function(request) {
-      if (!request) throw API_ERRORS.INVALID_RESET_KEY;
-      if (request.isExpired()) throw API_ERRORS.RESET_KEY_EXPIRED;
+      validateResetKey(request);
 
       return User.findOne({
         userName: request.userName
@@ -142,13 +141,75 @@ exports.passwordReset = function(resetKey, newPassword) {
     .then(function(user) {
       if (!user) throw API_ERRORS.USER_NOT_EXISTS;
 
-      user.setNewPassword(new Password(newPassword));
-      user.lastPasswordResetDate = new Date();
+      user.resetNewPassword(new Password(newPassword));
 
       return user.save();
     });
 };
 
 exports.passwordResetRequestByPhone = function(userName) {
+  return Promise.try(function() {
+      if (!config.passwordResetPhoneData) throw API_ERRORS.PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED;
 
+      return User.findOne({
+        userName: userName
+      });
+    })
+    .then(function(user) {
+      if (!user) throw API_ERRORS.USER_NOT_EXISTS;
+
+      if (!user.phone) throw API_ERRORS.INVALID_PHONE;
+
+      return ResetRequest.findOne({
+          userName: userName,
+          phone: user.phone
+        })
+        .then(function(request) {
+          if (!request) {
+            return new ResetRequest({
+              userName: userName,
+              phone: user.phone
+            });
+          }
+
+          request.phone = user.phone;
+
+          return request;
+        });
+    })
+    .then(function(request) {
+      request.generatePhoneKey(config.passwordResetPhoneData.resetKeyExpiresIn);
+
+      return request.save();
+    })
+    .then(function(request) {
+      return config.passwordResetPhoneData.sendResetKey(request.phone, request.resetKey);
+    });
 };
+
+exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
+  return ResetRequest.findOne({
+      userName: userName,
+      resetKey: resetKey
+    })
+    .then(function(request) {
+      validateResetKey(request);
+
+      return User.findOne({
+        userName: userName
+      });
+    })
+    .then(function(user) {
+      if (!user) throw API_ERRORS.USER_NOT_EXISTS;
+
+      user.resetNewPassword(new Password(newPassword));
+
+      return user.save();
+    });
+};
+
+function validateResetKey(request) {
+  if (!request) throw API_ERRORS.INVALID_RESET_KEY;
+
+  if (request.isExpired()) throw API_ERRORS.RESET_KEY_EXPIRED;
+}
