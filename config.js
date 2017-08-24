@@ -8,7 +8,7 @@ var passwordResetDataDefaults = {
       clientIp + ' requested password reset. your account with this email is not registered on our site.';
   },
   passwordResetEnabled: false
-}
+};
 
 var config = {
   accessTokenExpiresIn: '1h',

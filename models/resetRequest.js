@@ -22,7 +22,7 @@ ResetRequestSchema.methods.generateKeyDates = function(expiresIn) {
   var expirationPeriodMilliseconds = ms(expiresIn);
 
   this.expirationDate = moment(this.generationDate).add(expirationPeriodMilliseconds, 'ms').toDate();
-}
+};
 
 ResetRequestSchema.methods.generateEmailKey = function(expiresIn) {
   this.resetKey = shortid.generate();

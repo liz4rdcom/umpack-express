@@ -91,6 +91,32 @@ router.post('/users/passwordReset', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.post('/users/:userName/passwordResetRequestByPhone', function(req, res, next) {
+  var promise = credentialsInteractor.passwordResetRequestByPhone(req.params.userName)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/:userName/passwordResetByPhone', function(req, res, next) {
+  var userName = req.params.userName;
+  var resetKey = req.body.resetKey;
+  var newPassword = req.body.newPassword;
+
+  var promise = credentialsInteractor.passwordResetByPhone(userName, resetKey, newPassword)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.get('/users', isAuthorized, function(req, res, next) {
 
   var promise = userInteractor.getUsers();
@@ -464,5 +490,5 @@ module.exports = function(options) {
     getFullUserObject: getFullUserObject,
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
     filterUsersByRole: userInteractor.filterUsersByRole
-  }
-}
+  };
+};

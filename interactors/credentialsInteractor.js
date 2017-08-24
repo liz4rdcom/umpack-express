@@ -2,7 +2,7 @@ var Promise = require('bluebird');
 var jwt = require('jsonwebtoken');
 var Password = require('../domain/password');
 var config = require('../config');
-var API_ERRORS = require('../exceptions/apiErrorsEnum')
+var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
 var ResetRequest = require('../models/resetRequest');
 var mailSender = require('../infrastructure/mailSender');
@@ -102,7 +102,7 @@ exports.passwordResetRequest = function(email, clientIp) {
               userName: user.userName,
               email: email
             });
-          };
+          }
 
           existingRequest.email = email;
 

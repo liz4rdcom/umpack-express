@@ -56,7 +56,7 @@ UserSchema.methods.setNewPassword = function(password) {
 
 UserSchema.methods.hasSamePassword = function(password) {
   return this.password === password.hash;
-}
+};
 
 UserSchema.methods.resetNewPassword = function(password) {
   this.password = password.hash;
