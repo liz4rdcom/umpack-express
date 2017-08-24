@@ -68,6 +68,10 @@ var INTERNAL_STATUS = {
   PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED: {
     code: 803,
     message: 'password reset by phone is not supported'
+  },
+  INVALID_PHONE: {
+    code: 804,
+    message: 'invalid phone number'
   }
 };
 
