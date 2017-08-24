@@ -205,6 +205,12 @@ exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
       user.resetNewPassword(new Password(newPassword));
 
       return user.save();
+    })
+    .then(function() {
+      return ResetRequest.remove({
+        userName: userName,
+        resetKey: resetKey
+      });
     });
 };
 
