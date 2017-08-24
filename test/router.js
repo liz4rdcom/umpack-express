@@ -400,16 +400,23 @@ describe('service API', function() {
           mailSenderMock.to.should.equal(email);
           mailSenderMock.should.have.property('key');
 
-          return mongoose.connection.db.collection(resetReqCollection).findOne({
-            userName: 'one'
-          });
-        })
-        .then(function(request) {
-          should.exist(request);
+          return Promise.join(
+            mongoose.connection.db.collection(resetReqCollection).count({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection).findOne({
+              userName: 'one'
+            }),
+            function(count, request) {
+              count.should.equal(1);
 
-          request.email.should.equal(email);
+              should.exist(request);
 
-          request.resetKey.should.not.equal(key);
+              request.email.should.equal(email);
+
+              request.resetKey.should.not.equal(key);
+            }
+          );
         });
     });
 
@@ -442,7 +449,7 @@ describe('service API', function() {
         });
     });
 
-    it('should return PASSWORD_RESET_NOT_SUPPORTED when passwordResetEnabled is false', function() {
+    it('should return PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED when passwordResetEnabled is false', function() {
       mailSenderMock.refreshToDefault();
 
       var umpackJs = rewired.umpackJs;
@@ -577,6 +584,154 @@ describe('service API', function() {
       return utils.shouldBeBadRequest(promise, 800);
     });
   });
+
+  describe('POST /users/:userName/passwordResetRequestByPhone', function() {
+    var rewired = initWithMockedConfig();
+
+    var app = rewired.app;
+    var resetDataMock = rewired.resetDataMock;
+
+    beforeEach(function() {
+      resetDataMock.refreshToDefault();
+    });
+
+    afterEach(function() {
+      rewired = initWithMockedConfig();
+
+      app = rewired.app;
+      resetDataMock = rewired.resetDataMock;
+    });
+
+    it('should send reset key to the user phone', function() {
+
+      return insertUsers([{
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['admin'],
+          phone: '995'
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+            .send({});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          resetDataMock.should.have.property('phone', '995');
+          resetDataMock.should.have.property('resetKey');
+
+          resetDataMock.resetKey.should.have.length(4);
+        });
+    });
+
+    it('should edit existing resetRequest', function() {
+
+      var phone = '995 995';
+      var key = '1313';
+
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetRequestByPhone')
+            .send({});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          resetDataMock.should.have.property('phone', phone);
+          resetDataMock.should.have.property('resetKey');
+
+          return Promise.join(
+            mongoose.connection.db.collection(resetReqCollection).count({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection).findOne({
+              userName: 'one'
+            }),
+            function(count, request) {
+              count.should.equal(1);
+
+              should.exist(request);
+
+              request.phone.should.equal(phone);
+
+              request.resetKey.should.not.equal(key);
+            }
+          );
+        });
+    });
+
+    it('should return PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED when passwordResetPhoneData is not passed', function() {
+      var umpackJs = rewired.umpackJs;
+      var appConfig = umpackJs.__get__('config');
+      appConfig.handleOptions({});
+      appConfig.passwordResetPhoneData = null;
+
+      var promise = chai.request(app)
+        .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+        .send({});
+
+      return utils.shouldBeBadRequest(promise, 803)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+
+    it('should return USER_NOT_EXISTS on wrong userName', function() {
+      var promise = chai.request(app)
+        .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+        .send({});
+
+      return utils.shouldBeBadRequest(promise, 605)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+
+    it('should return INVALID_PHONE when user has no phone number assigned', function() {
+      var promise = insertUsers([{
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['admin']
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+            .send({});
+        });
+
+      return utils.shouldBeBadRequest(promise, 804)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+  });
+
+  describe('POST /users/:userName/passwordResetByPhone', function() {
+
+  });
 });
 
 function initRewired() {
@@ -626,6 +781,40 @@ function initRewired() {
     mailSenderMock: mailSenderMock,
     app: app,
     umpackJs: umpackJs
+  };
+}
+
+function initWithMockedConfig() {
+  var resetDataMock = {
+    resetKeyExpiresIn: '2h',
+    sendResetKey: function(phone, resetKey) {
+      this.phone = phone;
+      this.resetKey = resetKey;
+    },
+    refreshToDefault: function() {
+      this.phone = null;
+      this.email = null;
+
+      this.resetKeyExpiresIn = '2h';
+    }
+  };
+
+  var configObject = config.get('umpack');
+  configObject.passwordResetPhoneData = resetDataMock;
+
+  var umpackJs = rewire('../umpack');
+
+  var appConfig = umpackJs.__get__('config');
+  appConfig.handleOptions(configObject);
+
+  var app = require('./helpers/app');
+
+  app.use('/otherUm', umpackJs.__get__('router'));
+
+  return {
+    resetDataMock: resetDataMock,
+    umpackJs: umpackJs,
+    app: app
   };
 }
 

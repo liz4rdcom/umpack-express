@@ -27,6 +27,13 @@ describe('config object', function() {
           passwordWrongEmailInstruction: function(clientIp) {
             return 'you are not registered with this email';
           }
+        },
+        passwordResetPhoneData: {
+          resetKeyExpiresIn: '2h',
+          sendResetKey: function (phone, key) {
+            //send
+            console.log(phone, key);
+          }
         }
       };
 
@@ -43,6 +50,8 @@ describe('config object', function() {
       config.passwordResetData.should.have.property('resetKeyExpiresIn', '3h');
       config.passwordResetData.should.have.property('passwordMessageFunction');
       config.passwordResetData.should.have.property('passwordWrongEmailInstruction');
+      config.passwordResetPhoneData.should.have.property('resetKeyExpiresIn', '2h');
+      config.passwordResetPhoneData.should.have.property('sendResetKey');
     });
 
     it('should use default values if not set', function() {
