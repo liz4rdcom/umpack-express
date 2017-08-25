@@ -16,9 +16,7 @@ UserDeviceSchema.methods.canAccess = function(deviceToken) {
   return false;
 };
 
-UserDeviceSchema.methods.addDevice = function(device) {
-  if (this.deviceExists(device.deviceToken)) return;
-
+UserDeviceSchema.methods.addNewDevice = function(device) {
   this.devices.push(device);
 };
 

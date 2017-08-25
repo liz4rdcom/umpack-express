@@ -5,6 +5,7 @@ var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
 var ResetRequest = require('../models/resetRequest');
+var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 
 exports.login = function(userData) {
@@ -211,6 +212,23 @@ exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
         userName: userName,
         resetKey: resetKey
       });
+    });
+};
+
+exports.checkDevice = function(userName, deviceToken) {
+  return UserDevice.findOne({
+      userName: userName
+    }).exec()
+    .then(function(userDevice) {
+      if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
+        deviceToken: deviceToken,
+        canAccess: false
+      });
+
+      return userDevice.save();
+    })
+    .then(function(userDevice) {
+      if (!userDevice.canAccess(deviceToken)) throw API_ERRORS.DEVICE_ACCESS_DENIED;
     });
 };
 
