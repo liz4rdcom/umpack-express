@@ -9,7 +9,13 @@ var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 
 exports.login = function(userData) {
-  return User.findByUserName(userData.userName)
+  return Promise.try(function() {
+      if (config.deviceControl) {
+        if (!userData.deviceToken) throw API_ERRORS.INVALID_DEVICE_TOKEN;
+      }
+
+      return User.findByUserName(userData.userName);
+    })
     .then(function(user) {
       if (!user) {
         throw API_ERRORS.USER_NOT_EXISTS;
