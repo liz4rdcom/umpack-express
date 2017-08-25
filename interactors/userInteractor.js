@@ -125,7 +125,7 @@ exports.changeUserInfo = function(id, body) {
     additionalInfo: body.additionalInfo
   };
 
-  return User.findByIdAndUpdate(id, info)
+  return User.findByIdAndUpdate(id, info);
 };
 
 exports.changeUserName = function(id, userName) {

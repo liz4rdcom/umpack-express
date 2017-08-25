@@ -69,6 +69,54 @@ router.post('/resetpass', isAuthorized, function(req, res, next) {
 
 });
 
+router.post('/users/passwordResetRequest', function(req, res, next) {
+  var promise = credentialsInteractor.passwordResetRequest(req.body.email, req.ip)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/passwordReset', function(req, res, next) {
+  var promise = credentialsInteractor.passwordReset(req.body.resetKey, req.body.newPassword)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/:userName/passwordResetRequestByPhone', function(req, res, next) {
+  var promise = credentialsInteractor.passwordResetRequestByPhone(req.params.userName)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/:userName/passwordResetByPhone', function(req, res, next) {
+  var userName = req.params.userName;
+  var resetKey = req.body.resetKey;
+  var newPassword = req.body.newPassword;
+
+  var promise = credentialsInteractor.passwordResetByPhone(userName, resetKey, newPassword)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.get('/users', isAuthorized, function(req, res, next) {
 
   var promise = userInteractor.getUsers();
@@ -159,12 +207,12 @@ router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/metadata', isAuthorized, function (req, res, next) {
+router.put('/metadata', isAuthorized, function(req, res, next) {
   var promise = decodeRequestToken(req)
-    .then(function (decoded) {
+    .then(function(decoded) {
       return updateUserMetaData(decoded.user, req.body);
     })
-    .then(function () {
+    .then(function() {
       return {
         success: true,
         message: 'metadata updated'
@@ -174,12 +222,12 @@ router.put('/metadata', isAuthorized, function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.put('/metadata/:key', isAuthorized, function (req, res, next) {
+router.put('/metadata/:key', isAuthorized, function(req, res, next) {
   var promise = decodeRequestToken(req)
-    .then(function (decoded) {
+    .then(function(decoded) {
 
       return getUserMetaDataByRequest(req)
-        .then(function (metadata) {
+        .then(function(metadata) {
 
           if (!metadata) {
             metadata = {};
@@ -192,10 +240,10 @@ router.put('/metadata/:key', isAuthorized, function (req, res, next) {
         });
 
     })
-    .then(function () {
+    .then(function() {
       return {
         success: true,
-        message: 'metadata key: '+ req.params.key + ' updated'
+        message: 'metadata key: ' + req.params.key + ' updated'
       };
     });
 
@@ -203,7 +251,7 @@ router.put('/metadata/:key', isAuthorized, function (req, res, next) {
 
 });
 
-router.get('/metadata', isAuthorized, function (req, res, next) {
+router.get('/metadata', isAuthorized, function(req, res, next) {
 
   var promise = getUserMetaDataByRequest(req);
 
@@ -295,11 +343,11 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, 
   sendPromiseResult(promise, req, res, next);
 });
 
-router.post('/initialization', function (req, res, next) {
+router.post('/initialization', function(req, res, next) {
   var promise = Promise.join(
     User.initAndSaveDefaultUser(),
     Role.initAndSaveDefaultRole(req.body.umBaseUrl),
-    function (password) {
+    function(password) {
       var result = {
         success: true
       };
@@ -313,67 +361,74 @@ router.post('/initialization', function (req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+
 function decodeRequestToken(req) {
 
-    try {
+  try {
 
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var jwtToken = req.headers.authorization || cookies[config.cookieAccessTokenName];
+    var cookies = cookie.parse(req.headers.cookie || '');
+    var jwtToken = req.headers.authorization || cookies[config.cookieAccessTokenName];
 
-        if (!jwtToken) {
-            throw API_ERRORS.JWT_NOT_EXISTS;
+    if (!jwtToken) {
+      throw API_ERRORS.JWT_NOT_EXISTS;
+    }
+
+    return jwtVerifyAsync(jwtToken, config.accessTokenSecret)
+      .catch(function(err) {
+        if (err instanceof jwt.TokenExpiredError) {
+          throw API_ERRORS.JWT_TOKEN_EXPIRED;
         }
 
-        return jwtVerifyAsync(jwtToken, config.accessTokenSecret)
-            .catch(function(err) {
-                if (err instanceof jwt.TokenExpiredError) {
-                    throw API_ERRORS.JWT_TOKEN_EXPIRED;
-                }
-
-                throw API_ERRORS.INVALID_JWT;
-            });
+        throw API_ERRORS.INVALID_JWT;
+      });
 
 
 
-    } catch (err) {
+  } catch (err) {
 
-        return Promise.reject(err);
+    return Promise.reject(err);
 
-    }
+  }
 }
 
 function isAuthorized(req, res, next) {
 
-    decodeRequestToken(req)
-        .then(function(decoded) {
+  decodeRequestToken(req)
+    .then(function(decoded) {
 
-            return { userName: decoded.user, roles: decoded.roles };
+      return {
+        userName: decoded.user,
+        roles: decoded.roles
+      };
 
-        })
-        .then(function(userInfo) {
+    })
+    .then(function(userInfo) {
 
-            return roleInteractor.checkRole(req.method, req.originalUrl, userInfo);
+      return roleInteractor.checkRole(req.method, req.originalUrl, userInfo);
 
-        })
-        .then(function() {
+    })
+    .then(function() {
 
-            next();
-            return null;
+      next();
+      return null;
 
-        })
-        .catch(function(err) {
-            return res.status(err.responseStatus).send({ message: err.message, internalStatus: err.internalStatus });
-        });
+    })
+    .catch(function(err) {
+      return res.status(err.responseStatus).send({
+        message: err.message,
+        internalStatus: err.internalStatus
+      });
+    });
 }
 
 function handleOptions(options) {
 
-    if (!options) return;
+  if (!options) return;
 
-    if (options.mongodbConnectionString)
-        mongoose.connect(options.mongodbConnectionString);
+  if (options.mongodbConnectionString)
+    mongoose.connect(options.mongodbConnectionString);
 
-    config.handleOptions(options);
+  config.handleOptions(options);
 }
 
 function updateUserMetaData(userName, metaDataObject) {
@@ -435,5 +490,5 @@ module.exports = function(options) {
     getFullUserObject: getFullUserObject,
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
     filterUsersByRole: userInteractor.filterUsersByRole
-  }
-}
+  };
+};

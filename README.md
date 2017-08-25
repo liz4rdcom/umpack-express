@@ -17,7 +17,32 @@ var umpack = require('./umpack')({
     accessTokenSecret: 'myrandomstring',
     passwordHashSecret: 'mypasswordsecret',
     accessTokenExpiresIn: '1m',
-    cookieAccessTokenName: 'accessToken'
+    cookieAccessTokenName: 'accessToken',
+    passwordResetData: {
+      smtpData: {
+        host: 'smtp host',
+        port: 'smtp port. optional',
+        user: 'username for logging into smtp',
+        password: 'password for logging into smtp',
+        timeout: 5000, // number of milliseconds to wait. default 5000
+        ssl: false //boolean or object with fields: key, ca, cert. default false
+      },
+      senderEmail: 'sender@email.com',
+      resetKeyExpiresIn: '2h', //password reset key expiration
+      passwordMessageFunction: function (key /*password reset key*/) {
+        return 'message to send. use key. for example: http://example.com?key=' + key;
+      },
+      passwordWrongEmailInstruction: function (clientIp) {
+        return 'someone with ip: ' + clientIp + ' requested password reset on the site example.com'; //message to send to input email, when user with input email does not exist
+      }
+    },
+    passwordResetPhoneData: {
+      resetKeyExpiresIn: '2h',
+      sendResetKey: function (phone, resetKey) {
+        // send sms to the phone.
+        // return promise or nothing.
+      }
+    }
 });
 //.....
 app.use('/um', umpack.router);
@@ -177,6 +202,44 @@ DELETE : {baseurl}/users/{userId}
 response - {
   success: true
 }
+```
+
+### Lost Password Reset Request
+```js
+POST : {baseurl}/users/passwordResetRequest
+request - data/body : {
+  email: 'test@email.com'
+}
+response - {success : true}
+instructions are sent to the email
+```
+
+### Lost Password Reset
+```js
+POST : {baseurl}/users/passwordReset
+request - data/body : {
+  resetKey: '', //password reset key sent to the email
+  newPassword: 'password'
+}
+response - {success : true}
+```
+
+### Lost Password Reset By Phone Request
+```js
+POST : {baseurl}/users/{userName}/passwordResetRequestByPhone
+request - data/body : {} //empty object
+response - {success : true}
+password reset key is sent to the user phone
+```
+
+### Lost Password Reset By Phone
+```js
+POST : {baseurl}/users/{userName}/passwordResetByPhone
+request - data/body : {
+  resetKey: '', //key sent to the phone
+  newPassword: 'password'
+}
+response - {success : true}
 ```
 
 ### Get metadata

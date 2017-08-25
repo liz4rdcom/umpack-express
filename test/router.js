@@ -1,6 +1,7 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var should = chai.should();
+var rewire = require('rewire');
 
 var config = require('config');
 var Promise = require('bluebird');
@@ -13,6 +14,7 @@ var ObjectId = require('mongodb').ObjectID;
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
+var resetReqCollection = 'resetrequests';
 var username = 'test';
 var password = '123456';
 
@@ -27,7 +29,8 @@ describe('service API', function() {
 
     return Promise.all([
         mongoose.connection.db.collection(rolesCollection).remove(),
-        mongoose.connection.db.collection(usersCollection).remove()
+        mongoose.connection.db.collection(usersCollection).remove(),
+        mongoose.connection.db.collection(resetReqCollection).remove()
       ])
       .then(function() {
 
@@ -307,4 +310,629 @@ describe('service API', function() {
         });
     });
   });
+
+  describe('POST /users/passwordResetRequest', function() {
+
+    var rewired = initRewired();
+
+    var app = rewired.app;
+    var mailSenderMock = rewired.mailSenderMock;
+
+    it('should send key to email', function() {
+      mailSenderMock.refreshToDefault();
+
+      var email = 'test@email.com';
+
+      return insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: email,
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordResetRequest')
+            .send({
+              email: email
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          mailSenderMock.keyIsSent.should.equal(true);
+          mailSenderMock.to.should.equal(email);
+          mailSenderMock.should.have.property('key');
+
+          return mongoose.connection.db.collection(resetReqCollection).findOne({
+            userName: 'one'
+          });
+        })
+        .then(function(request) {
+          should.exist(request);
+
+          request.email.should.equal(email);
+
+          request.should.have.property('resetKey');
+          request.should.have.property('generationDate');
+          request.should.have.property('expirationDate');
+        });
+    });
+
+    it('should edit existing resetRequest', function() {
+      mailSenderMock.refreshToDefault();
+
+      var email = 'test@email.com';
+      var key = 'key1313';
+
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            email: email,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            email: email,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordResetRequest')
+            .send({
+              email: email
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          mailSenderMock.keyIsSent.should.equal(true);
+          mailSenderMock.to.should.equal(email);
+          mailSenderMock.should.have.property('key');
+
+          return Promise.join(
+            mongoose.connection.db.collection(resetReqCollection).count({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection).findOne({
+              userName: 'one'
+            }),
+            function(count, request) {
+              count.should.equal(1);
+
+              should.exist(request);
+
+              request.email.should.equal(email);
+
+              request.resetKey.should.not.equal(key);
+            }
+          );
+        });
+    });
+
+    it('should send instruction to wrong email', function() {
+      mailSenderMock.refreshToDefault();
+
+      var email = 'one@email.com';
+
+      return insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: 'other@email.com',
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordResetRequest')
+            .send({
+              email: email
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          mailSenderMock.instructionIsSent.should.equal(true);
+          mailSenderMock.to.should.equal(email);
+          mailSenderMock.should.have.property('clientIp');
+        });
+    });
+
+    it('should return PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED when passwordResetEnabled is false', function() {
+      mailSenderMock.refreshToDefault();
+
+      var umpackJs = rewired.umpackJs;
+      var appConfig = umpackJs.__get__('config');
+      appConfig.handleOptions({});
+
+      var promise = chai.request(app)
+        .post('/otherUm/users/passwordResetRequest')
+        .send({
+          email: 'something@test.com'
+        });
+
+      return utils.shouldBeBadRequest(promise, 802)
+        .then(function() {
+          mailSenderMock.instructionIsSent.should.equal(false);
+        });
+    });
+  });
+
+  describe('POST /users/passwordReset', function() {
+    it('should reset password and delete reset request', function() {
+      var email = 'test@email.com';
+      var key = 'key1313';
+
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            email: email,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            email: email,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordReset')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return Promise.join(
+            mongoose.connection.db.collection(usersCollection)
+            .findOne({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection)
+            .findOne({
+              resetKey: key
+            }),
+            function(user, request) {
+              user.password.should.equal(utils.passwordHash('123'));
+              user.should.have.property('lastPasswordResetDate');
+
+              should.not.exist(request);
+            }
+          );
+        });
+    });
+
+    it('should return INVALID_RESET_KEY when not exists with key', function() {
+      var email = 'test@email.com';
+
+      var promise = insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          email: email,
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordReset')
+            .send({
+              resetKey: 'key3232',
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 801);
+    });
+
+    it('should return RESET_KEY_EXPIRED when key expired', function() {
+      var email = 'test@email.com';
+      var key = 'key1313';
+
+      var promise = Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            email: email,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            email: email,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: new Date()
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/passwordReset')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 800);
+    });
+  });
+
+  describe('POST /users/:userName/passwordResetRequestByPhone', function() {
+    var rewired = initWithMockedConfig();
+
+    var app = rewired.app;
+    var resetDataMock = rewired.resetDataMock;
+
+    beforeEach(function() {
+      resetDataMock.refreshToDefault();
+    });
+
+    afterEach(function() {
+      rewired = initWithMockedConfig();
+
+      app = rewired.app;
+      resetDataMock = rewired.resetDataMock;
+    });
+
+    it('should send reset key to the user phone', function() {
+
+      return insertUsers([{
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['admin'],
+          phone: '995'
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+            .send({});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          resetDataMock.should.have.property('phone', '995');
+          resetDataMock.should.have.property('resetKey');
+
+          resetDataMock.resetKey.should.have.length(4);
+        });
+    });
+
+    it('should edit existing resetRequest', function() {
+
+      var phone = '995 995';
+      var key = '1313';
+
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetRequestByPhone')
+            .send({});
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          resetDataMock.should.have.property('phone', phone);
+          resetDataMock.should.have.property('resetKey');
+
+          return Promise.join(
+            mongoose.connection.db.collection(resetReqCollection).count({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection).findOne({
+              userName: 'one'
+            }),
+            function(count, request) {
+              count.should.equal(1);
+
+              should.exist(request);
+
+              request.phone.should.equal(phone);
+
+              request.resetKey.should.not.equal(key);
+            }
+          );
+        });
+    });
+
+    it('should return PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED when passwordResetPhoneData is not passed', function() {
+      var umpackJs = rewired.umpackJs;
+      var appConfig = umpackJs.__get__('config');
+      appConfig.handleOptions({});
+      appConfig.passwordResetPhoneData = null;
+
+      var promise = chai.request(app)
+        .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+        .send({});
+
+      return utils.shouldBeBadRequest(promise, 803)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+
+    it('should return USER_NOT_EXISTS on wrong userName', function() {
+      var promise = chai.request(app)
+        .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+        .send({});
+
+      return utils.shouldBeBadRequest(promise, 605)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+
+    it('should return INVALID_PHONE when user has no phone number assigned', function() {
+      var promise = insertUsers([{
+          userName: username,
+          password: utils.passwordHash(password),
+          roles: ['admin']
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
+            .send({});
+        });
+
+      return utils.shouldBeBadRequest(promise, 804)
+        .then(function() {
+          should.not.exist(resetDataMock.phone);
+        });
+    });
+  });
+
+  describe('POST /users/:userName/passwordResetByPhone', function() {
+    it('should reset password and delete reset request', function() {
+      var phone = '598';
+      var key = '1313';
+
+      var expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 2);
+
+      return Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: expirationDate
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+
+          return Promise.join(
+            mongoose.connection.db.collection(usersCollection)
+            .findOne({
+              userName: 'one'
+            }),
+            mongoose.connection.db.collection(resetReqCollection)
+            .findOne({
+              userName: 'one',
+              resetKey: key
+            }),
+            function(user, request) {
+              user.password.should.equal(utils.passwordHash('123'));
+              user.should.have.property('lastPasswordResetDate');
+
+              should.not.exist(request);
+            }
+          );
+        });
+    });
+
+    it('should return INVALID_RESET_KEY when not exists with key', function() {
+      var phone = '591';
+
+      var promise = insertUsers([{
+          userName: 'one',
+          password: utils.passwordHash(password),
+          phone: phone,
+          isActivated: true,
+          roles: ['admin'],
+          '__v': 0
+        }])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: '3232',
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 801);
+    });
+
+    it('should return RESET_KEY_EXPIRED when key expired', function() {
+      var phone = '599';
+      var key = '1313';
+
+      var promise = Promise.all([
+          insertUsers([{
+            userName: 'one',
+            password: utils.passwordHash(password),
+            phone: phone,
+            isActivated: true,
+            roles: ['admin'],
+            '__v': 0
+          }]),
+          mongoose.connection.db.collection(resetReqCollection).insert({
+            userName: 'one',
+            phone: phone,
+            resetKey: key,
+            generationDate: new Date(),
+            expirationDate: new Date()
+          })
+        ])
+        .then(function() {
+          return chai.request(app)
+            .post('/otherUm/users/one/passwordResetByPhone')
+            .send({
+              resetKey: key,
+              newPassword: '123'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 800);
+    });
+  });
 });
+
+function initRewired() {
+  var mailSenderMock = {
+    keyIsSent: false,
+    instructionIsSent: false,
+    sendKey: function(to, key) {
+      this.keyIsSent = true;
+      this.to = to;
+      this.key = key;
+
+      return Promise.resolve();
+    },
+    sendWrongEmailInstruction: function(to, clientIp) {
+      this.instructionIsSent = true;
+      this.to = to;
+      this.clientIp = clientIp;
+
+      return Promise.resolve();
+    },
+    refreshToDefault: function() {
+      this.keyIsSent = false;
+      this.instructionIsSent = false;
+
+      this.to = null;
+      this.key = null;
+      this.clientIp = null;
+    }
+  };
+
+  var credentialsInteractor = rewire('../interactors/credentialsInteractor');
+
+  credentialsInteractor.__set__('mailSender', mailSenderMock);
+
+  var umpackJs = rewire('../umpack');
+
+  umpackJs.__set__('credentialsInteractor', credentialsInteractor);
+
+  var appConfig = umpackJs.__get__('config');
+  appConfig.handleOptions(config.get('umpack'));
+
+  var app = require('./helpers/app');
+
+  app.use('/otherUm', umpackJs.__get__('router'));
+
+  return {
+    mailSenderMock: mailSenderMock,
+    app: app,
+    umpackJs: umpackJs
+  };
+}
+
+function initWithMockedConfig() {
+  var resetDataMock = {
+    resetKeyExpiresIn: '2h',
+    sendResetKey: function(phone, resetKey) {
+      this.phone = phone;
+      this.resetKey = resetKey;
+    },
+    refreshToDefault: function() {
+      this.phone = null;
+      this.resetKey = null;
+
+      this.resetKeyExpiresIn = '2h';
+    }
+  };
+
+  var configObject = config.get('umpack');
+  configObject.passwordResetPhoneData = resetDataMock;
+
+  var umpackJs = rewire('../umpack');
+
+  var appConfig = umpackJs.__get__('config');
+  appConfig.handleOptions(configObject);
+
+  var app = require('./helpers/app');
+
+  app.use('/otherUm', umpackJs.__get__('router'));
+
+  return {
+    resetDataMock: resetDataMock,
+    umpackJs: umpackJs,
+    app: app
+  };
+}
+
+function insertUsers(users) {
+  return Promise.map(users, function(user) {
+    return mongoose.connection.db.collection(usersCollection).insert(user);
+  });
+}

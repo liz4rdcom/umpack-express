@@ -52,6 +52,26 @@ var INTERNAL_STATUS = {
   ACTION_PATTERN_ALREADY_EXISTS: {
     code: 704,
     message: 'Action Pattern Already Exists'
+  },
+  RESET_KEY_EXPIRED: {
+    code: 800,
+    message: 'password reset key is expired'
+  },
+  INVALID_RESET_KEY: {
+    code: 801,
+    message: 'password reset key is invalid'
+  },
+  PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED: {
+    code: 802,
+    message: 'password reset by email is not supported'
+  },
+  PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED: {
+    code: 803,
+    message: 'password reset by phone is not supported'
+  },
+  INVALID_PHONE: {
+    code: 804,
+    message: 'invalid phone number'
   }
 };
 

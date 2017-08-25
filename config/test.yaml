@@ -4,3 +4,4 @@ umpack:
   accessTokenSecret: 'ovU3PrDyHS9uqcKiHirt'
   passwordHashSecret: 'I9ZqRNXm7wVCyzYhjB7Q'
   accessTokenExpiresIn: '1h'
+  passwordResetData: {}
