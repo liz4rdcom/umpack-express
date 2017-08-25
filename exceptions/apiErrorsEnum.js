@@ -37,6 +37,10 @@ var INTERNAL_STATUS = {
     code: 609,
     message: 'Access Denied'
   },
+  DEVICE_ACCESS_DENIED: {
+    code: 610,
+    message: 'access is denied for your device'
+  },
   WRONG_ROLE_NAME: {
     code: 701,
     message: 'Wrong Role Name'
@@ -75,7 +79,7 @@ var INTERNAL_STATUS = {
   }
 };
 
-var forbiddenStatusCodes = [609];
+var forbiddenStatusCodes = [609, 610];
 
 var unauthorizedStatusCodes = [606, 607, 608];
 
