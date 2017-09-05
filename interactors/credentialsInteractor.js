@@ -29,10 +29,14 @@ exports.login = function(userData) {
         throw API_ERRORS.WRONG_USER_CREDENTIALS;
       }
 
-      var accesKey = jwt.sign({
+      var payload = {
         user: user.userName,
         roles: user.roles
-      }, config.accessTokenSecret, {
+      };
+
+      if (config.deviceControl) payload.device = userData.deviceToken;
+
+      var accesKey = jwt.sign(payload, config.accessTokenSecret, {
         expiresIn: config.accessTokenExpiresIn
       });
 
