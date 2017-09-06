@@ -45,7 +45,7 @@ describe('device control', function() {
             "name": "admin",
             "actions": [{
               "_id": new ObjectId("58a301b880a92f3930ebfef4"),
-              "pattern": "/um/*",
+              "pattern": "/deviceUm/*",
               "name": "um",
               "verbDelete": true,
               "verbPost": true,
@@ -135,6 +135,112 @@ describe('device control', function() {
         });
 
       return utils.shouldBeBadRequest(promise, 800);
+    });
+  });
+
+  describe('isAuthorized()', function() {
+    var isAuthorized = umpack.isAuthorized;
+
+    var nextCallError = new chai.AssertionError(
+      'next() function should not be called');
+
+    function shouldBeForbidden(result) {
+      result.status.should.equal(403);
+    }
+
+    function shouldReturnErrorWithStatus(result, internalStatus) {
+      should.exist(result.data);
+
+      result.data.should.have.property('message');
+      result.data.should.have.property('internalStatus', internalStatus);
+    }
+
+    function callMockedIsAuthorized(reqStub) {
+      var resMock;
+
+      return new Promise(function(resolve, reject) {
+
+        resMock = utils.createResponseMock(resolve);
+
+        isAuthorized(reqStub, resMock, function() {
+          reject(nextCallError);
+        });
+
+      });
+    }
+
+    it('should pass when device access is enabled', function() {
+      var deviceToken = shortid.generate();
+
+      return mongoose.connection.db.collection(userDevicesCollection)
+        .insert({
+          userName: username,
+          devices: [{
+            deviceToken: deviceToken,
+            canAccess: true
+          }]
+        })
+        .then(function() {
+          var token = jwt.sign({
+            user: username,
+            roles: ['admin'],
+            device: deviceToken
+          }, config.get('umpack.accessTokenSecret'), {
+            expiresIn: config.get('umpack.accessTokenExpiresIn')
+          });
+
+          var reqStub = {
+            headers: {
+              authorization: token
+            },
+            method: 'GET',
+            originalUrl: '/deviceUm/something'
+          };
+
+          return new Promise(function(resolve, reject) {
+            var resMock = utils.createResponseMock(reject);
+
+            isAuthorized(reqStub, resMock, resolve);
+          });
+        });
+
+    });
+
+    it('should return DEVICE_ACCESS_DENIED when device access is disabled', function() {
+      var deviceToken = shortid.generate();
+
+      return mongoose.connection.db.collection(userDevicesCollection)
+        .insert({
+          userName: username,
+          devices: [{
+            deviceToken: deviceToken,
+            canAccess: false
+          }]
+        })
+        .then(function() {
+          var token = jwt.sign({
+            user: username,
+            roles: ['admin'],
+            device: deviceToken
+          }, config.get('umpack.accessTokenSecret'), {
+            expiresIn: config.get('umpack.accessTokenExpiresIn')
+          });
+
+          var reqStub = {
+            headers: {
+              authorization: token
+            },
+            method: 'GET',
+            originalUrl: '/deviceUm/something'
+          };
+
+          return callMockedIsAuthorized(reqStub);
+        })
+        .then(function(result) {
+          shouldBeForbidden(result);
+
+          shouldReturnErrorWithStatus(result, 801);
+        });
     });
   });
 });
