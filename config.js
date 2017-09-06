@@ -45,7 +45,7 @@ config.handleOptions = function(options) {
     this.passwordResetPhoneData = options.passwordResetPhoneData;
   }
 
-  if (options.deviceControl) {
+  if (options.deviceControl != null || options.deviceControl != undefined) {
     this.deviceControl = options.deviceControl;
   }
 };
