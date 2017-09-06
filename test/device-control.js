@@ -260,5 +260,35 @@ describe('device control', function() {
           userDevice.devices[0].canAccess.should.equal(false);
         });
     });
+
+    it('should not call checkDevice when device control is disabled', function() {
+      toggleControl(false);
+
+      var umpackJs = rewire('../umpack');
+
+      var interactorMock = {
+        called: false,
+        checkDevice: function(userName, deviceToken) {
+          this.called = true;
+        }
+      };
+
+      umpackJs.__set__('credentialsInteractor', interactorMock);
+
+      var isAuthorized = umpackJs.__get__('isAuthorized');
+
+      var deviceToken = shortid.generate();
+
+      var reqStub = createReqStub(deviceToken);
+
+      return new Promise(function(resolve, reject) {
+          var resMock = utils.createResponseMock(reject);
+
+          isAuthorized(reqStub, resMock, resolve);
+        })
+        .then(function() {
+          interactorMock.called.should.equal(false);
+        });
+    });
   });
 });
