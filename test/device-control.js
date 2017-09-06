@@ -145,6 +145,7 @@ describe('device control', function() {
       'next() function should not be called');
 
     function shouldBeForbidden(result) {
+      should.exist(result.status);
       result.status.should.equal(403);
     }
 
@@ -169,6 +170,26 @@ describe('device control', function() {
       });
     }
 
+    function createReqStub(deviceToken) {
+      var token = jwt.sign({
+        user: username,
+        roles: ['admin'],
+        device: deviceToken
+      }, config.get('umpack.accessTokenSecret'), {
+        expiresIn: config.get('umpack.accessTokenExpiresIn')
+      });
+
+      var reqStub = {
+        headers: {
+          authorization: token
+        },
+        method: 'GET',
+        originalUrl: '/deviceUm/something'
+      };
+
+      return reqStub;
+    }
+
     it('should pass when device access is enabled', function() {
       var deviceToken = shortid.generate();
 
@@ -181,21 +202,7 @@ describe('device control', function() {
           }]
         })
         .then(function() {
-          var token = jwt.sign({
-            user: username,
-            roles: ['admin'],
-            device: deviceToken
-          }, config.get('umpack.accessTokenSecret'), {
-            expiresIn: config.get('umpack.accessTokenExpiresIn')
-          });
-
-          var reqStub = {
-            headers: {
-              authorization: token
-            },
-            method: 'GET',
-            originalUrl: '/deviceUm/something'
-          };
+          var reqStub = createReqStub(deviceToken);
 
           return new Promise(function(resolve, reject) {
             var resMock = utils.createResponseMock(reject);
@@ -218,21 +225,7 @@ describe('device control', function() {
           }]
         })
         .then(function() {
-          var token = jwt.sign({
-            user: username,
-            roles: ['admin'],
-            device: deviceToken
-          }, config.get('umpack.accessTokenSecret'), {
-            expiresIn: config.get('umpack.accessTokenExpiresIn')
-          });
-
-          var reqStub = {
-            headers: {
-              authorization: token
-            },
-            method: 'GET',
-            originalUrl: '/deviceUm/something'
-          };
+          var reqStub = createReqStub(deviceToken);
 
           return callMockedIsAuthorized(reqStub);
         })
@@ -240,6 +233,31 @@ describe('device control', function() {
           shouldBeForbidden(result);
 
           shouldReturnErrorWithStatus(result, 801);
+        });
+    });
+
+    it('should register device if not registered and return DEVICE_ACCESS_DENIED', function() {
+      var deviceToken = shortid.generate();
+
+      var reqStub = createReqStub(deviceToken);
+
+      return callMockedIsAuthorized(reqStub)
+        .then(function(result) {
+          shouldBeForbidden(result);
+
+          shouldReturnErrorWithStatus(result, 801);
+
+          return mongoose.connection.db.collection(userDevicesCollection)
+            .findOne({
+              userName: username
+            });
+        })
+        .then(function(userDevice) {
+          should.exist(userDevice);
+
+          userDevice.devices.should.have.length(1);
+          userDevice.devices[0].deviceToken.should.equal(deviceToken);
+          userDevice.devices[0].canAccess.should.equal(false);
         });
     });
   });
