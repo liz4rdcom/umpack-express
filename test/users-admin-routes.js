@@ -124,11 +124,6 @@ describe('service api users administrative routes', function() {
           res.body.should.not.have.property('_id');
           res.body.should.have.property('roles');
           res.body.should.have.property('isActivated');
-        })
-        .catch(function(err) {
-          console.log(err);
-
-          throw err;
         });
     });
   });
