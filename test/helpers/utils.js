@@ -1,5 +1,6 @@
 var config = require('config');
 var crypto = require('crypto');
+var _ = require('lodash');
 
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
@@ -68,7 +69,9 @@ function shouldBeBadRequest(promise, internalStatus) {
 function findUser(id, username) {
   if (id) {
     return mongoose.connection.db.collection(usersCollection)
-      .findOne({_id: id});
+      .findOne({
+        _id: id
+      });
   }
 
   return mongoose.connection.db.collection(usersCollection)
@@ -107,6 +110,16 @@ function findRole(role) {
   });
 }
 
+function refreshToFirstState(object, firstObject) {
+  Object.assign(object, firstObject);
+
+  var newKeys = _.difference(Object.keys(object), Object.keys(firstObject));
+
+  newKeys.forEach(function(key) {
+    object[key] = undefined;
+  });
+}
+
 module.exports = {
   passwordHash: passwordHash,
   saveRecordWithParameters: saveRecordWithParameters,
@@ -114,5 +127,6 @@ module.exports = {
   shouldBeBadRequest: shouldBeBadRequest,
   findUser: findUser,
   createResponseMock: createResponseMock,
-  findRole: findRole
+  findRole: findRole,
+  refreshToFirstState: refreshToFirstState
 };

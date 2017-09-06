@@ -5,7 +5,8 @@ var rewire = require('rewire');
 
 var config = require('config');
 var Promise = require('bluebird');
-var crypto = require('crypto');
+var jwt = require('jsonwebtoken');
+var _ = require('lodash');
 
 var umpack = require('./helpers/umpack');
 var utils = require('./helpers/utils');
@@ -313,10 +314,24 @@ describe('service API', function() {
 
   describe('POST /users/passwordResetRequest', function() {
 
-    var rewired = initRewired();
+    var firstConfig = _.cloneDeep(require('../config'));
 
-    var app = rewired.app;
-    var mailSenderMock = rewired.mailSenderMock;
+    var rewired;
+
+    var app;
+    var mailSenderMock;
+
+    before(function() {
+      rewired = initRewired();
+      app = rewired.app;
+      mailSenderMock = rewired.mailSenderMock;
+    });
+
+    after(function() {
+      var currentConfig = require('../config');
+
+      utils.refreshToFirstState(currentConfig, firstConfig);
+    });
 
     it('should send key to email', function() {
       mailSenderMock.refreshToDefault();
@@ -470,6 +485,20 @@ describe('service API', function() {
   });
 
   describe('POST /users/passwordReset', function() {
+    var firstConfig = _.cloneDeep(require('../config'));
+
+    var app;
+
+    before(function() {
+      app = initRewired().app;
+    });
+
+    after(function() {
+      var currentConfig = require('../config');
+
+      utils.refreshToFirstState(currentConfig, firstConfig);
+    });
+
     it('should reset password and delete reset request', function() {
       var email = 'test@email.com';
       var key = 'key1313';
@@ -586,10 +615,18 @@ describe('service API', function() {
   });
 
   describe('POST /users/:userName/passwordResetRequestByPhone', function() {
-    var rewired = initWithMockedConfig();
+    var firstConfig = _.cloneDeep(require('../config'));
 
-    var app = rewired.app;
-    var resetDataMock = rewired.resetDataMock;
+    var rewired;
+
+    var app;
+    var resetDataMock;
+
+    before(function() {
+      rewired = initWithMockedConfig();
+      app = rewired.app;
+      resetDataMock = rewired.resetDataMock;
+    });
 
     beforeEach(function() {
       resetDataMock.refreshToDefault();
@@ -600,6 +637,12 @@ describe('service API', function() {
 
       app = rewired.app;
       resetDataMock = rewired.resetDataMock;
+    });
+
+    after(function() {
+      var currentConfig = require('../config');
+
+      utils.refreshToFirstState(currentConfig, firstConfig);
     });
 
     it('should send reset key to the user phone', function() {
@@ -730,6 +773,20 @@ describe('service API', function() {
   });
 
   describe('POST /users/:userName/passwordResetByPhone', function() {
+    var firstConfig = _.cloneDeep(require('../config'));
+
+    var app;
+
+    before(function() {
+      app = initRewired().app;
+    });
+
+    after(function() {
+      var currentConfig = require('../config');
+
+      utils.refreshToFirstState(currentConfig, firstConfig);
+    });
+
     it('should reset password and delete reset request', function() {
       var phone = '598';
       var key = '1313';
