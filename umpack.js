@@ -398,13 +398,25 @@ function isAuthorized(req, res, next) {
 
       return {
         userName: decoded.user,
-        roles: decoded.roles
+        roles: decoded.roles,
+        deviceToken: decoded.device
       };
 
     })
     .then(function(userInfo) {
 
-      return roleInteractor.checkRole(req.method, req.originalUrl, userInfo);
+      var checkRolePromise = roleInteractor.checkRole(req.method, req.originalUrl, userInfo);
+
+      if (!config.deviceControl) {
+        return checkRolePromise;
+      }
+
+      var checkDevicePromise = credentialsInteractor.checkDevice(userInfo.userName, userInfo.deviceToken);
+
+      return Promise.all([
+        checkRolePromise,
+        checkDevicePromise
+      ]);
 
     })
     .then(function() {

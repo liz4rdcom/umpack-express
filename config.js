@@ -13,7 +13,8 @@ var passwordResetDataDefaults = {
 var config = {
   accessTokenExpiresIn: '1h',
   cookieAccessTokenName: 'accessToken',
-  passwordResetData: passwordResetDataDefaults
+  passwordResetData: passwordResetDataDefaults,
+  deviceControl: false
 };
 
 config.handleOptions = function(options) {
@@ -42,6 +43,10 @@ config.handleOptions = function(options) {
 
   if (options.passwordResetPhoneData) {
     this.passwordResetPhoneData = options.passwordResetPhoneData;
+  }
+
+  if (options.deviceControl != null || options.deviceControl != undefined) {
+    this.deviceControl = options.deviceControl;
   }
 };
 

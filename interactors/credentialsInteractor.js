@@ -5,10 +5,17 @@ var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
 var ResetRequest = require('../models/resetRequest');
+var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 
 exports.login = function(userData) {
-  return User.findByUserName(userData.userName)
+  return Promise.try(function() {
+      if (config.deviceControl) {
+        if (!userData.deviceToken) throw API_ERRORS.INVALID_DEVICE_TOKEN;
+      }
+
+      return User.findByUserName(userData.userName);
+    })
     .then(function(user) {
       if (!user) {
         throw API_ERRORS.USER_NOT_EXISTS;
@@ -22,10 +29,14 @@ exports.login = function(userData) {
         throw API_ERRORS.WRONG_USER_CREDENTIALS;
       }
 
-      var accesKey = jwt.sign({
+      var payload = {
         user: user.userName,
         roles: user.roles
-      }, config.accessTokenSecret, {
+      };
+
+      if (config.deviceControl) payload.device = userData.deviceToken;
+
+      var accesKey = jwt.sign(payload, config.accessTokenSecret, {
         expiresIn: config.accessTokenExpiresIn
       });
 
@@ -211,6 +222,31 @@ exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
         userName: userName,
         resetKey: resetKey
       });
+    });
+};
+
+exports.checkDevice = function(userName, deviceToken) {
+  return UserDevice.findOne({
+      userName: userName
+    }).exec()
+    .then(function(userDevice) {
+      if (!userDevice) return new UserDevice({
+        userName: userName,
+        devices: []
+      });
+
+      return userDevice;
+    })
+    .then(function(userDevice) {
+      if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
+        deviceToken: deviceToken,
+        canAccess: false
+      });
+
+      return userDevice.save();
+    })
+    .then(function(userDevice) {
+      if (!userDevice.canAccess(deviceToken)) throw API_ERRORS.DEVICE_ACCESS_DENIED;
     });
 };
 
