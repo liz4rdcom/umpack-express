@@ -230,6 +230,14 @@ exports.checkDevice = function(userName, deviceToken) {
       userName: userName
     }).exec()
     .then(function(userDevice) {
+      if (!userDevice) return new UserDevice({
+        userName: userName,
+        devices: []
+      });
+
+      return userDevice;
+    })
+    .then(function(userDevice) {
       if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
         deviceToken: deviceToken,
         canAccess: false
