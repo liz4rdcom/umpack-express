@@ -134,7 +134,7 @@ describe('device control', function() {
           password: password
         });
 
-      return utils.shouldBeBadRequest(promise, 800);
+      return utils.shouldBeBadRequest(promise, 805);
     });
   });
 
@@ -232,7 +232,7 @@ describe('device control', function() {
         .then(function(result) {
           shouldBeForbidden(result);
 
-          shouldReturnErrorWithStatus(result, 801);
+          shouldReturnErrorWithStatus(result, 806);
         });
     });
 
@@ -245,7 +245,7 @@ describe('device control', function() {
         .then(function(result) {
           shouldBeForbidden(result);
 
-          shouldReturnErrorWithStatus(result, 801);
+          shouldReturnErrorWithStatus(result, 806);
 
           return mongoose.connection.db.collection(userDevicesCollection)
             .findOne({

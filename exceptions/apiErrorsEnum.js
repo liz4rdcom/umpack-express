@@ -74,16 +74,16 @@ var INTERNAL_STATUS = {
     message: 'invalid phone number'
   },
   INVALID_DEVICE_TOKEN: {
-    code: 800,
+    code: 805,
     message: 'invalid device token'
   },
   DEVICE_ACCESS_DENIED: {
-    code: 801,
+    code: 806,
     message: 'access is denied for your device'
   }
 };
 
-var forbiddenStatusCodes = [609, 801];
+var forbiddenStatusCodes = [609, 806];
 
 var unauthorizedStatusCodes = [606, 607, 608];
 
