@@ -42,7 +42,8 @@ var umpack = require('./umpack')({
         // send sms to the phone.
         // return promise or nothing.
       }
-    }
+    },
+    deviceControl: false // default false. if it is true, user's devices access is controlled
 });
 //.....
 app.use('/um', umpack.router);
