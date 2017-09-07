@@ -375,7 +375,10 @@ response - { success: true }
 ```
 
 ### Use Authorization Middleware
-* if user has no access right then response status is 401 and response is object with error message ```{ message: err.message }```
+* if user is not authorized then response status is 401
+* if user has no access right then response status is 403
+* if device control is enabled and user's device has no access right then response status is 403 too
+* if response status is 401 or 403 response body is object with error message and internalStatus ```{ message: err.message, internalStatus: err.internalStatus }```
 
 ```js
 var umpack = require('./umpack')();
