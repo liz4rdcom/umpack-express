@@ -42,7 +42,8 @@ var umpack = require('./umpack')({
         // send sms to the phone.
         // return promise or nothing.
       }
-    }
+    },
+    deviceControl: false // default false. if it is true, user's devices access is controlled
 });
 //.....
 app.use('/um', umpack.router);
@@ -54,7 +55,11 @@ app.use('/um', umpack.router);
 ### Login
 ```js
 POST : {baseurl}/login
-request - data/body : {userName:'user',password:'userpassword'}
+request - data/body : {
+  userName: 'user',
+  password: 'userpassword',
+  deviceToken: 'device token' //required if device control is enabled
+}
 response - 'user access token'
 ```
 ### Signup
@@ -365,10 +370,20 @@ response - { success: true }
     { code: 702, message: 'Role Already Exists'}
     { code: 703, message: 'Invalid Action Pattern'}
     { code: 704, message: 'Action Pattern Already Exists'}
+    { code: 800, message: 'password reset key is expired' }
+    { code: 801, message: 'password reset key is invalid' }
+    { code: 802, message: 'password reset by email is not supported' }
+    { code: 803, message: 'password reset by phone is not supported' }
+    { code: 804, message: 'invalid phone number' }
+    { code: 805, message: 'invalid device token' }
+    { code: 806, message: 'access is denied for your device' }
 ```
 
 ### Use Authorization Middleware
-* if user has no access right then response status is 401 and response is object with error message ```{ message: err.message }```
+* if user is not authorized then response status is 401
+* if user has no access right then response status is 403
+* if device control is enabled and user's device has no access right then response status is 403 too
+* if response status is 401 or 403 response body is object with error message and internalStatus ```{ message: err.message, internalStatus: err.internalStatus }```
 
 ```js
 var umpack = require('./umpack')();
