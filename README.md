@@ -365,6 +365,13 @@ response - { success: true }
     { code: 702, message: 'Role Already Exists'}
     { code: 703, message: 'Invalid Action Pattern'}
     { code: 704, message: 'Action Pattern Already Exists'}
+    { code: 800, message: 'password reset key is expired' }
+    { code: 801, message: 'password reset key is invalid' }
+    { code: 802, message: 'password reset by email is not supported' }
+    { code: 803, message: 'password reset by phone is not supported' }
+    { code: 804, message: 'invalid phone number' }
+    { code: 805, message: 'invalid device token' }
+    { code: 806, message: 'access is denied for your device' }
 ```
 
 ### Use Authorization Middleware
