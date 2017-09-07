@@ -55,7 +55,11 @@ app.use('/um', umpack.router);
 ### Login
 ```js
 POST : {baseurl}/login
-request - data/body : {userName:'user',password:'userpassword'}
+request - data/body : {
+  userName: 'user',
+  password: 'userpassword',
+  deviceToken: 'device token' //required if device control is enabled
+}
 response - 'user access token'
 ```
 ### Signup
