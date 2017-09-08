@@ -208,7 +208,7 @@ router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.post('/users/:userName/devices/access', function(req, res, next) {
+router.post('/users/:userName/devices/access', isAuthorized, function(req, res, next) {
   var promise = deviceInteractor.grantDeviceAccess(req.params.userName, req.body.deviceToken)
     .then(function() {
       return {
@@ -219,7 +219,7 @@ router.post('/users/:userName/devices/access', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.post('/users/:userName/devices/restriction', function(req, res, next) {
+router.post('/users/:userName/devices/restriction', isAuthorized, function(req, res, next) {
   var promise = deviceInteractor.restrictDeviceAccess(req.params.userName, req.body.deviceToken)
     .then(function() {
       return {
@@ -230,13 +230,13 @@ router.post('/users/:userName/devices/restriction', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
-router.get('/users/:userName/devices', function(req, res, next) {
+router.get('/users/:userName/devices', isAuthorized, function(req, res, next) {
   var promise = deviceInteractor.getAllRegisteredDevices(req.params.userName);
 
   sendPromiseResult(promise, req, res, next);
 });
 
-router.get('/users/:userName/devices/permitted', function(req, res, next) {
+router.get('/users/:userName/devices/permitted', isAuthorized, function(req, res, next) {
   var promise = deviceInteractor.getAllPermittedDevices(req.params.userName);
 
   sendPromiseResult(promise, req, res, next);
