@@ -19,14 +19,13 @@ exports.checkDevice = function(userName, deviceToken) {
 };
 
 exports.grantDeviceAccess = function(userName, deviceToken) {
-  if (!config.deviceControl) return Promise.reject(API_ERRORS.DEVICE_CONTROL_NOT_SUPPORTED);
+  return Promise.try(function() {
+      checkIfControlEnabled();
 
-  return UserDevice.findOrCreateNew(userName)
+      return UserDevice.findOrCreateNew(userName);
+    })
     .then(function(userDevice) {
       userDevice.grantDeviceAccess(deviceToken);
-
-
-
 
       return userDevice.save();
     });
@@ -34,7 +33,7 @@ exports.grantDeviceAccess = function(userName, deviceToken) {
 
 exports.restrictDeviceAccess = function(userName, deviceToken) {
   return Promise.try(function() {
-      if (!config.deviceControl) throw API_ERRORS.DEVICE_CONTROL_NOT_SUPPORTED;
+      checkIfControlEnabled();
 
       return UserDevice.findOrCreateNew(userName);
     })
@@ -44,3 +43,27 @@ exports.restrictDeviceAccess = function(userName, deviceToken) {
       return userDevice.save();
     });
 };
+
+exports.getAllRegisteredDevices = function(userName) {
+  return Promise.try(function() {
+      checkIfControlEnabled();
+
+      return UserDevice.findOrCreateNew(userName);
+    })
+    .then(function(userDevice) {
+      return userDevice.devices;
+    });
+};
+
+exports.getAllPermittedDevices = function(userName) {
+  return exports.getAllRegisteredDevices(userName)
+    .then(function(devices) {
+      return devices.filter(function(item) {
+        return item.canAccess;
+      });
+    });
+};
+
+function checkIfControlEnabled() {
+  if (!config.deviceControl) throw API_ERRORS.DEVICE_CONTROL_NOT_SUPPORTED;
+}

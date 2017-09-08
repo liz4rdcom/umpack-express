@@ -230,6 +230,18 @@ router.post('/users/:userName/devices/restriction', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.get('/users/:userName/devices', function(req, res, next) {
+  var promise = deviceInteractor.getAllRegisteredDevices(req.params.userName);
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.get('/users/:userName/devices/permitted', function(req, res, next) {
+  var promise = deviceInteractor.getAllPermittedDevices(req.params.userName);
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function(req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function(decoded) {
