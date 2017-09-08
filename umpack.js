@@ -20,6 +20,7 @@ var Role = require('./models/role');
 var credentialsInteractor = require('./interactors/credentialsInteractor');
 var userInteractor = require('./interactors/userInteractor');
 var roleInteractor = require('./interactors/roleInteractor');
+var deviceInteractor = require('./interactors/deviceInteractor');
 
 
 router.post('/login', function(req, res, next) {
@@ -411,7 +412,7 @@ function isAuthorized(req, res, next) {
         return checkRolePromise;
       }
 
-      var checkDevicePromise = credentialsInteractor.checkDevice(userInfo.userName, userInfo.deviceToken);
+      var checkDevicePromise = deviceInteractor.checkDevice(userInfo.userName, userInfo.deviceToken);
 
       return Promise.all([
         checkRolePromise,

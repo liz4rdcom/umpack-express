@@ -225,31 +225,6 @@ exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
     });
 };
 
-exports.checkDevice = function(userName, deviceToken) {
-  return UserDevice.findOne({
-      userName: userName
-    }).exec()
-    .then(function(userDevice) {
-      if (!userDevice) return new UserDevice({
-        userName: userName,
-        devices: []
-      });
-
-      return userDevice;
-    })
-    .then(function(userDevice) {
-      if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
-        deviceToken: deviceToken,
-        canAccess: false
-      });
-
-      return userDevice.save();
-    })
-    .then(function(userDevice) {
-      if (!userDevice.canAccess(deviceToken)) throw API_ERRORS.DEVICE_ACCESS_DENIED;
-    });
-};
-
 function validateResetKey(request) {
   if (!request) throw API_ERRORS.INVALID_RESET_KEY;
 
