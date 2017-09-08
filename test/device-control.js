@@ -408,6 +408,51 @@ describe('device control', function() {
         return utils.shouldBeBadRequest(promise, 605);
       });
     });
+
+    describe('GET /users/:userName/devices/permitted', function() {
+      it('should get all permitted', function() {
+        var token = shortid.generate();
+
+        return mongoose.connection.db.collection(userDevicesCollection)
+          .insert({
+            userName: username,
+            devices: [{
+                deviceToken: token,
+                canAccess: true
+              },
+              {
+                deviceToken: 'one',
+                canAccess: false
+              },
+              {
+                deviceToken: 'two',
+                canAccess: true
+              }
+            ]
+          })
+          .then(function() {
+            return login(token);
+          })
+          .then(function(res) {
+            return chai.request(app)
+              .get('/deviceUm/users/' + username + '/devices/permitted')
+              .set('authorization', res.text);
+          })
+          .then(function(res) {
+            res.should.have.status(200);
+
+            should.exist(res.body);
+
+            res.body.should.have.length(2);
+
+            res.body.forEach(function(device) {
+              should.exist(device);
+
+              device.deviceToken.should.not.equal('one');
+            });
+          });
+      });
+    });
   });
 
 });
