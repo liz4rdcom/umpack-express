@@ -247,6 +247,46 @@ request - data/body : {
 response - {success : true}
 ```
 
+### Get User's All Registered Devices
+```js
+GET : {baseurl}/users/{userName}/devices
+response - [
+  {
+    deviceToken: 'token',
+    canAccess: true/false
+  }
+]
+```
+
+### Get User's All Permitted Devices
+```js
+GET : {baseurl}/users/{userName}/devices/permitted
+response - [
+  {
+    deviceToken: 'token',
+    canAccess: true
+  }
+]
+```
+
+### Grant User's Device Access
+```js
+POST : {baseurl}/users/{userName}/devices/access
+request - data/body : {
+  deviceToken: 'device token'
+}
+response - { success: true }
+```
+
+### Restrict User's Device From Access
+```js
+POST : {baseurl}/users/{userName}/devices/restriction
+request - data/body : {
+  deviceToken: 'token'
+}
+response - { success: true }
+```
+
 ### Get metadata
 ```js
 GET : {baseurl}/metadata
@@ -377,6 +417,7 @@ response - { success: true }
     { code: 804, message: 'invalid phone number' }
     { code: 805, message: 'invalid device token' }
     { code: 806, message: 'access is denied for your device' }
+    { code: 807, message: 'devices control is not supported' }
 ```
 
 ### Use Authorization Middleware
