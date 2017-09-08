@@ -2,6 +2,7 @@ var Promise = require('bluebird');
 var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var UserDevice = require('../models/userDevice');
+var User = require('../models/user');
 
 exports.checkDevice = function(userName, deviceToken) {
   return UserDevice.findOrCreateNew(userName)
@@ -22,6 +23,9 @@ exports.grantDeviceAccess = function(userName, deviceToken) {
   return Promise.try(function() {
       checkIfControlEnabled();
 
+      return checkIfUserExists(userName);
+    })
+    .then(function() {
       return UserDevice.findOrCreateNew(userName);
     })
     .then(function(userDevice) {
@@ -35,6 +39,9 @@ exports.restrictDeviceAccess = function(userName, deviceToken) {
   return Promise.try(function() {
       checkIfControlEnabled();
 
+      return checkIfUserExists(userName);
+    })
+    .then(function() {
       return UserDevice.findOrCreateNew(userName);
     })
     .then(function(userDevice) {
@@ -48,6 +55,9 @@ exports.getAllRegisteredDevices = function(userName) {
   return Promise.try(function() {
       checkIfControlEnabled();
 
+      return checkIfUserExists(userName);
+    })
+    .then(function() {
       return UserDevice.findOrCreateNew(userName);
     })
     .then(function(userDevice) {
@@ -66,4 +76,13 @@ exports.getAllPermittedDevices = function(userName) {
 
 function checkIfControlEnabled() {
   if (!config.deviceControl) throw API_ERRORS.DEVICE_CONTROL_NOT_SUPPORTED;
+}
+
+function checkIfUserExists(userName) {
+  return User.findOne({
+      userName: userName
+    })
+    .then(function(userName) {
+      if (!userName) throw API_ERRORS.USER_NOT_EXISTS;
+    });
 }
