@@ -80,6 +80,10 @@ var INTERNAL_STATUS = {
   DEVICE_ACCESS_DENIED: {
     code: 806,
     message: 'access is denied for your device'
+  },
+  DEVICE_CONTROL_NOT_SUPPORTED: {
+    code: 807,
+    message: 'devices control is not supported'
   }
 };
 

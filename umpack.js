@@ -208,6 +208,17 @@ router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.post('/users/:userName/devices/access', function (req, res, next) {
+  var promise = deviceInteractor.grantDeviceAccess(req.params.userName, req.body.deviceToken)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
 router.put('/metadata', isAuthorized, function(req, res, next) {
   var promise = decodeRequestToken(req)
     .then(function(decoded) {
