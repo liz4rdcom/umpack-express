@@ -25,6 +25,22 @@ exports.grantDeviceAccess = function(userName, deviceToken) {
     .then(function(userDevice) {
       userDevice.grantDeviceAccess(deviceToken);
 
+
+
+
+      return userDevice.save();
+    });
+};
+
+exports.restrictDeviceAccess = function(userName, deviceToken) {
+  return Promise.try(function() {
+      if (!config.deviceControl) throw API_ERRORS.DEVICE_CONTROL_NOT_SUPPORTED;
+
+      return UserDevice.findOrCreateNew(userName);
+    })
+    .then(function(userDevice) {
+      userDevice.restrictDeviceAccess(deviceToken);
+
       return userDevice.save();
     });
 };
