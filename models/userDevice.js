@@ -44,6 +44,8 @@ UserDeviceSchema.methods.grantDeviceAccess = function(deviceToken) {
     canAccess: true
   });
   else device.canAccess = true;
+
+  this.markModified('devices');
 };
 
 UserDeviceSchema.methods.restrictDeviceAccess = function(deviceToken) {
@@ -54,6 +56,8 @@ UserDeviceSchema.methods.restrictDeviceAccess = function(deviceToken) {
     canAccess: false
   });
   else device.canAccess = false;
+
+  this.markModified('devices');
 };
 
 UserDeviceSchema.statics.findOrCreateNew = function(userName) {
