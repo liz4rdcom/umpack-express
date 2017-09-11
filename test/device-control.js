@@ -506,6 +506,106 @@ describe('device control', function() {
             devices[0].canAccess.should.equal(true);
           });
       });
+
+      it('should register device and grant access if not exists', function() {
+        var token = shortid.generate();
+
+        return mongoose.connection.db.collection(userDevicesCollection)
+          .insert({
+            userName: username,
+            devices: [{
+              deviceToken: token,
+              canAccess: true
+            }]
+          })
+          .then(function() {
+            return login(token);
+          })
+          .then(function(res) {
+            return chai.request(app)
+              .post('/deviceUm/users/' + username + '/devices/access')
+              .set('authorization', res.text)
+              .send({
+                deviceToken: 'one'
+              });
+          })
+          .then(function(res) {
+            res.should.have.status(200);
+
+            should.exist(res.body);
+
+            res.body.should.have.property('success', true);
+
+            return mongoose.connection.db.collection(userDevicesCollection)
+              .findOne({
+                userName: username
+              });
+          })
+          .then(function(userDevice) {
+            should.exist(userDevice);
+
+            var devices = userDevice.devices.filter(function(device) {
+              return device.deviceToken === 'one';
+            });
+
+            devices.should.have.length(1);
+
+            devices[0].canAccess.should.equal(true);
+          });
+      });
+
+      it('should create new userDevice if not exists and grant its device access', function() {
+        var token = shortid.generate();
+
+        return Promise.all([
+            mongoose.connection.db.collection(usersCollection)
+            .insert({
+              userName: 'someone',
+              password: utils.passwordHash(password),
+              isActivated: true,
+              roles: ['user'],
+              '__v': 0
+            }),
+            mongoose.connection.db.collection(userDevicesCollection)
+            .insert({
+              userName: username,
+              devices: [{
+                deviceToken: token,
+                canAccess: true
+              }]
+            })
+          ])
+          .then(function() {
+            return login(token);
+          })
+          .then(function(res) {
+            return chai.request(app)
+              .post('/deviceUm/users/someone/devices/access')
+              .set('authorization', res.text)
+              .send({
+                deviceToken: 'one'
+              });
+          })
+          .then(function(res) {
+            res.should.have.status(200);
+
+            should.exist(res.body);
+
+            res.body.should.have.property('success', true);
+
+            return mongoose.connection.db.collection(userDevicesCollection)
+              .findOne({
+                userName: 'someone'
+              });
+          })
+          .then(function(userDevice) {
+            should.exist(userDevice);
+
+            userDevice.devices.should.have.length(1);
+            userDevice.devices[0].deviceToken.should.equal('one');
+          });
+
+      });
     });
   });
 
