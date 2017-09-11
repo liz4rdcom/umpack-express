@@ -28,5 +28,51 @@ UserDeviceSchema.methods.deviceExists = function(deviceToken) {
   return false;
 };
 
+UserDeviceSchema.methods.getDevice = function(deviceToken) {
+  for (var i = 0; i < this.devices.length; i++) {
+    if (this.devices[i].deviceToken === deviceToken) return this.devices[i];
+  }
+
+  return null;
+};
+
+UserDeviceSchema.methods.grantDeviceAccess = function(deviceToken) {
+  var device = this.getDevice(deviceToken);
+
+  if (!device) this.devices.push({
+    deviceToken: deviceToken,
+    canAccess: true
+  });
+  else device.canAccess = true;
+
+  this.markModified('devices');
+};
+
+UserDeviceSchema.methods.restrictDeviceAccess = function(deviceToken) {
+  var device = this.getDevice(deviceToken);
+
+  if (!device) this.devices.push({
+    deviceToken: deviceToken,
+    canAccess: false
+  });
+  else device.canAccess = false;
+
+  this.markModified('devices');
+};
+
+UserDeviceSchema.statics.findOrCreateNew = function(userName) {
+  return this.findOne({
+      userName: userName
+    }).exec()
+    .then(function(userDevice) {
+      if (!userDevice) return new this({
+        userName: userName,
+        devices: []
+      });
+
+      return userDevice;
+    }.bind(this));
+};
+
 
 module.exports = mongoose.model('userdevices', UserDeviceSchema);

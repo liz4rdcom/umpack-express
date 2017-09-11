@@ -20,6 +20,7 @@ var Role = require('./models/role');
 var credentialsInteractor = require('./interactors/credentialsInteractor');
 var userInteractor = require('./interactors/userInteractor');
 var roleInteractor = require('./interactors/roleInteractor');
+var deviceInteractor = require('./interactors/deviceInteractor');
 
 
 router.post('/login', function(req, res, next) {
@@ -203,6 +204,40 @@ router.delete('/users/:id/password', isAuthorized, function(req, res, next) {
         password: password.original
       };
     });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/:userName/devices/access', isAuthorized, function(req, res, next) {
+  var promise = deviceInteractor.grantDeviceAccess(req.params.userName, req.body.deviceToken)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.post('/users/:userName/devices/restriction', isAuthorized, function(req, res, next) {
+  var promise = deviceInteractor.restrictDeviceAccess(req.params.userName, req.body.deviceToken)
+    .then(function() {
+      return {
+        success: true
+      };
+    });
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.get('/users/:userName/devices', isAuthorized, function(req, res, next) {
+  var promise = deviceInteractor.getAllRegisteredDevices(req.params.userName);
+
+  sendPromiseResult(promise, req, res, next);
+});
+
+router.get('/users/:userName/devices/permitted', isAuthorized, function(req, res, next) {
+  var promise = deviceInteractor.getAllPermittedDevices(req.params.userName);
 
   sendPromiseResult(promise, req, res, next);
 });
@@ -411,7 +446,7 @@ function isAuthorized(req, res, next) {
         return checkRolePromise;
       }
 
-      var checkDevicePromise = credentialsInteractor.checkDevice(userInfo.userName, userInfo.deviceToken);
+      var checkDevicePromise = deviceInteractor.checkDevice(userInfo.userName, userInfo.deviceToken);
 
       return Promise.all([
         checkRolePromise,
