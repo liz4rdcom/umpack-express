@@ -607,6 +607,107 @@ describe('device control', function() {
 
       });
     });
+
+    describe('POST /users/:userName/devices/restriction', function () {
+      it('should restrict access of existing device', function () {
+        var token = shortid.generate();
+
+        return mongoose.connection.db.collection(userDevicesCollection)
+          .insert({
+            userName: username,
+            devices: [{
+                deviceToken: token,
+                canAccess: true
+              },
+              {
+                deviceToken: 'one',
+                canAccess: true
+              }
+            ]
+          })
+          .then(function() {
+            return login(token);
+          })
+          .then(function(res) {
+            return chai.request(app)
+              .post('/deviceUm/users/' + username + '/devices/restriction')
+              .set('authorization', res.text)
+              .send({
+                deviceToken: 'one'
+              });
+          })
+          .then(function(res) {
+            res.should.have.status(200);
+
+            should.exist(res.body);
+
+            res.body.should.have.property('success', true);
+
+            return mongoose.connection.db.collection(userDevicesCollection)
+              .findOne({
+                userName: username
+              });
+          })
+          .then(function(userDevice) {
+            should.exist(userDevice);
+
+            var devices = userDevice.devices.filter(function(device) {
+              return device.deviceToken === 'one';
+            });
+
+            devices.should.have.length(1);
+
+            devices[0].canAccess.should.equal(false);
+          });
+      });
+
+      it('should register device and restrict access if not exists', function () {
+        var token = shortid.generate();
+
+        return mongoose.connection.db.collection(userDevicesCollection)
+          .insert({
+            userName: username,
+            devices: [{
+              deviceToken: token,
+              canAccess: true
+            }]
+          })
+          .then(function() {
+            return login(token);
+          })
+          .then(function(res) {
+            return chai.request(app)
+              .post('/deviceUm/users/' + username + '/devices/restriction')
+              .set('authorization', res.text)
+              .send({
+                deviceToken: 'one'
+              });
+          })
+          .then(function(res) {
+            res.should.have.status(200);
+
+            should.exist(res.body);
+
+            res.body.should.have.property('success', true);
+
+            return mongoose.connection.db.collection(userDevicesCollection)
+              .findOne({
+                userName: username
+              });
+          })
+          .then(function(userDevice) {
+            should.exist(userDevice);
+
+            var devices = userDevice.devices.filter(function(device) {
+              return device.deviceToken === 'one';
+            });
+
+            devices.should.have.length(1);
+
+            devices[0].canAccess.should.equal(false);
+          });
+      });
+    });
   });
 
 });
