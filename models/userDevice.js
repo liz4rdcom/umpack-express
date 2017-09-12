@@ -10,20 +10,6 @@ var UserDeviceSchema = new mongoose.Schema({
 
 UserDeviceSchema.methods.canAccess = function(deviceToken) {
   for (var i = 0; i < this.devices.length; i++) {
-    if (this.devices[i].deviceToken === deviceToken) {
-      this.devices[i].lastUsageDate = new Date();
-
-      this.markModified('devices');
-
-      return this.devices[i].canAccess;
-    }
-  }
-
-  return false;
-};
-
-UserDeviceSchema.methods.checkAccessWithoutMark = function(deviceToken) {
-  for (var i = 0; i < this.devices.length; i++) {
     if (this.devices[i].deviceToken === deviceToken) return this.devices[i].canAccess;
   }
 
