@@ -7,6 +7,7 @@ var User = require('../models/user');
 var ResetRequest = require('../models/resetRequest');
 var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
+var deviceInteractor = require('./deviceInteractor');
 
 exports.login = function(userData) {
   return Promise.try(function() {
@@ -29,20 +30,31 @@ exports.login = function(userData) {
         throw API_ERRORS.WRONG_USER_CREDENTIALS;
       }
 
-      var payload = {
-        user: user.userName,
-        roles: user.roles
-      };
+      if (!config.deviceControl) return createToken(user, userData);
 
-      if (config.deviceControl) payload.device = userData.deviceToken;
-
-      var accesKey = jwt.sign(payload, config.accessTokenSecret, {
-        expiresIn: config.accessTokenExpiresIn
-      });
-
-      return accesKey;
+      return deviceInteractor.checkDevice(userData.userName, userData.deviceToken)
+        .then(function() {
+          return createToken(user, userData);
+        });
     });
 };
+
+function createToken(user, userData) {
+  var payload = {
+    user: user.userName,
+    roles: user.roles
+  };
+
+  if (config.deviceControl) {
+    payload.device = userData.deviceToken;
+  }
+
+  var accesKey = jwt.sign(payload, config.accessTokenSecret, {
+    expiresIn: config.accessTokenExpiresIn
+  });
+
+  return accesKey;
+}
 
 exports.signup = function(userData) {
   return User.findOne({
