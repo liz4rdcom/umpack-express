@@ -90,12 +90,22 @@ describe('device control', function() {
     it('should create jwt with device token', function() {
       var deviceToken = shortid.generate();
 
-      return chai.request(app)
-        .post('/deviceUm/login')
-        .send({
+      return mongoose.connection.db.collection(userDevicesCollection)
+        .insert({
           userName: username,
-          password: password,
-          deviceToken: deviceToken
+          devices: [{
+            deviceToken: deviceToken,
+            canAccess: true
+          }]
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/deviceUm/login')
+            .send({
+              userName: username,
+              password: password,
+              deviceToken: deviceToken
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
