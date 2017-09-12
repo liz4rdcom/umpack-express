@@ -146,6 +146,18 @@ describe('device control', function() {
 
       return utils.shouldBeBadRequest(promise, 805);
     });
+
+    it('should return DEVICE_ACCESS_DENIED when device access is denied', function () {
+      var promise = chai.request(app)
+        .post('/deviceUm/login')
+        .send({
+          userName: username,
+          password: password,
+          deviceToken: 'one'
+        });
+
+      return utils.shouldBeBadRequest(promise, 806);
+    });
   });
 
   describe('isAuthorized()', function() {
