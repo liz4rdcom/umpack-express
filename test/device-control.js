@@ -449,6 +449,8 @@ describe('device control', function() {
               should.exist(device);
 
               device.deviceToken.should.not.equal('one');
+
+              if (device.deviceToken === token) device.should.have.property('lastUsageDate');
             });
           });
       });
@@ -608,8 +610,8 @@ describe('device control', function() {
       });
     });
 
-    describe('POST /users/:userName/devices/restriction', function () {
-      it('should restrict access of existing device', function () {
+    describe('POST /users/:userName/devices/restriction', function() {
+      it('should restrict access of existing device', function() {
         var token = shortid.generate();
 
         return mongoose.connection.db.collection(userDevicesCollection)
@@ -661,7 +663,7 @@ describe('device control', function() {
           });
       });
 
-      it('should register device and restrict access if not exists', function () {
+      it('should register device and restrict access if not exists', function() {
         var token = shortid.generate();
 
         return mongoose.connection.db.collection(userDevicesCollection)
