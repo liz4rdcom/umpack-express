@@ -11,7 +11,7 @@ var UserDeviceSchema = new mongoose.Schema({
 UserDeviceSchema.methods.canAccess = function(deviceToken) {
   for (var i = 0; i < this.devices.length; i++) {
     if (this.devices[i].deviceToken === deviceToken) {
-      this.devices[i].lastAccessDate = new Date();
+      this.devices[i].lastUsageDate = new Date();
 
       this.markModified('devices');
 
@@ -33,7 +33,7 @@ UserDeviceSchema.methods.checkAccessWithoutMark = function(deviceToken) {
 UserDeviceSchema.methods.markDeviceUsage = function(deviceToken) {
   for (var i = 0; i < this.devices.length; i++) {
     if (this.devices[i].deviceToken === deviceToken) {
-      this.devices[i].lastAccessDate = new Date();
+      this.devices[i].lastUsageDate = new Date();
 
       this.markModified('devices');
 

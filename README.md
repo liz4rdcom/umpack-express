@@ -254,7 +254,7 @@ response - [
   {
     deviceToken: 'token',
     canAccess: true/false,
-    lastAccessDate: new Date() //last usage date
+    lastUsageDate: new Date() //last usage date
   }
 ]
 ```
@@ -266,7 +266,7 @@ response - [
   {
     deviceToken: 'token',
     canAccess: true,
-    lastAccessDate: new Date() //last usage date
+    lastUsageDate: new Date() //last usage date
   }
 ]
 ```
