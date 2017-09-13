@@ -84,7 +84,7 @@ function checkIfUserExists(userName) {
   return User.findOne({
       userName: userName
     })
-    .then(function(userName) {
-      if (!userName) throw API_ERRORS.USER_NOT_EXISTS;
+    .then(function(user) {
+      if (!user) throw API_ERRORS.USER_NOT_EXISTS;
     });
 }
