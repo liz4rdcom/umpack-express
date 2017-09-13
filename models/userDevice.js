@@ -16,6 +16,18 @@ UserDeviceSchema.methods.canAccess = function(deviceToken) {
   return false;
 };
 
+UserDeviceSchema.methods.markDeviceUsage = function(deviceToken) {
+  for (var i = 0; i < this.devices.length; i++) {
+    if (this.devices[i].deviceToken === deviceToken) {
+      this.devices[i].lastUsageDate = new Date();
+
+      this.markModified('devices');
+
+      return;
+    }
+  }
+};
+
 UserDeviceSchema.methods.addNewDevice = function(device) {
   this.devices.push(device);
 };

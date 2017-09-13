@@ -90,12 +90,22 @@ describe('device control', function() {
     it('should create jwt with device token', function() {
       var deviceToken = shortid.generate();
 
-      return chai.request(app)
-        .post('/deviceUm/login')
-        .send({
+      return mongoose.connection.db.collection(userDevicesCollection)
+        .insert({
           userName: username,
-          password: password,
-          deviceToken: deviceToken
+          devices: [{
+            deviceToken: deviceToken,
+            canAccess: true
+          }]
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/deviceUm/login')
+            .send({
+              userName: username,
+              password: password,
+              deviceToken: deviceToken
+            });
         })
         .then(function(res) {
           res.should.have.status(200);
@@ -135,6 +145,18 @@ describe('device control', function() {
         });
 
       return utils.shouldBeBadRequest(promise, 805);
+    });
+
+    it('should return DEVICE_ACCESS_DENIED when device access is denied', function () {
+      var promise = chai.request(app)
+        .post('/deviceUm/login')
+        .send({
+          userName: username,
+          password: password,
+          deviceToken: 'one'
+        });
+
+      return utils.shouldBeBadRequest(promise, 806);
     });
   });
 
@@ -449,6 +471,8 @@ describe('device control', function() {
               should.exist(device);
 
               device.deviceToken.should.not.equal('one');
+
+              if (device.deviceToken === token) device.should.have.property('lastUsageDate');
             });
           });
       });
@@ -608,8 +632,8 @@ describe('device control', function() {
       });
     });
 
-    describe('POST /users/:userName/devices/restriction', function () {
-      it('should restrict access of existing device', function () {
+    describe('POST /users/:userName/devices/restriction', function() {
+      it('should restrict access of existing device', function() {
         var token = shortid.generate();
 
         return mongoose.connection.db.collection(userDevicesCollection)
@@ -661,7 +685,7 @@ describe('device control', function() {
           });
       });
 
-      it('should register device and restrict access if not exists', function () {
+      it('should register device and restrict access if not exists', function() {
         var token = shortid.generate();
 
         return mongoose.connection.db.collection(userDevicesCollection)

@@ -253,7 +253,8 @@ GET : {baseurl}/users/{userName}/devices
 response - [
   {
     deviceToken: 'token',
-    canAccess: true/false
+    canAccess: true/false,
+    lastUsageDate: new Date() //last usage date
   }
 ]
 ```
@@ -264,7 +265,8 @@ GET : {baseurl}/users/{userName}/devices/permitted
 response - [
   {
     deviceToken: 'token',
-    canAccess: true
+    canAccess: true,
+    lastUsageDate: new Date() //last usage date
   }
 ]
 ```

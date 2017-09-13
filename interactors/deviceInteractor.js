@@ -12,6 +12,8 @@ exports.checkDevice = function(userName, deviceToken) {
         canAccess: false
       });
 
+      userDevice.markDeviceUsage(deviceToken);
+
       return userDevice.save();
     })
     .then(function(userDevice) {
