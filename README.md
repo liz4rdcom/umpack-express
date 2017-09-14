@@ -43,7 +43,8 @@ var umpack = require('./umpack')({
         // return promise or nothing.
       }
     },
-    deviceControl: false // default false. if it is true, user's devices access is controlled
+    deviceControl: false, // default false. if it is true, user's devices access is controlled
+    userNameCaseSensitive: false // if it is true, userName is case sensitive, if false - it is not.
 });
 //.....
 app.use('/um', umpack.router);
@@ -420,6 +421,7 @@ response - { success: true }
     { code: 805, message: 'invalid device token' }
     { code: 806, message: 'access is denied for your device' }
     { code: 807, message: 'devices control is not supported' }
+    { code: 900, message: 'invalid userName' }
 ```
 
 ### Use Authorization Middleware
