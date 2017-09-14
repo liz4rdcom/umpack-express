@@ -3,9 +3,16 @@ var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var UserDevice = require('../models/userDevice');
 var User = require('../models/user');
+var UserName = require('../domain/userName');
 
 exports.checkDevice = function(userName, deviceToken) {
-  return UserDevice.findOrCreateNew(userName)
+  var userNameObject;
+
+  return Promise.try(function () {
+    userNameObject = typeof(userName) === 'string' ? new UserName(userName) : userName;
+
+    return UserDevice.findOrCreateNew(userNameObject);
+  })
     .then(function(userDevice) {
       if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
         deviceToken: deviceToken,
@@ -22,13 +29,17 @@ exports.checkDevice = function(userName, deviceToken) {
 };
 
 exports.grantDeviceAccess = function(userName, deviceToken) {
+  var userNameObject;
+
   return Promise.try(function() {
       checkIfControlEnabled();
 
-      return checkIfUserExists(userName);
+      userNameObject = new UserName(userName);
+
+      return checkIfUserExists(userNameObject);
     })
     .then(function() {
-      return UserDevice.findOrCreateNew(userName);
+      return UserDevice.findOrCreateNew(userNameObject);
     })
     .then(function(userDevice) {
       userDevice.grantDeviceAccess(deviceToken);
@@ -38,13 +49,17 @@ exports.grantDeviceAccess = function(userName, deviceToken) {
 };
 
 exports.restrictDeviceAccess = function(userName, deviceToken) {
+  var userNameObject;
+
   return Promise.try(function() {
       checkIfControlEnabled();
 
-      return checkIfUserExists(userName);
+      userNameObject = new UserName(userName);
+
+      return checkIfUserExists(userNameObject);
     })
     .then(function() {
-      return UserDevice.findOrCreateNew(userName);
+      return UserDevice.findOrCreateNew(userNameObject);
     })
     .then(function(userDevice) {
       userDevice.restrictDeviceAccess(deviceToken);
@@ -54,13 +69,17 @@ exports.restrictDeviceAccess = function(userName, deviceToken) {
 };
 
 exports.getAllRegisteredDevices = function(userName) {
+  var userNameObject;
+
   return Promise.try(function() {
       checkIfControlEnabled();
 
-      return checkIfUserExists(userName);
+      userNameObject = new UserName(userName);
+
+      return checkIfUserExists(userNameObject);
     })
     .then(function() {
-      return UserDevice.findOrCreateNew(userName);
+      return UserDevice.findOrCreateNew(userNameObject);
     })
     .then(function(userDevice) {
       return userDevice.devices;
@@ -81,10 +100,8 @@ function checkIfControlEnabled() {
 }
 
 function checkIfUserExists(userName) {
-  return User.findOne({
-      userName: userName
-    })
-    .then(function(userName) {
-      if (!userName) throw API_ERRORS.USER_NOT_EXISTS;
+  return User.findByUserName(userName)
+    .then(function(user) {
+      if (!user) throw API_ERRORS.USER_NOT_EXISTS;
     });
 }

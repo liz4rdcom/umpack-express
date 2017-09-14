@@ -14,7 +14,7 @@ var usersCollection = 'users';
 var rolesCollection = 'roleactions';
 var username = 'test';
 var password = '123456';
-var defaultUser = 'defaultUser';
+var defaultUser = 'defaultuser';
 
 chai.use(chaiHttp);
 global.Promise = Promise;

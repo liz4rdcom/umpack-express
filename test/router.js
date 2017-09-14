@@ -94,6 +94,23 @@ describe('service API', function() {
 
         return utils.shouldBeBadRequest(promise, 603);
       });
+
+    it('should return token when non-lowercase userName passed', function() {
+      return utils.saveRecordWithParameters()
+        .then(function() {
+          return chai.request(app)
+            .post('/um/login')
+            .send({
+              userName: 'Test',
+              password: password
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.text);
+        });
+    });
   });
 
   describe('POST /signup', function() {
@@ -142,6 +159,31 @@ describe('service API', function() {
         });
 
       return utils.shouldBeBadRequest(promise, 602);
+    });
+
+    it('should save user with lowercase userName when non-lowercase username passed', function() {
+      return chai.request(app)
+        .post('/um/signup')
+        .send({
+          userName: 'SomeUserName',
+          password: password,
+          email: 'test@test.com',
+          metaData: {
+            one: 1
+          }
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+
+          return mongoose.connection.db.collection(usersCollection).find({}).toArray();
+        })
+        .then(function(users) {
+          users.should.have.length(1);
+
+          users[0].userName.should.equal('someusername');
+        });
     });
   });
 

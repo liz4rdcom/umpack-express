@@ -84,6 +84,10 @@ var INTERNAL_STATUS = {
   DEVICE_CONTROL_NOT_SUPPORTED: {
     code: 807,
     message: 'devices control is not supported'
+  },
+  INVALID_USER_NAME: {
+    code: 900,
+    message: 'invalid userName'
   }
 };
 

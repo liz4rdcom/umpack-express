@@ -14,7 +14,8 @@ var config = {
   accessTokenExpiresIn: '1h',
   cookieAccessTokenName: 'accessToken',
   passwordResetData: passwordResetDataDefaults,
-  deviceControl: false
+  deviceControl: false,
+  userNameCaseSensitive: false
 };
 
 config.handleOptions = function(options) {
@@ -47,6 +48,10 @@ config.handleOptions = function(options) {
 
   if (options.deviceControl != null || options.deviceControl != undefined) {
     this.deviceControl = options.deviceControl;
+  }
+
+  if (options.caseSensitive != null || options.caseSensitive != undefined) {
+    this.caseSensitive = options.caseSensitive;
   }
 };
 

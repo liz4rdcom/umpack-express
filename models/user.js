@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Promise = require('bluebird');
 var Password = require('../domain/password');
+var UserName = require('../domain/userName');
 
 mongoose.Promise = require('bluebird');
 
@@ -23,7 +24,7 @@ var UserSchema = new mongoose.Schema({
 
 UserSchema.statics.findByUserName = function(userName) {
   return this.findOne({
-    'userName': userName
+    'userName': userName.toString()
   }).exec();
 };
 

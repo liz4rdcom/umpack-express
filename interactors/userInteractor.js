@@ -3,6 +3,7 @@ var Password = require('../domain/password');
 var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
+var UserName = require('../domain/userName');
 
 exports.getUsers = function() {
   return User.find({}).exec()
@@ -72,7 +73,7 @@ exports.updateUserRoles = function(userId, roleName, enable) {
 };
 
 exports.getUserById = function(id) {
-  return User.findById(id)
+  return User.findById(id).exec()
     .then(function(user) {
       return {
         id: user._id,
@@ -92,8 +93,12 @@ exports.getUserById = function(id) {
 };
 
 exports.getUserByUserName = function(userName) {
-  return User.findOne({
-      userName: userName
+  var userNameObject;
+
+  return Promise.try(function() {
+      userNameObject = new UserName(userName);
+
+      return User.findByUserName(userNameObject);
     })
     .then(function(user) {
       var userObject = user.toObject();
@@ -129,20 +134,24 @@ exports.changeUserInfo = function(id, body) {
 };
 
 exports.changeUserName = function(id, userName) {
-  return User.findOne({
-      userName: userName
+  var userNameObject;
+
+  return Promise.try(function() {
+      userNameObject = new UserName(userName);
+
+      return User.findByUserName(userNameObject);
     })
     .then(function(user) {
       if (user) throw API_ERRORS.USER_ALREADY_EXISTS;
 
       return User.findByIdAndUpdate(id, {
-        userName: userName
+        userName: userNameObject.value
       });
     });
 };
 
 exports.resetUserPassword = function(id) {
-  return User.findById(id)
+  return User.findById(id).exec()
     .then(function(user) {
       var password = new Password();
 

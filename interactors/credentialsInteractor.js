@@ -8,14 +8,19 @@ var ResetRequest = require('../models/resetRequest');
 var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 var deviceInteractor = require('./deviceInteractor');
+var UserName = require('../domain/userName');
 
 exports.login = function(userData) {
+  var userName;
+
   return Promise.try(function() {
+      userName = new UserName(userData.userName);
+
       if (config.deviceControl) {
         if (!userData.deviceToken) throw API_ERRORS.INVALID_DEVICE_TOKEN;
       }
 
-      return User.findByUserName(userData.userName);
+      return User.findByUserName(userName);
     })
     .then(function(user) {
       if (!user) {
@@ -32,7 +37,7 @@ exports.login = function(userData) {
 
       if (!config.deviceControl) return createToken(user, userData);
 
-      return deviceInteractor.checkDevice(userData.userName, userData.deviceToken)
+      return deviceInteractor.checkDevice(userName, userData.deviceToken)
         .then(function() {
           return createToken(user, userData);
         });
@@ -57,13 +62,19 @@ function createToken(user, userData) {
 }
 
 exports.signup = function(userData) {
-  return User.findOne({
-      $or: [{
-        'userName': userData.userName
-      }, {
-        'email': userData.email
-      }]
-    }).exec()
+  var userName;
+
+  return Promise.try(function() {
+      userName = new UserName(userData.userName);
+
+      return User.findOne({
+        $or: [{
+          'userName': userName.value
+        }, {
+          'email': userData.email
+        }]
+      }).exec();
+    })
     .then(function(result) {
       if (result) {
         throw API_ERRORS.USER_ALREADY_EXISTS;
@@ -71,7 +82,7 @@ exports.signup = function(userData) {
     })
     .then(function() {
       var newUser = new User({
-        userName: userData.userName,
+        userName: userName.value,
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
@@ -93,7 +104,13 @@ exports.signup = function(userData) {
 };
 
 exports.changePassword = function(userData) {
-  return User.findByUserName(userData.userName)
+  var userName;
+
+  return Promise.try(function() {
+      userName = new UserName(userData.userName);
+
+      return User.findByUserName(userName);
+    })
     .then(function(user) {
       if (!user.hasSamePassword(new Password(userData.oldPassword))) {
         throw API_ERRORS.WRONG_PASSWORD;
@@ -118,7 +135,7 @@ exports.passwordResetRequest = function(email, clientIp) {
 
       return ResetRequest.findOne({
           userName: user.userName
-        })
+        }).exec()
         .then(function(existingRequest) {
           if (!existingRequest) {
             return new ResetRequest({
@@ -149,9 +166,7 @@ exports.passwordReset = function(resetKey, newPassword) {
     .then(function(request) {
       validateResetKey(request);
 
-      return User.findOne({
-        userName: request.userName
-      });
+      return User.findByUserName(request.userName);
     })
     .then(function(user) {
       return ResetRequest.remove({
@@ -171,12 +186,14 @@ exports.passwordReset = function(resetKey, newPassword) {
 };
 
 exports.passwordResetRequestByPhone = function(userName) {
+  var userNameObject;
+
   return Promise.try(function() {
       if (!config.passwordResetPhoneData) throw API_ERRORS.PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED;
 
-      return User.findOne({
-        userName: userName
-      });
+      userNameObject = new UserName(userName);
+
+      return User.findByUserName(userNameObject);
     })
     .then(function(user) {
       if (!user) throw API_ERRORS.USER_NOT_EXISTS;
@@ -184,13 +201,13 @@ exports.passwordResetRequestByPhone = function(userName) {
       if (!user.phone) throw API_ERRORS.INVALID_PHONE;
 
       return ResetRequest.findOne({
-          userName: userName,
+          userName: userNameObject.value,
           phone: user.phone
-        })
+        }).exec()
         .then(function(request) {
           if (!request) {
             return new ResetRequest({
-              userName: userName,
+              userName: userNameObject.value,
               phone: user.phone
             });
           }
@@ -211,16 +228,20 @@ exports.passwordResetRequestByPhone = function(userName) {
 };
 
 exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
-  return ResetRequest.findOne({
-      userName: userName,
-      resetKey: resetKey
+  var username;
+
+  return Promise.try(function() {
+      username = new UserName(userName);
+
+      return ResetRequest.findOne({
+        userName: username.value,
+        resetKey: resetKey
+      }).exec();
     })
     .then(function(request) {
       validateResetKey(request);
 
-      return User.findOne({
-        userName: userName
-      });
+      return User.findByUserName(username);
     })
     .then(function(user) {
       if (!user) throw API_ERRORS.USER_NOT_EXISTS;
@@ -231,7 +252,7 @@ exports.passwordResetByPhone = function(userName, resetKey, newPassword) {
     })
     .then(function() {
       return ResetRequest.remove({
-        userName: userName,
+        userName: username.value,
         resetKey: resetKey
       });
     });
