@@ -15,7 +15,7 @@ var config = {
   cookieAccessTokenName: 'accessToken',
   passwordResetData: passwordResetDataDefaults,
   deviceControl: false,
-  caseSensitive: false
+  userNameCaseSensitive: false
 };
 
 config.handleOptions = function(options) {

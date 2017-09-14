@@ -12,7 +12,7 @@ var accessors = {
 function UserName(userName) {
   if (!isValid(userName)) throw API_ERRORS.INVALID_USER_NAME;
 
-  this._value = config.caseSensitive ? userName.trim() : userName.trim().toLowerCase();
+  this._value = config.userNameCaseSensitive ? userName.trim() : userName.trim().toLowerCase();
 
   Object.defineProperties(this, accessors);
 }
