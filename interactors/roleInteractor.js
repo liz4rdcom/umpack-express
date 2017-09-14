@@ -28,7 +28,7 @@ exports.createRole = function(name, description) {
 
   return Role.findOne({
       name: role.name
-    })
+    }).exec()
     .then(function(roleResult) {
       if (roleResult) throw API_ERRORS.ROLE_ALREADY_EXISTS;
 
@@ -39,7 +39,7 @@ exports.createRole = function(name, description) {
 exports.getRoleByName = function(roleName) {
   return Role.findOne({
       name: roleName
-    })
+    }).exec()
     .then(function(role) {
       return {
         name: role.name,
@@ -67,13 +67,13 @@ exports.editRole = function(roleName, roleObject) {
 
   return Role.findOne({
       name: roleInfo.name
-    })
+    }).exec()
     .then(function(role) {
       if (role && roleInfo.name !== roleName) throw API_ERRORS.ROLE_ALREADY_EXISTS;
 
       return Role.findOne({
         name: roleName
-      });
+      }).exec();
     })
     .then(function(role) {
       if (!role) throw API_ERRORS.WRONG_ROLE_NAME;
@@ -106,7 +106,7 @@ exports.addActionToRole = function(roleName, actionObject) {
 
       return Role.findOne({
         name: roleName
-      });
+      }).exec();
     })
     .then(function(role) {
 
@@ -137,7 +137,7 @@ exports.editAction = function(roleName, actionId, actionObject) {
 
       return Role.findOne({
         name: roleName
-      });
+      }).exec();
     })
     .then(function(role) {
 
@@ -152,7 +152,7 @@ exports.editAction = function(roleName, actionId, actionObject) {
 exports.deleteAction = function(roleName, actionId) {
   return Role.findOne({
       name: roleName
-    })
+    }).exec()
     .then(function(role) {
       role.deleteAction(actionId);
 
@@ -160,17 +160,21 @@ exports.deleteAction = function(roleName, actionId) {
     });
 };
 
-exports.checkRole = function (verb, requestUrl, userInfo) {
+exports.checkRole = function(verb, requestUrl, userInfo) {
   var roleConditionalArray = userInfo.roles.map(function(item) {
-      return { 'name': item };
+    return {
+      'name': item
+    };
   });
 
-  return Role.find({ $or: roleConditionalArray }).exec()
-    .then(function (roles) {
+  return Role.find({
+      $or: roleConditionalArray
+    }).exec()
+    .then(function(roles) {
       return roles.reduce(function(patterns, role) {
         var actions = role.filterActionsByVerb(verb);
 
-        patterns = patterns.concat(actions.map(function (action) {
+        patterns = patterns.concat(actions.map(function(action) {
           return action.pattern;
         }));
 
@@ -178,9 +182,9 @@ exports.checkRole = function (verb, requestUrl, userInfo) {
       }, []);
     })
     .then(function(patterns) {
-        if (!urlMatch(patterns, requestUrl)) {
-            throw API_ERRORS.ACCESS_DENIED;
-        }
+      if (!urlMatch(patterns, requestUrl)) {
+        throw API_ERRORS.ACCESS_DENIED;
+      }
     });
 };
 

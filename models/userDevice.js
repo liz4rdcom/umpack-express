@@ -74,11 +74,11 @@ UserDeviceSchema.methods.restrictDeviceAccess = function(deviceToken) {
 
 UserDeviceSchema.statics.findOrCreateNew = function(userName) {
   return this.findOne({
-      userName: userName
+      userName: userName.toString()
     }).exec()
     .then(function(userDevice) {
       if (!userDevice) return new this({
-        userName: userName,
+        userName: userName.toString(),
         devices: []
       });
 
