@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Promise = require('bluebird');
+var config = require('../config');
 
 mongoose.Promise = Promise;
 
@@ -84,6 +85,17 @@ UserDeviceSchema.statics.findOrCreateNew = function(userName) {
 
       return userDevice;
     }.bind(this));
+};
+
+UserDeviceSchema.statics.initUserDevice = function(deviceToken) {
+  if (!config.deviceControl) return Promise.resolve();
+
+  return this.findOrCreateNew('root')
+    .then(function(userDevice) {
+      userDevice.grantDeviceAccess(deviceToken);
+
+      return userDevice.save();
+    });
 };
 
 
