@@ -7,6 +7,7 @@ var config = require('config');
 var Promise = require('bluebird');
 var jwt = require('jsonwebtoken');
 var _ = require('lodash');
+var shortid = require('shortid');
 
 var umpack = require('./helpers/umpack');
 var utils = require('./helpers/utils');
@@ -16,6 +17,7 @@ var ObjectId = require('mongodb').ObjectID;
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
 var resetReqCollection = 'resetrequests';
+var userDevicesCollection = 'userdevices';
 var username = 'test';
 var password = '123456';
 
@@ -31,7 +33,8 @@ describe('service API', function() {
     return Promise.all([
         mongoose.connection.db.collection(rolesCollection).remove(),
         mongoose.connection.db.collection(usersCollection).remove(),
-        mongoose.connection.db.collection(resetReqCollection).remove()
+        mongoose.connection.db.collection(resetReqCollection).remove(),
+        mongoose.connection.db.collection(userDevicesCollection).remove()
       ])
       .then(function() {
 
@@ -350,6 +353,82 @@ describe('service API', function() {
           user.should.have.property('roles');
 
           user.roles.should.have.length(2);
+        });
+    });
+
+    it('should save userDevice', function() {
+      var config = require('../config');
+      var deviceControlFirstValue = config.deviceControl;
+
+      config.deviceControl = true;
+
+      var token = shortid.generate();
+
+      return chai.request(app)
+        .post('/um/initialization')
+        .send({
+          umBaseUrl: umBaseUrl,
+          deviceToken: token
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('password');
+
+          return mongoose.connection.db.collection(userDevicesCollection).findOne({
+            userName: 'root'
+          });
+        })
+        .then(function(userDevice) {
+          should.exist(userDevice);
+
+          userDevice.devices.should.have.length(1);
+          userDevice.devices[0].deviceToken.should.equal(token);
+          userDevice.devices[0].canAccess.should.equal(true);
+
+          config.deviceControl = deviceControlFirstValue;
+        })
+        .catch(function(err) {
+          config.deviceControl = deviceControlFirstValue;
+
+          throw err;
+        });
+    });
+
+    it('should not save userDevice when device control is disabled', function() {
+      var config = require('../config');
+      var deviceControlFirstValue = config.deviceControl;
+
+      config.deviceControl = false;
+
+      var token = shortid.generate();
+
+      return chai.request(app)
+        .post('/um/initialization')
+        .send({
+          umBaseUrl: umBaseUrl,
+          deviceToken: token
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('password');
+
+          return mongoose.connection.db.collection(userDevicesCollection).findOne({
+            userName: 'root'
+          });
+        })
+        .then(function(userDevice) {
+          should.not.exist(userDevice);
+
+          config.deviceControl = deviceControlFirstValue;
+        })
+        .catch(function(err) {
+          config.deviceControl = deviceControlFirstValue;
+
+          throw err;
         });
     });
   });

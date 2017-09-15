@@ -393,6 +393,22 @@ DELETE : {baseurl}/roles/{roleName}/actions/{actionId}
 response - { success: true }
 ```
 
+### Middleware Initialization.
+* saves root user and admin role if they do not exist.
+* if device control is enabled, it saves one permitted device of the root for administration.
+
+```js
+POST : {baseurl}/users
+request - data/body : {
+  umBaseUrl: '/um',
+  deviceToken: 'token' //not required if device control is disabled
+}
+response - {
+  success: true,
+  password: 'password' //generated password for root user
+}
+```
+
 ### API Response Internal Statuses
 * Every response with status 400/401 has also internal status for example :
 ```js

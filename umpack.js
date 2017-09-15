@@ -16,6 +16,7 @@ mongoose.Promise = require('bluebird');
 var User = require('./models/user');
 
 var Role = require('./models/role');
+var UserDevice = require('./models/userDevice');
 
 var credentialsInteractor = require('./interactors/credentialsInteractor');
 var userInteractor = require('./interactors/userInteractor');
@@ -381,7 +382,10 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, 
 router.post('/initialization', function(req, res, next) {
   var promise = Promise.join(
     User.initAndSaveDefaultUser(),
-    Role.initAndSaveDefaultRole(req.body.umBaseUrl),
+    Promise.all([
+      Role.initAndSaveDefaultRole(req.body.umBaseUrl),
+      UserDevice.initUserDevice(req.body.deviceToken)
+    ]),
     function(password) {
       var result = {
         success: true
