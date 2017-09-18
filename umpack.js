@@ -465,6 +465,11 @@ function isAuthorized(req, res, next) {
 
     })
     .catch(function(err) {
+      if (!err.internalStatus)
+        return res.status(500).send({
+          message: err.message
+        });
+
       return res.status(err.responseStatus).send({
         message: err.message,
         internalStatus: err.internalStatus
