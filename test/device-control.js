@@ -116,6 +116,39 @@ describe('device control', function() {
         });
     });
 
+    it('should set device lastUsageDate field', function() {
+      var deviceToken = shortid.generate();
+
+      return mongoose.connection.db.collection(userDevicesCollection)
+        .insert({
+          userName: username,
+          devices: [{
+            deviceToken: deviceToken,
+            canAccess: true
+          }]
+        })
+        .then(function() {
+          return chai.request(app)
+            .post('/deviceUm/login')
+            .send({
+              userName: username,
+              password: password,
+              deviceToken: deviceToken
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          return mongoose.connection.db.collection(userDevicesCollection)
+            .findOne({
+              userName: username
+            });
+        })
+        .then(function(userDevice) {
+          userDevice.devices[0].should.have.property('lastUsageDate');
+        });
+    });
+
     it('should not write device field in jwt when device control is disabled', function() {
       toggleControl(false);
 
@@ -147,7 +180,7 @@ describe('device control', function() {
       return utils.shouldBeBadRequest(promise, 805);
     });
 
-    it('should return DEVICE_ACCESS_DENIED when device access is denied', function () {
+    it('should return DEVICE_ACCESS_DENIED when device access is denied', function() {
       var promise = chai.request(app)
         .post('/deviceUm/login')
         .send({
@@ -280,6 +313,27 @@ describe('device control', function() {
           userDevice.devices.should.have.length(1);
           userDevice.devices[0].deviceToken.should.equal(deviceToken);
           userDevice.devices[0].canAccess.should.equal(false);
+        });
+    });
+
+    it('should not set field lastUsageDate to device', function() {
+      var deviceToken = shortid.generate();
+
+      var reqStub = createReqStub(deviceToken);
+
+      return callMockedIsAuthorized(reqStub)
+        .then(function(result) {
+          shouldBeForbidden(result);
+
+          shouldReturnErrorWithStatus(result, 806);
+
+          return mongoose.connection.db.collection(userDevicesCollection)
+            .findOne({
+              userName: username
+            });
+        })
+        .then(function(userDevice) {
+          userDevice.devices[0].should.not.have.property('lastUsageDate');
         });
     });
 
