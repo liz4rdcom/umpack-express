@@ -23,6 +23,10 @@ UserName.prototype.toString = function() {
   return this._value;
 };
 
+UserName.toUserNameObject = function(userName) {
+  return userName instanceof UserName ? userName : new UserName(userName);
+};
+
 function isValid(userName) {
   if (!userName || typeof(userName) !== 'string') return false;
 
