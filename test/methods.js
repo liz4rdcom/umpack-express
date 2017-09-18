@@ -539,6 +539,24 @@ describe('umpack methods', function() {
           shouldReturnErrorWithStatus(result, 609);
         });
     });
+
+    it('should catch internal server error and return 500', function () {
+      var reqStub = {
+        headers: null
+      }; // error should be thrown
+
+      return callMockedIsAuthorized(reqStub)
+        .then(function (result) {
+          statusMethodShouldBeCalled(result);
+
+          result.status.should.equal(500);
+
+          should.exist(result.data);
+          should.exist(result.data.message);
+
+          result.data.message.should.include('null');
+        });
+    });
   });
 });
 
