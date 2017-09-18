@@ -8,11 +8,34 @@ var UserName = require('../domain/userName');
 exports.checkDevice = function(userName, deviceToken) {
   var userNameObject;
 
-  return Promise.try(function () {
-    userNameObject = typeof(userName) === 'string' ? new UserName(userName) : userName;
+  return Promise.try(function() {
+      userNameObject = UserName.toUserNameObject(userName);
 
-    return UserDevice.findOrCreateNew(userNameObject);
-  })
+      return UserDevice.findOrCreateNew(userNameObject);
+    })
+    .then(function(userDevice) {
+      if (!userDevice.deviceExists(deviceToken)) {
+        userDevice.addNewDevice({
+          deviceToken: deviceToken,
+          canAccess: false
+        });
+
+        return userDevice.save();
+      }
+
+      return userDevice;
+    })
+    .then(function(userDevice) {
+      if (!userDevice.canAccess(deviceToken)) throw API_ERRORS.DEVICE_ACCESS_DENIED;
+    });
+};
+
+exports.checkAndMarkDevice = function(userName, deviceToken) {
+  return Promise.try(function() {
+      var userNameObject = UserName.toUserNameObject(userName);
+
+      return UserDevice.findOrCreateNew(userNameObject);
+    })
     .then(function(userDevice) {
       if (!userDevice.deviceExists(deviceToken)) userDevice.addNewDevice({
         deviceToken: deviceToken,

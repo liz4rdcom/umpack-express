@@ -37,7 +37,7 @@ exports.login = function(userData) {
 
       if (!config.deviceControl) return createToken(user, userData);
 
-      return deviceInteractor.checkDevice(userName, userData.deviceToken)
+      return deviceInteractor.checkAndMarkDevice(userName, userData.deviceToken)
         .then(function() {
           return createToken(user, userData);
         });

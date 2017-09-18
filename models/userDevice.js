@@ -31,6 +31,8 @@ UserDeviceSchema.methods.markDeviceUsage = function(deviceToken) {
 
 UserDeviceSchema.methods.addNewDevice = function(device) {
   this.devices.push(device);
+
+  this.markModified('devices');
 };
 
 UserDeviceSchema.methods.deviceExists = function(deviceToken) {
