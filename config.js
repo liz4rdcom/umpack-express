@@ -10,12 +10,24 @@ var passwordResetDataDefaults = {
   passwordResetEnabled: false
 };
 
+var nullFunction = function () {};
+
+var defaultLogger = {
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+  info: nullFunction,
+  log: nullFunction,
+  debug: nullFunction,
+  trace: nullFunction
+};
+
 var config = {
   accessTokenExpiresIn: '1h',
   cookieAccessTokenName: 'accessToken',
   passwordResetData: passwordResetDataDefaults,
   deviceControl: false,
-  userNameCaseSensitive: false
+  userNameCaseSensitive: false,
+  logger: defaultLogger
 };
 
 config.handleOptions = function(options) {
@@ -52,6 +64,10 @@ config.handleOptions = function(options) {
 
   if (options.caseSensitive != null || options.caseSensitive != undefined) {
     this.caseSensitive = options.caseSensitive;
+  }
+
+  if (options.logger) {
+    this.logger = options.logger;
   }
 };
 
