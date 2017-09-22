@@ -24,6 +24,10 @@ var userInteractor = require('./interactors/userInteractor');
 var roleInteractor = require('./interactors/roleInteractor');
 var deviceInteractor = require('./interactors/deviceInteractor');
 
+process.on("unhandledRejection", function(reason, promise) {
+  config.logger.warn('unhandled rejection: ' + reason);
+});
+
 
 router.post('/login', function(req, res, next) {
 
