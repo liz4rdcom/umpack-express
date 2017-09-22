@@ -1,5 +1,4 @@
 var config = require('./config');
-var logger = config.logger;
 var jwt = require('jsonwebtoken');
 
 exports.logResult = function(req, result) {
@@ -18,11 +17,11 @@ exports.logResult = function(req, result) {
   if (result.success === false) logObject.message = 'success false';
   else logObject.message = 'OK';
 
-  logger.info(logObject);
+  config.logger.info(logObject);
 
   logObject.result = result;
 
-  logger.debug(logObject);
+  config.logger.debug(logObject);
 };
 
 exports.logBadRequest = function(req, err) {
@@ -40,7 +39,7 @@ exports.logBadRequest = function(req, err) {
 
   if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
 
-  logger.info(logObject);
+  config.logger.info(logObject);
 };
 
 exports.logInternalError = function(req, err) {
@@ -57,7 +56,7 @@ exports.logInternalError = function(req, err) {
 
   if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
 
-  logger.error(logObject);
+  config.logger.error(logObject);
 };
 
 exports.logAuthorizationResult = function(req) {
@@ -73,7 +72,7 @@ exports.logAuthorizationResult = function(req) {
 
   if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
 
-  logger.trace(logObject);
+  config.logger.trace(logObject);
 };
 
 exports.logAuthorizationInternalError = function(req, err) {
@@ -88,7 +87,7 @@ exports.logAuthorizationInternalError = function(req, err) {
     stacktrace: err.stack
   };
 
-  logger.error(logObject);
+  config.logger.error(logObject);
 };
 
 exports.logAuthorizationFail = function(req, err) {
@@ -104,9 +103,9 @@ exports.logAuthorizationFail = function(req, err) {
     message: err.message
   };
 
-  if (err.responseStatus === 403) return logger.warn(logObject);
+  if (err.responseStatus === 403) return config.logger.warn(logObject);
 
-  logger.info(logObject);
+  config.logger.info(logObject);
 };
 
 function hidePassword(body) {
