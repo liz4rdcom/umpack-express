@@ -9,7 +9,7 @@ exports.logResult = function (req, result) {
     ip: req.ip,
     requestParams: req.params,
     requestQuery: req.query,
-    requestBody: req.body,
+    requestBody: hidePassword(req.body),
     status: 200
   };
 
@@ -32,7 +32,7 @@ exports.logBadRequest = function (req, err) {
     ip: req.ip,
     requestParams: req.params,
     requestQuery: req.query,
-    requestBody: req.body,
+    requestBody: hidePassword(req.body),
     status: 400,
     internalStatus: err.internalStatus,
     message: err.message
@@ -50,7 +50,7 @@ exports.logInternalError = function (req, err) {
     ip: req.ip,
     requestParams: req.params,
     requestQuery: req.query,
-    requestBody: req.body,
+    requestBody: hidePassword(req.body),
     status: 500,
     stacktrace: err.stack
   };
@@ -59,3 +59,17 @@ exports.logInternalError = function (req, err) {
 
   logger.error(logObject);
 };
+
+function hidePassword(body) {
+  if (!body.password) return body;
+
+  return Object.keys(body)
+    .filter(function (key) {
+      return key !== 'password';
+    })
+    .reduce(function (newBody, key) {
+      newBody[key] = body[key];
+
+      return newBody;
+    }, {password: 'hidden'});
+}
