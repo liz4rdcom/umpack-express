@@ -44,7 +44,9 @@ var umpack = require('./umpack')({
       }
     },
     deviceControl: false, // default false. if it is true, user's devices access is controlled
-    userNameCaseSensitive: false // if it is true, userName is case sensitive, if false - it is not.
+    userNameCaseSensitive: false, // if it is true, userName is case sensitive, if false - it is not.
+    logger: loggerObject // loggerObject should have methods: error, warn, info, debug and trace. it should have logging level restriction itself.
+    // by default logger field is logger object that logs only warnings and errors.
 });
 //.....
 app.use('/um', umpack.router);
