@@ -588,9 +588,8 @@ describe('service API', function() {
     it('should return PASSWORD_RESET_BY_EMAIL_NOT_SUPPORTED when passwordResetEnabled is false', function() {
       mailSenderMock.refreshToDefault();
 
-      var umpackJs = rewired.umpackJs;
-      var appConfig = umpackJs.__get__('config');
-      appConfig.handleOptions({});
+      var config = require('../config');
+      config.handleOptions({});
 
       var promise = chai.request(app)
         .post('/otherUm/users/passwordResetRequest')
@@ -848,10 +847,9 @@ describe('service API', function() {
     });
 
     it('should return PASSWORD_RESET_BY_PHONE_NOT_SUPPORTED when passwordResetPhoneData is not passed', function() {
-      var umpackJs = rewired.umpackJs;
-      var appConfig = umpackJs.__get__('config');
-      appConfig.handleOptions({});
-      appConfig.passwordResetPhoneData = null;
+      var config = require('../config');
+      config.handleOptions({});
+      config.passwordResetPhoneData = null;
 
       var promise = chai.request(app)
         .post('/otherUm/users/' + username + '/passwordResetRequestByPhone')
@@ -1061,8 +1059,8 @@ function initRewired() {
 
   umpackJs.__set__('credentialsInteractor', credentialsInteractor);
 
-  var appConfig = umpackJs.__get__('config');
-  appConfig.handleOptions(config.get('umpack'));
+  var conf = require('../config');
+  conf.handleOptions(config.get('umpack'));
 
   var app = require('./helpers/app');
 
@@ -1095,8 +1093,8 @@ function initWithMockedConfig() {
 
   var umpackJs = rewire('../umpack');
 
-  var appConfig = umpackJs.__get__('config');
-  appConfig.handleOptions(configObject);
+  var conf = require('../config');
+  conf.handleOptions(configObject);
 
   var app = require('./helpers/app');
 
