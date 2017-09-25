@@ -254,6 +254,76 @@ describe('logging', function() {
           infos[0].data.should.have.property('message', 'success false');
         });
       });
+
+    });
+
+    describe('isAuthorized() logs', function () {
+      describe('#logAuthorizationInternalError()', function () {
+        it('should log object with stacktrace and 500 status', function () {
+          var req = {
+            method: 'GET',
+            originalUrl: '/api',
+            ip: '::1',
+            params: {},
+            query: {},
+            body: {},
+            headers: {}
+          };
+
+          var err = new Error('some error');
+
+          requestLogger.logAuthorizationInternalError(req, err);
+
+          loggerMock.logs.should.have.length(1);
+          loggerMock.logs[0].level.should.equal('error');
+          loggerMock.logs[0].data.should.have.property('stacktrace', err.stack);
+          loggerMock.logs[0].data.should.have.property('status', 500);
+        });
+      });
+
+      describe('#logAuthorizationFail()', function () {
+        it('should log info on unauthorized', function () {
+          var req = {
+            method: 'GET',
+            originalUrl: '/api',
+            ip: '::1',
+            params: {},
+            query: {},
+            body: {},
+            headers: {}
+          };
+
+          var err = API_ERRORS.JWT_NOT_EXISTS;
+
+          requestLogger.logAuthorizationFail(req, err);
+
+          loggerMock.logs.should.have.length(1);
+          loggerMock.logs[0].level.should.equal('info');
+          loggerMock.logs[0].data.should.have.property('status', 401);
+          loggerMock.logs[0].data.should.have.property('internalStatus', 606);
+        });
+
+        it('should log warning on forbidden', function () {
+          var req = {
+            method: 'GET',
+            originalUrl: '/api',
+            ip: '::1',
+            params: {},
+            query: {},
+            body: {},
+            headers: {}
+          };
+
+          var err = API_ERRORS.ACCESS_DENIED;
+
+          requestLogger.logAuthorizationFail(req, err);
+
+          loggerMock.logs.should.have.length(1);
+          loggerMock.logs[0].level.should.equal('warn');
+          loggerMock.logs[0].data.should.have.property('status', 403);
+          loggerMock.logs[0].data.should.have.property('internalStatus', 609);
+        });
+      });
     });
 
   });
