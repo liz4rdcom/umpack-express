@@ -5,7 +5,12 @@ var _ = require('lodash');
 describe('config object', function() {
   describe('#handleOptions()', function() {
     it('should save config fields', function() {
-      var config = Object.assign({}, require('../config'));
+      var originalConfig = require('../config');
+      var config = Object.keys(originalConfig).reduce(function(conf, key) {
+        conf[key] = originalConfig[key];
+
+        return conf;
+      }, {});
 
       var options = {
         accessTokenSecret: 'access',
@@ -30,7 +35,7 @@ describe('config object', function() {
         },
         passwordResetPhoneData: {
           resetKeyExpiresIn: '2h',
-          sendResetKey: function (phone, key) {
+          sendResetKey: function(phone, key) {
             //send
             console.log(phone, key);
           }
