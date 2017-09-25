@@ -109,7 +109,7 @@ exports.logAuthorizationFail = function(req, err) {
 };
 
 function hidePassword(body) {
-  if (!body.password) return body;
+  if (!body || !body.password) return body;
 
   return Object.keys(body)
     .filter(function(key) {
