@@ -43,7 +43,7 @@ describe('logging', function() {
     config.logger = firstLogger;
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     loggerMock.logs = [];
   });
 
@@ -55,7 +55,7 @@ describe('logging', function() {
 
       describe('#logInternalError()', function() {
 
-        it('should log object with error stacktrace', function () {
+        it('should log object with error stacktrace', function() {
           var req = {
             method: 'GET',
             originalUrl: '/api',
@@ -78,8 +78,8 @@ describe('logging', function() {
 
       });
 
-      describe('#logBadRequest()', function () {
-        it('should log with internalStatus field', function () {
+      describe('#logBadRequest()', function() {
+        it('should log with internalStatus field', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
@@ -100,14 +100,17 @@ describe('logging', function() {
           loggerMock.logs[0].data.should.have.property('status', 400);
         });
 
-        it('should hide password', function () {
+        it('should hide password', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
             ip: '::1',
             params: {},
             query: {},
-            body: {userName: 'user', password: '12345'},
+            body: {
+              userName: 'user',
+              password: '12345'
+            },
             headers: {}
           };
 
@@ -120,9 +123,9 @@ describe('logging', function() {
         });
       });
 
-      describe('#logResult()', function () {
+      describe('#logResult()', function() {
 
-        it('should log object with info level', function () {
+        it('should log object with info level', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
@@ -139,7 +142,7 @@ describe('logging', function() {
 
           loggerMock.logs.should.have.length(2);
 
-          var infos = loggerMock.logs.filter(function (log) {
+          var infos = loggerMock.logs.filter(function(log) {
             return log.level === 'info';
           });
 
@@ -154,7 +157,7 @@ describe('logging', function() {
           infos[0].data.should.have.property('message', 'OK');
         });
 
-        it('should log object with result in debug level', function () {
+        it('should log object with result in debug level', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
@@ -171,7 +174,7 @@ describe('logging', function() {
 
           loggerMock.logs.should.have.length(2);
 
-          var debugs = loggerMock.logs.filter(function (log) {
+          var debugs = loggerMock.logs.filter(function(log) {
             return log.level === 'debug';
           });
 
@@ -179,8 +182,11 @@ describe('logging', function() {
           debugs[0].data.should.have.property('result', result);
         });
 
-        it('should log object with userName field if token passed', function () {
-          var token = jwt.sign({user: 'one', roles:[]}, config.accessTokenSecret);
+        it('should log object with userName field if token passed', function() {
+          var token = jwt.sign({
+            user: 'one',
+            roles: []
+          }, config.accessTokenSecret);
 
           var req = {
             method: 'POST',
@@ -189,7 +195,9 @@ describe('logging', function() {
             params: {},
             query: {},
             body: {},
-            headers: {authorization: token}
+            headers: {
+              authorization: token
+            }
           };
 
           var result = ['test'];
@@ -198,14 +206,14 @@ describe('logging', function() {
 
           loggerMock.logs.should.have.length(2);
 
-          var infos = loggerMock.logs.filter(function (log) {
+          var infos = loggerMock.logs.filter(function(log) {
             return log.level === 'info';
           });
 
           infos[0].data.should.have.property('userName', 'one');
         });
 
-        it('should log object without userName field if token not passed', function () {
+        it('should log object without userName field if token not passed', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
@@ -222,14 +230,14 @@ describe('logging', function() {
 
           loggerMock.logs.should.have.length(2);
 
-          var infos = loggerMock.logs.filter(function (log) {
+          var infos = loggerMock.logs.filter(function(log) {
             return log.level === 'info';
           });
 
           infos[0].data.should.not.have.property('userName');
         });
 
-        it('should log success false', function () {
+        it('should log success false', function() {
           var req = {
             method: 'POST',
             originalUrl: '/api/login',
@@ -240,13 +248,16 @@ describe('logging', function() {
             headers: {}
           };
 
-          var result = {success: false, message: 'something'};
+          var result = {
+            success: false,
+            message: 'something'
+          };
 
           requestLogger.logResult(req, result);
 
           loggerMock.logs.should.have.length(2);
 
-          var infos = loggerMock.logs.filter(function (log) {
+          var infos = loggerMock.logs.filter(function(log) {
             return log.level === 'info';
           });
 
@@ -257,9 +268,9 @@ describe('logging', function() {
 
     });
 
-    describe('isAuthorized() logs', function () {
-      describe('#logAuthorizationInternalError()', function () {
-        it('should log object with stacktrace and 500 status', function () {
+    describe('isAuthorized() logs', function() {
+      describe('#logAuthorizationInternalError()', function() {
+        it('should log object with stacktrace and 500 status', function() {
           var req = {
             method: 'GET',
             originalUrl: '/api',
@@ -281,8 +292,8 @@ describe('logging', function() {
         });
       });
 
-      describe('#logAuthorizationFail()', function () {
-        it('should log info on unauthorized', function () {
+      describe('#logAuthorizationFail()', function() {
+        it('should log info on unauthorized', function() {
           var req = {
             method: 'GET',
             originalUrl: '/api',
@@ -303,7 +314,7 @@ describe('logging', function() {
           loggerMock.logs[0].data.should.have.property('internalStatus', 606);
         });
 
-        it('should log warning on forbidden', function () {
+        it('should log warning on forbidden', function() {
           var req = {
             method: 'GET',
             originalUrl: '/api',
@@ -322,6 +333,61 @@ describe('logging', function() {
           loggerMock.logs[0].level.should.equal('warn');
           loggerMock.logs[0].data.should.have.property('status', 403);
           loggerMock.logs[0].data.should.have.property('internalStatus', 609);
+        });
+      });
+
+      describe('#logAuthorizationResult()', function() {
+        it('should log authorization success', function() {
+          var token = jwt.sign({
+            user: 'one',
+            roles: []
+          }, config.accessTokenSecret);
+
+          var req = {
+            method: 'GET',
+            originalUrl: '/api/users',
+            ip: '::1',
+            params: {},
+            query: {},
+            body: {},
+            headers: {
+              authorization: token
+            }
+          };
+
+          requestLogger.logAuthorizationResult(req);
+
+          loggerMock.logs.should.have.length(1);
+          loggerMock.logs[0].level.should.equal('trace');
+          loggerMock.logs[0].data.should.have.property('message', 'authorized');
+          loggerMock.logs[0].data.should.have.property('userName', 'one');
+        });
+
+        it('should log object with userName when token passed from cookie', function () {
+          var token = jwt.sign({
+            user: 'one',
+            roles: []
+          }, config.accessTokenSecret);
+
+          var cookie = {};
+          cookie[config.cookieAccessTokenName] = token;
+
+          var req = {
+            method: 'GET',
+            originalUrl: '/api/users',
+            ip: '::1',
+            params: {},
+            query: {},
+            body: {},
+            headers: {
+              cookie: cookie
+            }
+          };
+
+          requestLogger.logAuthorizationResult(req);
+
+          loggerMock.logs.should.have.length(1);
+          loggerMock.logs[0].data.should.have.property('userName', 'one');
         });
       });
     });
