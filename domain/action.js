@@ -1,7 +1,9 @@
 function Action(actionObject) {
   if (!actionObject) return;
 
-  Object.assign(this, actionObject);
+  Object.keys(actionObject).forEach(function (key) {
+    this[key] = actionObject[key];
+  }.bind(this));
 }
 
 Action.prototype.verbIsPermitted = function(verb) {
