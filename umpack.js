@@ -8,6 +8,7 @@ var sendPromiseResult = require('./responseSender').sendPromiseResult;
 var Password = require('./domain/password');
 var config = require('./config');
 var API_ERRORS = require('./exceptions/apiErrorsEnum');
+var requestLogger = require('./requestLogger');
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -22,6 +23,10 @@ var credentialsInteractor = require('./interactors/credentialsInteractor');
 var userInteractor = require('./interactors/userInteractor');
 var roleInteractor = require('./interactors/roleInteractor');
 var deviceInteractor = require('./interactors/deviceInteractor');
+
+process.on("unhandledRejection", function(reason, promise) {
+  config.logger.warn('unhandled rejection: ' + reason);
+});
 
 
 router.post('/login', function(req, res, next) {
@@ -460,15 +465,22 @@ function isAuthorized(req, res, next) {
     })
     .then(function() {
 
+      requestLogger.logAuthorizationResult(req);
+
       next();
       return null;
 
     })
     .catch(function(err) {
-      if (!err.internalStatus)
+      if (!err.internalStatus) {
+        requestLogger.logAuthorizationInternalError(req, err);
+
         return res.status(500).send({
           message: err.message
         });
+      }
+
+      requestLogger.logAuthorizationFail(req, err);
 
       return res.status(err.responseStatus).send({
         message: err.message,

@@ -15,7 +15,9 @@ describe('responseSender', function() {
   describe('#sendPromiseResult()', function() {
     var sendPromiseResult = responseSender.sendPromiseResult;
 
-    var reqStub = {};
+    var reqStub = {
+      headers: {}
+    };
 
     it('should return status 500 on internal server error', function() {
       var errorMessage = 'something went wrong';
