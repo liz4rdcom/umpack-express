@@ -3,7 +3,6 @@ var should = chai.should();
 
 var Promise = require('bluebird');
 var _ = require('lodash');
-var umpack = require('./helpers/umpack');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var jwt = require('jsonwebtoken');
 
@@ -391,6 +390,27 @@ describe('logging', function() {
         });
       });
     });
+
+  });
+
+  it('should log warning when promise rejection is not handled', function (done) {
+    var promise = Promise.reject(new Error('some error'));
+
+    promise = promise.then(function () {
+      //nothing
+    });
+
+    promise = promise.then(function () {
+      //nothing
+    });
+
+    setTimeout(function () {
+      loggerMock.logs.should.not.have.length(0);
+      loggerMock.logs[0].level.should.equal('warn');
+      loggerMock.logs[0].data.should.include('unhandled rejection');
+
+      done();
+    }, 0);
 
   });
 });
