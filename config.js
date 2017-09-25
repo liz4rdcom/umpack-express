@@ -47,7 +47,16 @@ config.handleOptions = function(options) {
     this.cookieAccessTokenName = options.cookieAccessTokenName;
 
   if (options.passwordResetData) {
-    this.passwordResetData = Object.assign({}, passwordResetDataDefaults, options.passwordResetData);
+    this.passwordResetData = {};
+
+    Object.keys(passwordResetDataDefaults).forEach(function (key) {
+      this.passwordResetData[key] = passwordResetDataDefaults[key];
+    }.bind(this));
+
+    Object.keys(options.passwordResetData).forEach(function (key) {
+      this.passwordResetData[key] = options.passwordResetData[key];
+    }.bind(this));
+
     this.passwordResetData.passwordResetEnabled = true;
   } else {
     this.passwordResetData = passwordResetDataDefaults;
