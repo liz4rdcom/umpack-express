@@ -70,7 +70,9 @@ exports.logAuthorizationResult = function(req) {
     message: 'authorized'
   };
 
-  if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
+  var token = req.headers.authorization || req.headers.cookie[config.cookieAccessTokenName];
+
+  logObject.userName = jwt.decode(token).user;
 
   config.logger.trace(logObject);
 };
