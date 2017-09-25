@@ -54,7 +54,7 @@ app.use('/um', umpack.router);
 ```
 
 ### umpack API Methods
-### This methods should be called without authorization hader
+### This methods should be called without authorization header
 ### Login
 ```js
 POST : {baseurl}/login
