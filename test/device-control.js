@@ -30,9 +30,17 @@ describe('device control', function() {
   function toggleControl(deviceControl) {
     var conf = require('../config');
 
-    conf.handleOptions(Object.assign({
+    var fileConf = config.get('umpack');
+
+    var options = Object.keys(fileConf).reduce(function (con, key) {
+      con[key] = fileConf[key];
+
+      return con;
+    }, {
       deviceControl: deviceControl
-    }, config.get('umpack')));
+    });
+
+    conf.handleOptions(options);
   }
 
   before(function() {

@@ -111,7 +111,9 @@ function findRole(role) {
 }
 
 function refreshToFirstState(object, firstObject) {
-  Object.assign(object, firstObject);
+  Object.keys(firstObject).forEach(function (key) {
+    object[key] = firstObject[key];
+  });
 
   var newKeys = _.difference(Object.keys(object), Object.keys(firstObject));
 
