@@ -14,7 +14,7 @@ exports.logResult = function(req, result) {
 
   if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
 
-  if (result.success === false) logObject.message = 'success false';
+  if (result && result.success === false) logObject.message = 'success false';
   else logObject.message = 'OK';
 
   config.logger.info(logObject);
