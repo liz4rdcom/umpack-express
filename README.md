@@ -1,7 +1,7 @@
 [![npm version](https://badge.fury.io/js/umpack-express.svg)](https://badge.fury.io/js/umpack-express)
 
 # umpack
-
+user management pack for express framework app
 ## Install Guide
 
 ### Install npm package

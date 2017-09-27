@@ -1,7 +1,7 @@
 {
   "name": "umpack-express",
-  "version": "1.9.2",
-  "description": "usermanagement pack for express app",
+  "version": "1.9.3",
+  "description": "user management pack for express framework app",
   "main": "umpack.js",
   "scripts": {
     "start": "node testServer.js",
