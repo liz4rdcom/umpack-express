@@ -1,4 +1,6 @@
 [![npm version](https://badge.fury.io/js/umpack-express.svg)](https://badge.fury.io/js/umpack-express)
+[![Dependency Status](https://david-dm.org/irakli2692/umpack-express.svg)](https://david-dm.org/irakli2692/umpack-express)
+[![devDependency Status](https://david-dm.org/irakli2692/umpack-express/dev-status.svg)](https://david-dm.org/irakli2692/umpack-express#info=devDependencies)
 
 # umpack
 user management pack for express framework app
