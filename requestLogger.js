@@ -1,5 +1,6 @@
 var config = require('./config');
 var jwt = require('jsonwebtoken');
+var cookie = require('cookie');
 
 exports.logResult = function(req, result) {
   var logObject = {
@@ -70,7 +71,7 @@ exports.logAuthorizationResult = function(req) {
     message: 'authorized'
   };
 
-  var token = req.headers.authorization || req.headers.cookie[config.cookieAccessTokenName];
+  var token = req.headers.authorization || cookie.parse(req.headers.cookie)[config.cookieAccessTokenName];
 
   logObject.userName = jwt.decode(token).user;
 

@@ -368,8 +368,7 @@ describe('logging', function() {
             roles: []
           }, config.accessTokenSecret);
 
-          var cookie = {};
-          cookie[config.cookieAccessTokenName] = token;
+          var cookie = config.cookieAccessTokenName + '=' + token;
 
           var req = {
             method: 'GET',
