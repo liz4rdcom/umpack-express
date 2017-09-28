@@ -13,7 +13,7 @@ exports.logResult = function(req, result) {
     status: 200
   };
 
-  if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
+  setUserNameToLog(req, logObject);
 
   if (result && result.success === false) logObject.message = 'success false';
   else logObject.message = 'OK';
@@ -38,7 +38,7 @@ exports.logBadRequest = function(req, err) {
     message: err.message
   };
 
-  if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
+  setUserNameToLog(req, logObject);
 
   config.logger.info(logObject);
 };
@@ -55,7 +55,7 @@ exports.logInternalError = function(req, err) {
     stacktrace: err.stack
   };
 
-  if (req.headers.authorization) logObject.userName = jwt.decode(req.headers.authorization).user;
+  setUserNameToLog(req, logObject);
 
   config.logger.error(logObject);
 };
@@ -71,9 +71,7 @@ exports.logAuthorizationResult = function(req) {
     message: 'authorized'
   };
 
-  var token = req.headers.authorization || cookie.parse(req.headers.cookie)[config.cookieAccessTokenName];
-
-  logObject.userName = jwt.decode(token).user;
+  setUserNameToLog(req, logObject);
 
   config.logger.trace(logObject);
 };
@@ -125,4 +123,18 @@ function hidePassword(body) {
     }, {
       password: 'hidden'
     });
+}
+
+function getToken(req) {
+  if (req.headers.authorization) return req.headers.authorization;
+
+  if (!req.headers.cookie) return null;
+
+  return cookie.parse(req.headers.cookie)[config.cookieAccessTokenName];
+}
+
+function setUserNameToLog(req, logObject) {
+  var token = getToken(req);
+
+  if (token) logObject.userName = jwt.decode(token).user;
 }
