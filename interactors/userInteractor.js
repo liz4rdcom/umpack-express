@@ -4,6 +4,8 @@ var config = require('../config');
 var API_ERRORS = require('../exceptions/apiErrorsEnum');
 var User = require('../models/user');
 var UserName = require('../domain/userName');
+var UserDevice = require('../models/userDevice');
+var ResetRequest = require('../models/resetRequest');
 
 exports.getUsers = function() {
   return User.find({}).exec()
@@ -144,9 +146,18 @@ exports.changeUserName = function(id, userName) {
     .then(function(user) {
       if (user) throw API_ERRORS.USER_ALREADY_EXISTS;
 
-      return User.findByIdAndUpdate(id, {
-        userName: userNameObject.value
-      });
+      return User.findById(id);
+    })
+    .then(function (user) {
+      var oldUserName = new UserName(user.userName);
+
+      user.userName = userNameObject.value;
+
+      return Promise.all([
+        user.save(),
+        UserDevice.findOneAndUpdate({userName: oldUserName.value}, {userName: userNameObject.value}),
+        ResetRequest.find({userName: oldUserName.value}).update({userName: userNameObject.value})
+      ]);
     });
 };
 
