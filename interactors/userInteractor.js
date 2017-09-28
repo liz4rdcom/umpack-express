@@ -155,8 +155,8 @@ exports.changeUserName = function(id, userName) {
 
       return Promise.all([
         user.save(),
-        UserDevice.findOneAndUpdate({userName: oldUserName.value}, {userName: userNameObject.value}),
-        ResetRequest.find({userName: oldUserName.value}).update({userName: userNameObject.value})
+        UserDevice.findOneAndUpdate({userName: oldUserName.value}, {userName: userNameObject.value}).exec(),
+        ResetRequest.find({userName: oldUserName.value}).setOptions({multi: true}).update({userName: userNameObject.value}).exec()
       ]);
     });
 };
