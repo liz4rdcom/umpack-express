@@ -43,6 +43,8 @@
     <br>
     <button id="logout">Logout</button>
     <br>
+    <button id="login">Login</button>
+    <br>
     <button id="signup_button">sign up</button>
     <br>
     <button id="showRoleManager_button">show role manager</button>
@@ -56,6 +58,12 @@
     <button id="resetUserPass_button">resetpass</button>
     <br>
     <button id="getFullUserObject_button">get full user object</button>
+    <br>
+    <button id="deleteUser_button">delete user</button>
+    <br>
+    <button id="changeUserName_button">change userName</button>
+    <br>
+    <button id="changeUserInfo_button">change user info</button>
     <br>
     <script>
     $(document).ready(function() {
@@ -94,10 +102,7 @@
                   success: function(result) {
                       $("#loginModal").modal('hide');
                       Cookies.set('accessToken', result);
-                      window.location.href = umfp.options.loginSuccessRedirectionUrl;
-
-                      if (umfp.options.afterLogin)
-                          umfp.options.afterLogin();
+                      window.location.href = '';
                   },
                   error: function(err) {
                       $("div.login-modal-content > div.response-message-box").text(err.responseJSON.message);
@@ -106,11 +111,24 @@
           }
         });
 
+        $('#login').click(function () {
+          $.ajax({type: 'POST',
+            url: '/um/login',
+            data: {userName: 'irakli', password: '1166272', deviceToken: btoa(navigator.platform + 'testdevice')},
+            success: function(result) {
+              Cookies.set('access_token', result);
+              console.log(result);
+            },
+            error: function(err) {
+              console.error(err);
+            }
+          });
+        });
+
         $('#getTestResources').click(function() {
             $.ajax({
                 type: 'GET',
                 url: '/resources',
-                headers: umfp.getAuthorizationHeader(),
                 success: function(result) {
                     alert(result.toString());
                 },
@@ -450,6 +468,57 @@
                     alert(err.responseText);
                 }
             });
+        });
+
+        $('#deleteUser_button').click(function () {
+          $.ajax({
+              type: 'DELETE',
+              url: '/um/users/59ce2e99b80f793a785a5c4a',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          })
+        });
+
+        $('#changeUserName_button').click(function () {
+          $.ajax({
+              type: 'PUT',
+              url: '/um/users/59ce475b8a393038a08f13d7/userName',
+              headers: umfp.getAuthorizationHeader(),
+              data: {
+                userName: 'newusername'
+              },
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#changeUserInfo_button').click(function () {
+          $.ajax({
+              type: 'PUT',
+              url: '/um/users/59ce475b8a393038a08f13d7/info',
+              headers: umfp.getAuthorizationHeader(),
+              data: {
+                firstName: 'nammeee'
+              },
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
         });
 
         umfp.setOptions({
