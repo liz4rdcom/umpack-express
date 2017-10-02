@@ -65,6 +65,8 @@
     <br>
     <button id="changeUserInfo_button">change user info</button>
     <br>
+    <button id="passwordResetAdmin_button">password reset by admin</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -511,6 +513,21 @@
               data: {
                 firstName: 'nammeee'
               },
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#passwordResetAdmin_button').click(function () {
+          $.ajax({
+              type: 'DELETE',
+              url: '/um/users/59d21f27a3c8e6436cf611e9/password',
+              headers: umfp.getAuthorizationHeader(),
               success: function(result) {
                   console.log(result);
               },
