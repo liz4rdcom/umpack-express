@@ -75,6 +75,12 @@
     <br>
     <button id="deleteRole_button">delete role</button>
     <br>
+    <button id="addAction_button">add action to role</button>
+    <br>
+    <button id="editAction_button">edit action in role</button>
+    <br>
+    <button id="deleteAction_buton">delete action from role</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -603,6 +609,67 @@
           $.ajax({
               type: 'DELETE',
               url: '/um/roles/testrole',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#addAction_button').click(function () {
+          $.ajax({
+              type: 'POST',
+              url: '/um/roles/testrole/actions',
+              data: {
+                pattern: '/test/*',
+                name: 'test template',
+                verbGet: true,
+                verbPost: true,
+                verbPut: true,
+                verbDelete: false
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#editAction_button').click(function () {
+          $.ajax({
+              type: 'PUT',
+              url: '/um/roles/testrole/actions/59d23a5c05702e3c78f7a4c3',
+              data: {
+                pattern: '/test/*',
+                name: 'test template',
+                verbGet: true,
+                verbPost: true,
+                verbPut: false,
+                verbDelete: true
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#deleteAction_buton').click(function () {
+          $.ajax({
+              type: 'DELETE',
+              url: '/um/roles/testrole/actions/59d23a5c05702e3c78f7a4c3',
               headers: umfp.getAuthorizationHeader(),
               success: function(result) {
                   console.log(result);
