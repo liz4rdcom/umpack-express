@@ -67,6 +67,14 @@
     <br>
     <button id="passwordResetAdmin_button">password reset by admin</button>
     <br>
+    <button id="getRoleFull_button">get full role</button>
+    <br>
+    <button id="addRole_button">add role</button>
+    <br>
+    <button id="editRole_button">edit role</button>
+    <br>
+    <button id="deleteRole_button">delete role</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -527,6 +535,74 @@
           $.ajax({
               type: 'DELETE',
               url: '/um/users/59d21f27a3c8e6436cf611e9/password',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#getRoleFull_button').click(function () {
+          $.ajax({
+              type: 'GET',
+              url: '/um/roles/user',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#addRole_button').click(function () {
+          $.ajax({
+              type: 'POST',
+              url: '/um/roles',
+              data: {
+                name: 'testrole',
+                description: 'test role'
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#editRole_button').click(function () {
+          $.ajax({
+              type: 'PUT',
+              url: '/um/roles/testrole',
+              data: {
+                name: 'testrole1',
+                description: 'test role changed'
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#deleteRole_button').click(function () {
+          $.ajax({
+              type: 'DELETE',
+              url: '/um/roles/testrole',
               headers: umfp.getAuthorizationHeader(),
               success: function(result) {
                   console.log(result);
