@@ -89,6 +89,8 @@
     <br>
     <button id="restrictDevice_button">restrict device</button>
     <br>
+    <button id="initialization_button">initialization</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -755,6 +757,23 @@
           });
         });
 
+        $('#initialization_button').click(function () {
+          $.ajax({
+              type: 'POST',
+              url: '/um/initialization',
+              data: {
+                umBaseUrl: '/um',
+                deviceToken: 'testdevicetoken'
+              },
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
 
         umfp.setOptions({
             loginPopupTitle: 'Enter user name and password',
