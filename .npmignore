@@ -5,10 +5,6 @@ gulpfile.js
 index.html
 resRouter.js
 testServer.js
-umpack-front.js
-umpack-style.css
-doc
-dist_front
 test
 config
 coverage
