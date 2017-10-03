@@ -81,6 +81,14 @@
     <br>
     <button id="deleteAction_buton">delete action from role</button>
     <br>
+    <button id="getDevices_button">get devices</button>
+    <br>
+    <button id="getPermittedDevices_button">get permitted devices</button>
+    <br>
+    <button id="grantDeviceAcess_button">grant access to device</button>
+    <br>
+    <button id="restrictDevice_button">restrict device</button>
+    <br>
     <script>
     $(document).ready(function() {
 
@@ -130,7 +138,7 @@
         $('#login').click(function () {
           $.ajax({type: 'POST',
             url: '/um/login',
-            data: {userName: 'irakli', password: '1166272', deviceToken: btoa(navigator.platform + 'testdevice')},
+            data: {userName: 'irakli', password: '9356938', deviceToken: btoa(navigator.platform + 'testdevice')},
             success: function(result) {
               Cookies.set('access_token', result);
               console.log(result);
@@ -680,6 +688,73 @@
               }
           });
         });
+
+        $('#getDevices_button').click(function () {
+          $.ajax({
+              type: 'GET',
+              url: '/um/users/newusername/devices',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#getPermittedDevices_button').click(function () {
+          $.ajax({
+              type: 'GET',
+              url: '/um/users/newusername/devices/permitted',
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#grantDeviceAcess_button').click(function () {
+          $.ajax({
+              type: 'POST',
+              url: '/um/users/newusername/devices/access',
+              data: {
+                deviceToken: 'testdevicetoken'
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
+        $('#restrictDevice_button').click(function () {
+          $.ajax({
+              type: 'POST',
+              url: '/um/users/newusername/devices/restriction',
+              data: {
+                deviceToken: 'testdevicetoken'
+              },
+              headers: umfp.getAuthorizationHeader(),
+              success: function(result) {
+                  console.log(result);
+              },
+              error: function(err) {
+                  console.log(err);
+                  alert(err.responseText);
+              }
+          });
+        });
+
 
         umfp.setOptions({
             loginPopupTitle: 'Enter user name and password',
