@@ -1,12 +1,12 @@
 {
   "name": "umpack-express",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "description": "user management pack for express framework app",
   "main": "umpack.js",
   "scripts": {
     "start": "node testServer.js",
-    "test": "set NODE_ENV=test& mocha",
-    "coverage": "set NODE_ENV=test& istanbul cover ./node_modules/mocha/bin/_mocha -- --ui bdd -R spec -t 5000"
+    "test": "set NODE_ENV=test& mocha --exit",
+    "coverage": "set NODE_ENV=test& istanbul cover ./node_modules/mocha/bin/_mocha -- --exit --ui bdd -R spec -t 5000"
   },
   "repository": {
     "type": "git",
@@ -39,18 +39,13 @@
     "shortid": "^2.2.8"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "config": "^1.26.1",
-    "gulp": "^3.9.1",
-    "gulp-clean-css": "^2.0.13",
-    "gulp-concat": "^2.6.1",
-    "gulp-mocha": "^4.3.1",
-    "gulp-uglify": "^2.0.0",
     "istanbul": "^0.4.5",
     "js-yaml": "^3.8.3",
     "lodash": "^4.17.4",
-    "mocha": "^3.3.0",
+    "mocha": "^4.0.0",
     "node-mocks-http": "^1.6.2",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
