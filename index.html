@@ -642,18 +642,21 @@
         });
 
         $('#addAction_button').click(function () {
+          var headers = umfp.getAuthorizationHeader();
+          headers['content-type'] = 'application/json';
+
           $.ajax({
               type: 'POST',
               url: '/um/roles/testrole/actions',
-              data: {
+              data: JSON.stringify({
                 pattern: '/test/*',
                 name: 'test template',
                 verbGet: true,
                 verbPost: true,
                 verbPut: true,
                 verbDelete: false
-              },
-              headers: umfp.getAuthorizationHeader(),
+              }),
+              headers: headers,
               success: function(result) {
                   console.log(result);
               },
@@ -665,18 +668,21 @@
         });
 
         $('#editAction_button').click(function () {
+          var headers = umfp.getAuthorizationHeader();
+          headers['content-type'] = 'application/json';
+
           $.ajax({
               type: 'PUT',
-              url: '/um/roles/testrole/actions/59d23a5c05702e3c78f7a4c3',
-              data: {
+              url: '/um/roles/testrole/actions/59d4e7d5c7ab654340a8b779',
+              data:  JSON.stringify({
                 pattern: '/test/*',
                 name: 'test template',
                 verbGet: true,
                 verbPost: true,
                 verbPut: false,
                 verbDelete: true
-              },
-              headers: umfp.getAuthorizationHeader(),
+              }),
+              headers: headers,
               success: function(result) {
                   console.log(result);
               },
