@@ -12,6 +12,8 @@ var ObjectId = require('mongodb').ObjectID;
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
+var userDevicesCollection = 'userdevices';
+var resetReqCollection = 'resetrequests';
 var username = 'test';
 var password = '123456';
 var defaultUser = 'defaultuser';
@@ -166,20 +168,46 @@ describe('service api users administrative routes', function() {
   });
 
   describe('PUT /users/:id/userName', function() {
+    beforeEach(function() {
+      return Promise.all([
+        mongoose.connection.dropCollection(userDevicesCollection, null),
+        mongoose.connection.dropCollection(resetReqCollection, null)
+      ]);
+    });
+
     it('should change userName when new userName not exists', function() {
       var id = new ObjectId();
+      var userDeviceId = new ObjectId();
+      var resetRequestId = new ObjectId();
 
-      return mongoose.connection.db.collection(usersCollection)
-        .insert({
-          _id: id,
-          userName: defaultUser,
-          password: utils.passwordHash(password),
-          isActivated: true,
-          roles: ['admin'],
-          email: 'test@test.com',
-          firstName: 'test',
-          '__v': 1
-        })
+      return Promise.all([
+          mongoose.connection.db.collection(usersCollection)
+          .insert({
+            _id: id,
+            userName: defaultUser,
+            password: utils.passwordHash(password),
+            isActivated: true,
+            roles: ['admin'],
+            email: 'test@test.com',
+            firstName: 'test',
+            '__v': 1
+          }),
+          mongoose.connection.db.collection(userDevicesCollection)
+          .insert({
+            _id: userDeviceId,
+            userName: defaultUser,
+            devices: []
+          }),
+          mongoose.connection.db.collection(resetReqCollection)
+          .insert({
+            _id: resetRequestId,
+            userName: defaultUser,
+            email: 'test@email.com',
+            resetKey: 'test key',
+            generationDate: new Date(),
+            expirationDate: new Date()
+          })
+        ])
         .then(utils.login)
         .then(function(res) {
           res.should.have.status(200);
@@ -198,10 +226,22 @@ describe('service api users administrative routes', function() {
 
           res.body.should.have.property('success', true);
 
-          return findUser(id);
-        })
-        .then(function(user) {
-          user.userName.should.equal('changed');
+          return Promise.join(
+            findUser(id),
+            mongoose.connection.db.collection(userDevicesCollection).findOne({
+              _id: userDeviceId
+            }),
+            mongoose.connection.db.collection(resetReqCollection).findOne({
+              _id: resetRequestId
+            }),
+            function(user, userDevice, resetRequest) {
+              user.userName.should.equal('changed');
+
+              userDevice.userName.should.equal('changed');
+
+              resetRequest.userName.should.equal('changed');
+            }
+          );
         });
     });
 
