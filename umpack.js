@@ -385,13 +385,8 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, 
 });
 
 router.post('/initialization', function(req, res, next) {
-  var promise = Promise.join(
-    User.initAndSaveDefaultUser(),
-    Promise.all([
-      Role.initAndSaveDefaultRole(req.body.umBaseUrl),
-      UserDevice.initUserDevice(req.body.deviceToken)
-    ]),
-    function(password) {
+  var promise = init(req.body.umBaseUrl, req.body.deviceToken)
+    .then(function(password) {
       var result = {
         success: true
       };
@@ -399,8 +394,7 @@ router.post('/initialization', function(req, res, next) {
       if (password) result.password = password.original;
 
       return result;
-    }
-  );
+    });
 
   sendPromiseResult(promise, req, res, next);
 });
@@ -541,7 +535,18 @@ function getUserRolesFromRequest(req) {
     });
 }
 
-
+function init(umBaseUrl, deviceToken) {
+  return Promise.join(
+    User.initAndSaveDefaultUser(),
+    Promise.all([
+      Role.initAndSaveDefaultRole(umBaseUrl),
+      UserDevice.initUserDevice(deviceToken)
+    ]),
+    function(password) {
+      return password;
+    }
+  );
+}
 
 module.exports = function(options) {
   handleOptions(options);
@@ -557,6 +562,7 @@ module.exports = function(options) {
     getUserRolesFromRequest: getUserRolesFromRequest,
     getFullUserObject: getFullUserObject,
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
-    filterUsersByRole: userInteractor.filterUsersByRole
+    filterUsersByRole: userInteractor.filterUsersByRole,
+    init: init
   };
 };
