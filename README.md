@@ -405,11 +405,12 @@ response - { success: true }
 POST : {baseurl}/users
 request - data/body : {
   umBaseUrl: '/um',
-  deviceToken: 'token' //not required if device control is disabled
+  deviceToken: 'token', //not required if device control is disabled
+  password: '123' // password for root user. optional. if it isn't passed new password is generated randomly.
 }
 response - {
   success: true,
-  password: 'password' //generated password for root user
+  password: 'password' //generated or parameter password for root user
 }
 ```
 
@@ -658,9 +659,10 @@ router.get('/fullUserObject', function(req, res, next) {
 ```js
 router.get('/initialization', function(req, res, next) {
 
-    umpack.init(req.body.umBaseUrl, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
+    //password is optional
+    umpack.init(req.body.umBaseUrl, req.body.password, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
         .then(function(password) {
-            // randomly generated password for the root user is returned
+            // randomly generated password or passed parameter password for the root user is returned
             res.send(password);
 
         })
