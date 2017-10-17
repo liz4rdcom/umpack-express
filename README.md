@@ -397,7 +397,7 @@ DELETE : {baseurl}/roles/{roleName}/actions/{actionId}
 response - { success: true }
 ```
 
-### Middleware Initialization.
+### Umpack Initialization.
 * saves root user and admin role if they do not exist.
 * if device control is enabled, it saves one permitted device of the root for administration.
 
@@ -405,11 +405,12 @@ response - { success: true }
 POST : {baseurl}/users
 request - data/body : {
   umBaseUrl: '/um',
-  deviceToken: 'token' //not required if device control is disabled
+  deviceToken: 'token', //not required if device control is disabled
+  password: '123' // password for root user. optional. if it isn't passed new password is generated randomly.
 }
 response - {
   success: true,
-  password: 'password' //generated password for root user
+  password: 'password' //generated or parameter password for root user
 }
 ```
 
@@ -641,6 +642,51 @@ router.get('/fullUserObject', function(req, res, next) {
         .then(function(result) {
 
             res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
+
+### Initialize Umpack
+* saves root user and admin role if they do not exist.
+* if device control is enabled, it saves one permitted device of the root for administration.
+
+```js
+router.get('/initialization', function(req, res, next) {
+
+    //password is optional
+    umpack.init(req.body.umBaseUrl, req.body.password, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
+        .then(function(password) {
+            // randomly generated password or passed parameter password for the root user is returned
+            res.send(password);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
+
+### Initialize Umpack With Full Api Access to admin Role
+* saves root user and admin role if they do not exist.
+* saved admin role has permission of everything.
+* if device control is enabled, it saves one permitted device of the root for administration.
+
+```js
+router.get('/initialization', function(req, res, next) {
+
+    //password is optional
+    umpack.initWithFullAccess(req.body.password, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
+        .then(function(password) {
+            // randomly generated password or passed parameter password for the root user is returned
+            res.send(password);
 
         })
         .catch(function(err) {

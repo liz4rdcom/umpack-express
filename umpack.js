@@ -385,22 +385,16 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, 
 });
 
 router.post('/initialization', function(req, res, next) {
-  var promise = Promise.join(
-    User.initAndSaveDefaultUser(),
-    Promise.all([
-      Role.initAndSaveDefaultRole(req.body.umBaseUrl),
-      UserDevice.initUserDevice(req.body.deviceToken)
-    ]),
-    function(password) {
+  var promise = init(req.body.umBaseUrl, req.body.password, req.body.deviceToken)
+    .then(function(passwordText) {
       var result = {
         success: true
       };
 
-      if (password) result.password = password.original;
+      if (passwordText) result.password = passwordText;
 
       return result;
-    }
-  );
+    });
 
   sendPromiseResult(promise, req, res, next);
 });
@@ -541,7 +535,35 @@ function getUserRolesFromRequest(req) {
     });
 }
 
+function init(umBaseUrl, passwordText, deviceToken) {
+  return Promise.join(
+    User.initAndSaveDefaultUser(passwordText),
+    Promise.all([
+      Role.initAndSaveDefaultRole(umBaseUrl),
+      UserDevice.initUserDevice(deviceToken)
+    ]),
+    function(password) {
+      if (!password) return password;
 
+      return password.original;
+    }
+  );
+}
+
+function initWithFullAccess(passwordText, deviceToken) {
+  return Promise.join(
+    User.initAndSaveDefaultUser(passwordText),
+    Promise.all([
+      Role.initAndSaveDefaultRoleWithFullAccess(),
+      UserDevice.initUserDevice(deviceToken)
+    ]),
+    function(password) {
+      if (!password) return password;
+
+      return password.original;
+    }
+  );
+}
 
 module.exports = function(options) {
   handleOptions(options);
@@ -557,6 +579,8 @@ module.exports = function(options) {
     getUserRolesFromRequest: getUserRolesFromRequest,
     getFullUserObject: getFullUserObject,
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
-    filterUsersByRole: userInteractor.filterUsersByRole
+    filterUsersByRole: userInteractor.filterUsersByRole,
+    init: init,
+    initWithFullAccess: initWithFullAccess
   };
 };

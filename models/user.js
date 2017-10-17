@@ -37,12 +37,12 @@ UserSchema.statics.createDefaultUser = function(password) {
   });
 };
 
-UserSchema.statics.initAndSaveDefaultUser = function() {
+UserSchema.statics.initAndSaveDefaultUser = function(passwordText) {
   return this.findByUserName(defaultUserName)
     .then(function(user) {
       if (user) return;
 
-      var password = new Password();
+      var password = new Password(passwordText);
 
       return this.createDefaultUser(password).save()
         .then(function() {
