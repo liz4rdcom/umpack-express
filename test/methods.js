@@ -16,6 +16,7 @@ var utils = require('./helpers/utils');
 
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
+var userDevicesCollection = 'userdevices';
 var username = 'test';
 var password = '123456';
 
@@ -555,6 +556,33 @@ describe('umpack methods', function() {
           should.exist(result.data.message);
 
           result.data.message.should.include('null');
+        });
+    });
+  });
+
+  describe('#initWithFullAccess()', function () {
+    var initWithFullAccess = umpack.initWithFullAccess;
+
+    beforeEach(function () {
+      return Promise.all([
+        mongoose.connection.db.collection(rolesCollection).remove(),
+        mongoose.connection.db.collection(userDevicesCollection).remove()
+      ]);
+    });
+
+    it('should save admin role with full access', function() {
+      return initWithFullAccess()
+        .then(function() {
+          return utils.findRole('admin');
+        })
+        .then(function(role) {
+          should.exist(role);
+
+          role.should.have.property('actions');
+
+          role.actions.should.have.length(1);
+
+          role.actions[0].pattern.should.equal('/*');
         });
     });
   });
