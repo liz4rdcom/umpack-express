@@ -673,3 +673,26 @@ router.get('/initialization', function(req, res, next) {
         });
 });
 ```
+
+### Initialize Umpack With Full Api Access to admin Role
+* saves root user and admin role if they do not exist.
+* saved admin role has permission of everything.
+* if device control is enabled, it saves one permitted device of the root for administration.
+
+```js
+router.get('/initialization', function(req, res, next) {
+
+    //password is optional
+    umpack.initWithFullAccess(req.body.password, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
+        .then(function(password) {
+            // randomly generated password or passed parameter password for the root user is returned
+            res.send(password);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
