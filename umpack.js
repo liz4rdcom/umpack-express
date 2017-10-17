@@ -385,13 +385,13 @@ router.delete('/roles/:roleName/actions/:actionId', isAuthorized, function(req, 
 });
 
 router.post('/initialization', function(req, res, next) {
-  var promise = init(req.body.umBaseUrl, req.body.deviceToken)
-    .then(function(password) {
+  var promise = init(req.body.umBaseUrl, req.body.password, req.body.deviceToken)
+    .then(function(passwordText) {
       var result = {
         success: true
       };
 
-      if (password) result.password = password.original;
+      if (passwordText) result.password = passwordText;
 
       return result;
     });
@@ -535,15 +535,17 @@ function getUserRolesFromRequest(req) {
     });
 }
 
-function init(umBaseUrl, deviceToken) {
+function init(umBaseUrl, passwordText, deviceToken) {
   return Promise.join(
-    User.initAndSaveDefaultUser(),
+    User.initAndSaveDefaultUser(passwordText),
     Promise.all([
       Role.initAndSaveDefaultRole(umBaseUrl),
       UserDevice.initUserDevice(deviceToken)
     ]),
     function(password) {
-      return password;
+      if (!password) return password;
+
+      return password.original;
     }
   );
 }
