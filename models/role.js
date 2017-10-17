@@ -37,6 +37,21 @@ RoleSchema.statics.createDefaultRole = function(umBaseUrl) {
   });
 };
 
+RoleSchema.statics.createDefaultRoleWithFullAccess = function() {
+  return new this({
+    name: 'admin',
+    actions: [{
+      _id: new ObjectId(),
+      name: 'full api',
+      pattern: '/*',
+      verbGet: true,
+      verbPost: true,
+      verbPut: true,
+      verbDelete: true
+    }]
+  });
+};
+
 RoleSchema.statics.initAndSaveDefaultRole = function(umBaseUrl) {
   return this.findOne({
       name: 'admin'
@@ -45,6 +60,17 @@ RoleSchema.statics.initAndSaveDefaultRole = function(umBaseUrl) {
       if (role) return;
 
       return this.createDefaultRole(umBaseUrl).save();
+    }.bind(this));
+};
+
+RoleSchema.statics.initAndSaveDefaultRoleWithFullAccess = function() {
+  return this.findOne({
+      name: 'admin'
+    })
+    .then(function(role) {
+      if (role) return;
+
+      return this.createDefaultRoleWithFullAccess().save();
     }.bind(this));
 };
 

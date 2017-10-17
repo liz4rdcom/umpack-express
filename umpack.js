@@ -550,6 +550,21 @@ function init(umBaseUrl, passwordText, deviceToken) {
   );
 }
 
+function initWithFullAccess(passwordText, deviceToken) {
+  return Promise.join(
+    User.initAndSaveDefaultUser(passwordText),
+    Promise.all([
+      Role.initAndSaveDefaultRoleWithFullAccess(),
+      UserDevice.initUserDevice(deviceToken)
+    ]),
+    function(password) {
+      if (!password) return password;
+
+      return password.original;
+    }
+  );
+}
+
 module.exports = function(options) {
   handleOptions(options);
   return {
@@ -565,6 +580,7 @@ module.exports = function(options) {
     getFullUserObject: getFullUserObject,
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
     filterUsersByRole: userInteractor.filterUsersByRole,
-    init: init
+    init: init,
+    initWithFullAccess: initWithFullAccess
   };
 };
