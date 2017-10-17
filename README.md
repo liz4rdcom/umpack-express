@@ -397,7 +397,7 @@ DELETE : {baseurl}/roles/{roleName}/actions/{actionId}
 response - { success: true }
 ```
 
-### Middleware Initialization.
+### Umpack Initialization.
 * saves root user and admin role if they do not exist.
 * if device control is enabled, it saves one permitted device of the root for administration.
 
@@ -641,6 +641,27 @@ router.get('/fullUserObject', function(req, res, next) {
         .then(function(result) {
 
             res.send(result);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+```
+
+### Initialize Umpack
+* saves root user and admin role if they do not exist.
+* if device control is enabled, it saves one permitted device of the root for administration.
+
+```js
+router.get('/initialization', function(req, res, next) {
+
+    umpack.init(req.body.umBaseUrl, req.body.deviceToken) // if deviceControl is disabled deviceToken is not required else it is required
+        .then(function(password) {
+            // randomly generated password for the root user is returned
+            res.send(password);
 
         })
         .catch(function(err) {
