@@ -535,6 +535,13 @@ function getUserRolesFromRequest(req) {
     });
 }
 
+function getUserNameFromRequest(req) {
+  return decodeRequestToken(req)
+    .then(function(decoded) {
+      return decoded.user;
+    });
+}
+
 function init(umBaseUrl, passwordText, deviceToken) {
   return Promise.join(
     User.initAndSaveDefaultUser(passwordText),
@@ -581,6 +588,7 @@ module.exports = function(options) {
     getFullUserObjectFromRequest: getFullUserObjectFromRequest,
     filterUsersByRole: userInteractor.filterUsersByRole,
     init: init,
-    initWithFullAccess: initWithFullAccess
+    initWithFullAccess: initWithFullAccess,
+    getUserNameFromRequest: getUserNameFromRequest
   };
 };

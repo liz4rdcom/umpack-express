@@ -696,3 +696,23 @@ router.get('/initialization', function(req, res, next) {
         });
 });
 ```
+
+### Get UserName From Request
+```js
+router.get('/userRoles', isAuthorized, function(req, res, next) {
+
+    // Request Must Have authorization Header
+    umpack.getUserNameFromRequest(req)
+        .then(function(userName) {
+
+            res.send(userName);
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
+
+```
