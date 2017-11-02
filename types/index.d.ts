@@ -1,4 +1,4 @@
-// Type definitions for umpack-express 1.11
+// Type definitions for umpack-express ^1.11
 // Project: https://github.com/liz4rdcom/umpack-express
 // Definitions by: Irakli Jishkariani <https://github.com/irakli2692>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
