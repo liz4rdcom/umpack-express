@@ -30,6 +30,14 @@ const passwordResetPhoneData = {
   }
 };
 
+const logger = {
+  error: console.error.bind(console),
+  warn: console.warn.bind(console),
+  info: console.info.bind(console),
+  debug: console.log.bind(console),
+  trace: console.trace.bind(console)
+};
+
 const umpack = umpackExpress({
   mongodbConnectionString: 'mongodb://localhost:27017/umpackServerTest',
   accessTokenSecret: 'myrandomstring',
@@ -38,7 +46,8 @@ const umpack = umpackExpress({
   cookieAccessTokenName: 'access_token',
   passwordResetData,
   passwordResetPhoneData,
-  deviceControl: true
+  deviceControl: true,
+  logger
 });
 
 app.use(bodyParser.json());
