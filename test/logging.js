@@ -409,7 +409,7 @@ describe('logging', function() {
       loggerMock.logs[0].data.should.include('unhandled rejection');
 
       done();
-    }, 0);
+    }, 100);
 
   });
 });
