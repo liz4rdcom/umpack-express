@@ -3,10 +3,12 @@
   "version": "1.11.0",
   "description": "user management pack for express framework app",
   "main": "umpack.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "start": "node testServer.js",
     "test": "set NODE_ENV=test& mocha --exit",
-    "coverage": "set NODE_ENV=test& istanbul cover ./node_modules/mocha/bin/_mocha -- --exit --ui bdd -R spec -t 5000"
+    "coverage": "set NODE_ENV=test& istanbul cover ./node_modules/mocha/bin/_mocha -- --exit --ui bdd -R spec -t 5000",
+    "dtslint": "dtslint types"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
   },
   "homepage": "https://github.com/liz4rdcom/umpack-express#readme",
   "dependencies": {
+    "@types/express-serve-static-core": "^4.0.56",
     "bluebird": "^3.5.0",
     "body-parser": "^1.18.2",
     "cookie": "0.3.1",
@@ -39,9 +42,12 @@
     "shortid": "^2.2.8"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.16.7",
+    "@types/express": "^4.0.39",
     "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "config": "^1.26.1",
+    "dtslint": "^0.2.0",
     "istanbul": "^0.4.5",
     "js-yaml": "^3.8.3",
     "lodash": "^4.17.4",
