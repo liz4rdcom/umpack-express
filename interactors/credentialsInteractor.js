@@ -134,7 +134,8 @@ exports.passwordResetRequest = function(email, clientIp) {
       if (!user) return mailSender.sendWrongEmailInstruction(email, clientIp);
 
       return ResetRequest.findOne({
-          userName: user.userName
+          userName: user.userName,
+          email: email
         }).exec()
         .then(function(existingRequest) {
           if (!existingRequest) {
