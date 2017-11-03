@@ -16,7 +16,7 @@ npm install umpack-express -S -E
 ### Set Options and Router(express app)
 * accessTokenExpiresIn [time span string description](https://github.com/zeit/ms)
 ```js
-var umpack = require('./umpack')({
+var umpack = require('umpack-express')({
     mongodbConnectionString: 'mongodb://172.17.7.92:27017/umpack',
     accessTokenSecret: 'myrandomstring',
     passwordHashSecret: 'mypasswordsecret',
