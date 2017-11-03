@@ -3,7 +3,9 @@
 [![devDependency Status](https://david-dm.org/liz4rdcom/umpack-express/dev-status.svg)](https://david-dm.org/liz4rdcom/umpack-express?type=dev)
 
 # umpack
-user management pack for express framework app
+user management pack for express framework app.
+
+you can use this package in typescript too.
 ## Install Guide
 
 ### Install npm package
