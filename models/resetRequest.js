@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 var Promise = require('bluebird');
 var shortid = require('shortid');
 var random = require('randomstring');
-var moment = require('moment');
 var ms = require('ms');
 
 mongoose.Promise = Promise;
@@ -21,7 +20,9 @@ ResetRequestSchema.methods.generateKeyDates = function(expiresIn) {
 
   var expirationPeriodMilliseconds = ms(expiresIn);
 
-  this.expirationDate = moment(this.generationDate).add(expirationPeriodMilliseconds, 'ms').toDate();
+  var milliseconds = this.generationDate.getTime()
+
+  this.expirationDate = new Date(milliseconds + expirationPeriodMilliseconds)
 };
 
 ResetRequestSchema.methods.generateEmailKey = function(expiresIn) {
