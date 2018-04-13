@@ -47,7 +47,8 @@ describe('service API', function() {
             "verbDelete": true,
             "verbPost": true,
             "verbPut": true,
-            "verbGet": true
+            "verbGet": true,
+            "verbHead": true
           }],
           "__v": 0
         });
@@ -1019,6 +1020,38 @@ describe('service API', function() {
         });
 
       return utils.shouldBeBadRequest(promise, 800);
+    });
+  });
+
+  describe('HEAD /authorization', function () {
+    it('should return status 200 when token is valid', function () {
+      return utils.saveRecordWithParameters()
+        .then(utils.login)
+        .then(function(res) {
+          return chai.request(app)
+            .head('/um/authorization')
+            .set('authorization', res.text);
+        })
+        .then(function (res) {
+          res.should.have.status(200)
+        });
+    });
+
+    it('should return 401 status when token is invalid', function () {
+      return utils.saveRecordWithParameters()
+        .then(function() {
+          return chai.request(app)
+            .head('/um/authorization')
+            .set('authorization', 'invalid token');
+        })
+        .then(function (res) {
+          res.should.have.status(401);
+        })
+        .catch(function(err) {
+          if (err instanceof chai.AssertionError) throw err;
+
+          err.should.have.status(401);
+        });
     });
   });
 });
