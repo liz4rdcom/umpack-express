@@ -11,7 +11,8 @@ Action.prototype.verbIsPermitted = function(verb) {
     'GET': this.verbGet,
     'POST': this.verbPost,
     'PUT': this.verbPut,
-    'DELETE': this.verbDelete
+    'DELETE': this.verbDelete,
+    'HEAD': this.verbHead
   };
 
   return verbsDict[verb];

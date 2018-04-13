@@ -52,7 +52,8 @@ exports.getRoleByName = function(roleName) {
             verbGet: action.verbGet,
             verbPost: action.verbPost,
             verbPut: action.verbPut,
-            verbDelete: action.verbDelete
+            verbDelete: action.verbDelete,
+            verbHead: action.verbHead
           };
         })
       };
@@ -98,7 +99,8 @@ exports.addActionToRole = function(roleName, actionObject) {
     verbGet: actionObject.verbGet || false,
     verbPost: actionObject.verbPost || false,
     verbPut: actionObject.verbPut || false,
-    verbDelete: actionObject.verbDelete || false
+    verbDelete: actionObject.verbDelete || false,
+    verbHead: actionObject.verbHead || false
   };
 
   return Promise.try(function() {
@@ -129,7 +131,8 @@ exports.editAction = function(roleName, actionId, actionObject) {
     verbGet: actionObject.verbGet || false,
     verbPost: actionObject.verbPost || false,
     verbPut: actionObject.verbPut || false,
-    verbDelete: actionObject.verbDelete || false
+    verbDelete: actionObject.verbDelete || false,
+    verbHead: actionObject.verbHead || false
   };
 
   return Promise.try(function() {

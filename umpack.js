@@ -399,6 +399,9 @@ router.post('/initialization', function(req, res, next) {
   sendPromiseResult(promise, req, res, next);
 });
 
+router.head('/authorization', isAuthorized, function (req, res, next) {
+  res.send();
+});
 
 function decodeRequestToken(req) {
 
