@@ -419,6 +419,12 @@ response - {
 }
 ```
 
+### Authorization Route
+it is used for validating access token
+```js
+HEAD : {baseurl}/authorization
+```
+
 ### API Response Internal Statuses
 * Every response with status 400/401 has also internal status for example :
 ```js
