@@ -32,7 +32,8 @@ RoleSchema.statics.createDefaultRole = function(umBaseUrl) {
       verbGet: true,
       verbPost: true,
       verbPut: true,
-      verbDelete: true
+      verbDelete: true,
+      verbHead: true
     }]
   });
 };
@@ -47,7 +48,8 @@ RoleSchema.statics.createDefaultRoleWithFullAccess = function() {
       verbGet: true,
       verbPost: true,
       verbPut: true,
-      verbDelete: true
+      verbDelete: true,
+      verbHead: true
     }]
   });
 };

@@ -341,7 +341,8 @@ response - {
     verbGet: true,
     verbPost: true,
     verbPut: true,
-    verbDelete: true
+    verbDelete: true,
+    verbHead: true
   }]
 }
 ```
@@ -371,7 +372,8 @@ request - data/body : {
   verbGet: true,
   verbPost: true,
   verbPut: true,
-  verbDelete: true
+  verbDelete: true,
+  verbHead: true
 }
 response - {
   success: true,
@@ -388,7 +390,8 @@ request - data/body : {
   verbGet: true,
   verbPost: true,
   verbPut: true,
-  verbDelete: false
+  verbDelete: false,
+  verbHead: false
 }
 response - { success : true }
 ```
@@ -414,6 +417,12 @@ response - {
   success: true,
   password: 'password' //generated or parameter password for root user
 }
+```
+
+### Authorization Route
+it is used for validating access token
+```js
+HEAD : {baseurl}/authorization
 ```
 
 ### API Response Internal Statuses
