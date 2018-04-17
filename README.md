@@ -407,7 +407,7 @@ response - { success: true }
 * if device control is enabled, it saves one permitted device of the root for administration.
 
 ```js
-POST : {baseurl}/users
+POST : {baseurl}/initialization
 request - data/body : {
   umBaseUrl: '/um',
   deviceToken: 'token', //not required if device control is disabled
