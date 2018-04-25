@@ -189,6 +189,21 @@ describe('service API', function() {
           users[0].userName.should.equal('someusername');
         });
     });
+
+    it('should return INVALID_EMAIL on invalid email pass', function () {
+      var promise = utils.saveRecordWithParameters()
+        .then(function() {
+          return chai.request(app)
+            .post('/um/signup')
+            .send({
+              userName: username,
+              password: password,
+              email: 'test'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 901);
+    });
   });
 
   describe('POST /resetpass', function() {
