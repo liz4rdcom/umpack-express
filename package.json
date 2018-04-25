@@ -1,6 +1,6 @@
 {
   "name": "umpack-express",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "user management pack for express framework app",
   "main": "umpack.js",
   "types": "types/index.d.ts",
