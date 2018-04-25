@@ -69,6 +69,23 @@ describe('service API', function() {
         });
     });
 
+    it('should return token when email and password passed', function() {
+      return utils.saveRecordWithParameters()
+        .then(function () {
+          return chai.request(app)
+            .post('/um/login')
+            .send({
+              email: 'test@test.com',
+              password: password
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.text);
+        });
+    });
+
     it('should return USER_NOT_EXISTS when no user by that username',
       function() {
         var promise = utils.login();
