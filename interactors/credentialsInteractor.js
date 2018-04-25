@@ -9,6 +9,7 @@ var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 var deviceInteractor = require('./deviceInteractor');
 var UserName = require('../domain/userName');
+var utils = require('../domain/utils');
 
 exports.login = function(userData) {
   var userName;
@@ -66,6 +67,8 @@ exports.signup = function(userData) {
 
   return Promise.try(function() {
       userName = new UserName(userData.userName);
+
+      utils.validateEmail(userData.email)
 
       return User.findOne({
         $or: [{
