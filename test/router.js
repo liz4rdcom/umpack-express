@@ -69,6 +69,23 @@ describe('service API', function() {
         });
     });
 
+    it('should return token when email and password passed', function() {
+      return utils.saveRecordWithParameters()
+        .then(function () {
+          return chai.request(app)
+            .post('/um/login')
+            .send({
+              email: 'test@test.com',
+              password: password
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.text);
+        });
+    });
+
     it('should return USER_NOT_EXISTS when no user by that username',
       function() {
         var promise = utils.login();
@@ -158,7 +175,7 @@ describe('service API', function() {
             .send({
               userName: username,
               password: password,
-              emails: 'test@test.com'
+              email: 'test@test.com'
             });
         });
 
@@ -188,6 +205,21 @@ describe('service API', function() {
 
           users[0].userName.should.equal('someusername');
         });
+    });
+
+    it('should return INVALID_EMAIL on invalid email pass', function () {
+      var promise = utils.saveRecordWithParameters()
+        .then(function() {
+          return chai.request(app)
+            .post('/um/signup')
+            .send({
+              userName: username,
+              password: password,
+              email: 'test'
+            });
+        });
+
+      return utils.shouldBeBadRequest(promise, 901);
     });
   });
 

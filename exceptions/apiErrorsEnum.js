@@ -88,6 +88,10 @@ var INTERNAL_STATUS = {
   INVALID_USER_NAME: {
     code: 900,
     message: 'invalid userName'
+  },
+  INVALID_EMAIL: {
+    code: 901,
+    message: 'invalid email'
   }
 };
 

@@ -9,16 +9,25 @@ var UserDevice = require('../models/userDevice');
 var mailSender = require('../infrastructure/mailSender');
 var deviceInteractor = require('./deviceInteractor');
 var UserName = require('../domain/userName');
+var utils = require('../domain/utils');
+
+function authorizeByEmail(email) {
+  utils.validateEmail(email);
+
+  return User.findOne({email: email});
+}
 
 exports.login = function(userData) {
   var userName;
 
   return Promise.try(function() {
-      userName = new UserName(userData.userName);
-
       if (config.deviceControl) {
         if (!userData.deviceToken) throw API_ERRORS.INVALID_DEVICE_TOKEN;
       }
+
+      if (userData.email) return authorizeByEmail(userData.email);
+
+      userName = new UserName(userData.userName);
 
       return User.findByUserName(userName);
     })
@@ -66,6 +75,8 @@ exports.signup = function(userData) {
 
   return Promise.try(function() {
       userName = new UserName(userData.userName);
+
+      utils.validateEmail(userData.email)
 
       return User.findOne({
         $or: [{
