@@ -11,15 +11,23 @@ var deviceInteractor = require('./deviceInteractor');
 var UserName = require('../domain/userName');
 var utils = require('../domain/utils');
 
+function authorizeByEmail(email) {
+  utils.validateEmail(email);
+
+  return User.findOne({email: email});
+}
+
 exports.login = function(userData) {
   var userName;
 
   return Promise.try(function() {
-      userName = new UserName(userData.userName);
-
       if (config.deviceControl) {
         if (!userData.deviceToken) throw API_ERRORS.INVALID_DEVICE_TOKEN;
       }
+
+      if (userData.email) return authorizeByEmail(userData.email);
+
+      userName = new UserName(userData.userName);
 
       return User.findByUserName(userName);
     })
