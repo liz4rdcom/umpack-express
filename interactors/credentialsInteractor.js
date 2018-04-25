@@ -100,7 +100,7 @@ exports.signup = function(userData) {
         phone: userData.phone,
         address: userData.address,
         additionalInfo: userData.additionalInfo,
-        isActivated: false,
+        isActivated: config.activateOnSignup,
         roles: []
       });
 

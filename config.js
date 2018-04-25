@@ -27,7 +27,8 @@ var config = {
   passwordResetData: passwordResetDataDefaults,
   deviceControl: false,
   userNameCaseSensitive: false,
-  logger: defaultLogger
+  logger: defaultLogger,
+  activateOnSignup: false
 };
 
 config.handleOptions = function(options) {
@@ -77,6 +78,10 @@ config.handleOptions = function(options) {
 
   if (options.logger) {
     this.logger = options.logger;
+  }
+
+  if (options.activateOnSignup != null) {
+    this.activateOnSignup = options.activateOnSignup;
   }
 };
 
