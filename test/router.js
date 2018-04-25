@@ -221,6 +221,49 @@ describe('service API', function() {
 
       return utils.shouldBeBadRequest(promise, 901);
     });
+
+    it('should save activated user when activateOnSignup is true', function () {
+      var config = require('../config');
+      var activateOnSignupFirstValue = config.activateOnSignup;
+
+      config.activateOnSignup = true;
+
+      return chai.request(app)
+        .post('/um/signup')
+        .send({
+          userName: username,
+          password: password,
+          email: 'test@test.com',
+          metaData: {
+            one: 1
+          }
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, username);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('email', 'test@test.com');
+          user.should.have.property('metaData');
+
+          user.should.have.property('isActivated', true);
+
+          config.activateOnSignup = activateOnSignupFirstValue;
+        })
+        .catch(function (err) {
+          config.activateOnSignup = activateOnSignupFirstValue;
+
+          throw err;
+        })
+    });
   });
 
   describe('POST /resetpass', function() {
