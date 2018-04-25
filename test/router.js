@@ -158,7 +158,7 @@ describe('service API', function() {
             .send({
               userName: username,
               password: password,
-              emails: 'test@test.com'
+              email: 'test@test.com'
             });
         });
 
