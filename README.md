@@ -64,6 +64,7 @@ app.use('/um', umpack.router);
 POST : {baseurl}/login
 request - data/body : {
   userName: 'user',
+  email: 'user@test.com', // userName or email is required
   password: 'userpassword',
   deviceToken: 'device token' //required if device control is enabled
 }
@@ -73,11 +74,11 @@ response - 'user access token'
 ```js
 POST : {baseurl}/signup
 request - data/body : {
-    userName: 'user',
-    password: 'userpassword',
+    userName: 'user', //required
+    password: 'userpassword', //required
     firstName: 'first name',
     lastName: 'last name',
-    email: 'user@test.com',
+    email: 'user@test.com', //required
     phone: '123456',
     address: 'usa/de',
     additionalInfo: 'user additional info',
