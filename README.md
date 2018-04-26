@@ -727,5 +727,34 @@ router.get('/userRoles', isAuthorized, function(req, res, next) {
 
         });
 });
+```
 
+### Signup method
+```js
+router.get('/signup', function(req, res, next) {
+
+  // {
+  //     userName: 'user',
+  //     password: 'userpassword',
+  //     firstName: 'first name',
+  //     lastName: 'last name',
+  //     email: 'user@test.com',
+  //     phone: '123456',
+  //     address: 'usa/de',
+  //     additionalInfo: 'user additional info',
+  // }
+  // parameters are exactly same as in /{baseurl}/signup
+
+    umpack.signup(req.body)
+        .then(function() {
+
+            res.send({success: true});
+
+        })
+        .catch(function(err) {
+
+            return res.status(400).send({ message: err.message });
+
+        });
+});
 ```
