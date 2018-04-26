@@ -281,6 +281,10 @@ describe('service API', function() {
 
           user.should.have.property('isActivated', true);
 
+          user.should.have.property('roles');
+          user.roles.should.have.length(1);
+          user.roles[0].should.equal(config.userDefaultRole);
+
           config.activateOnSignup = activateOnSignupFirstValue;
         })
         .catch(function (err) {
