@@ -52,6 +52,17 @@ declare namespace umpack {
     logger?: Logger;
   }
 
+  interface SignupRequest {
+    userName: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    additionalInfo?: string;
+  }
+
   interface UmpackExpress {
     router: IRouter;
     isAuthorized: RequestHandler;
@@ -77,6 +88,7 @@ declare namespace umpack {
      */
     initWithFullAccess: (umBaseUrl: string, deviceToken?: string) => Promise<string>;
     getUserNameFromRequest: (req: Request) => Promise<string>;
+    signup: (userData: SignupRequest) => Promise<any>;
   }
 }
 
