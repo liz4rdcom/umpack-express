@@ -182,6 +182,31 @@ describe('service API', function() {
       return utils.shouldBeBadRequest(promise, 602);
     });
 
+    it('should save user when email is not set', function() {
+      return utils.saveRecordWithParameters(null, null, null, '')
+        .then(function() {
+          return chai.request(app)
+            .post('/um/signup')
+            .send({
+              userName: 'otheruser',
+              password: password
+            });
+        })
+        .then(function(res) {
+          res.should.have.status(200);
+
+          should.exist(res.body);
+
+          res.body.should.have.property('success', true);
+          res.body.should.have.property('message');
+
+          return utils.findUser(null, 'otheruser');
+        })
+        .then(function(user) {
+          should.exist(user);
+        });
+    });
+
     it('should save user with lowercase userName when non-lowercase username passed', function() {
       return chai.request(app)
         .post('/um/signup')
