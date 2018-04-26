@@ -79,7 +79,7 @@ request - data/body : {
     password: 'userpassword', //required
     firstName: 'first name',
     lastName: 'last name',
-    email: 'user@test.com', //required
+    email: 'user@test.com',
     phone: '123456',
     address: 'usa/de',
     additionalInfo: 'user additional info',
