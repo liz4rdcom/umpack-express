@@ -28,7 +28,8 @@ var config = {
   deviceControl: false,
   userNameCaseSensitive: false,
   logger: defaultLogger,
-  activateOnSignup: false
+  activateOnSignup: false,
+  userDefaultRole: 'user'
 };
 
 config.handleOptions = function(options) {
@@ -82,6 +83,10 @@ config.handleOptions = function(options) {
 
   if (options.activateOnSignup != null) {
     this.activateOnSignup = options.activateOnSignup;
+  }
+
+  if (options.userDefaultRole) {
+    this.userDefaultRole = options.userDefaultRole;
   }
 };
 

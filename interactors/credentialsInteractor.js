@@ -106,6 +106,10 @@ exports.signup = function(userData) {
         roles: []
       });
 
+      if (config.activateOnSignup) {
+        newUser.roles = [config.userDefaultRole]
+      }
+
       newUser.setNewPassword(new Password(userData.password));
 
       if (userData.metaData) {
