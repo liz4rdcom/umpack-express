@@ -457,6 +457,7 @@ HEAD : {baseurl}/authorization
     { code: 806, message: 'access is denied for your device' }
     { code: 807, message: 'devices control is not supported' }
     { code: 900, message: 'invalid userName' }
+    { code: 901, message: 'invalid email' }
 ```
 
 ### Use Authorization Middleware
