@@ -592,6 +592,7 @@ module.exports = function(options) {
     filterUsersByRole: userInteractor.filterUsersByRole,
     init: init,
     initWithFullAccess: initWithFullAccess,
-    getUserNameFromRequest: getUserNameFromRequest
+    getUserNameFromRequest: getUserNameFromRequest,
+    signup: credentialsInteractor.signup.bind(credentialsInteractor)
   };
 };
