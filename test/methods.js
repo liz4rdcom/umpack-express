@@ -586,6 +586,35 @@ describe('umpack methods', function() {
         });
     });
   });
+
+  describe('#signup()', function () {
+    beforeEach(function () {
+      return Promise.all([
+        mongoose.connection.db.collection(rolesCollection).remove(),
+        mongoose.connection.db.collection(userDevicesCollection).remove()
+      ]);
+    });
+
+    it('it should save user', function () {
+      return umpack.signup({
+          userName: username,
+          password: password,
+          email: 'test@test.com',
+          metaData: {
+            one: 1
+          }
+        })
+        .then(function() {
+          return utils.findUser(null, username);
+        })
+        .then(function(user) {
+          should.exist(user);
+
+          user.should.have.property('email', 'test@test.com');
+          user.should.have.property('metaData');
+        });
+    });
+  });
 });
 
 function insertUser(user) {
