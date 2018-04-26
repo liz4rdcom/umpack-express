@@ -51,7 +51,8 @@ var umpack = require('umpack-express')({
     userNameCaseSensitive: false, // if it is true, userName is case sensitive, if false - it is not.
     logger: loggerObject, // loggerObject should have methods: error, warn, info, debug and trace. it should have logging level restriction itself.
     // by default logger field is logger object that logs only warnings and errors.
-    activateOnSignup: false // if true, when user signs up account doesn't need to activate
+    activateOnSignup: false, // if true, when user signs up account doesn't need to activate
+    userDefaultRole: 'user' //not works if activateOnSignup is false. on signup user has this role
 });
 //.....
 app.use('/um', umpack.router);
