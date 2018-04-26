@@ -10,6 +10,8 @@ var utils = require('./helpers/utils');
 var mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectID;
 
+var dropCollection = Promise.promisify(mongoose.connection.dropCollection.bind(mongoose.connection))
+
 var usersCollection = 'users';
 var rolesCollection = 'roleactions';
 var userDevicesCollection = 'userdevices';
@@ -170,8 +172,8 @@ describe('service api users administrative routes', function() {
   describe('PUT /users/:id/userName', function() {
     beforeEach(function() {
       return Promise.all([
-        mongoose.connection.dropCollection(userDevicesCollection, null),
-        mongoose.connection.dropCollection(resetReqCollection, null)
+        dropCollection(userDevicesCollection),
+        dropCollection(resetReqCollection)
       ]);
     });
 
