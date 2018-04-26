@@ -76,7 +76,9 @@ exports.signup = function(userData) {
   return Promise.try(function() {
       userName = new UserName(userData.userName);
 
-      utils.validateEmail(userData.email)
+      if (!userData.email) return User.findByUserName(userName);
+
+      utils.validateEmail(userData.email);
 
       return User.findOne({
         $or: [{
