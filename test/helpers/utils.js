@@ -24,16 +24,18 @@ function passwordHash(password) {
     .digest('hex');
 }
 
-function saveRecordWithParameters(metadata, isActivated, roles) {
+function saveRecordWithParameters(metadata, isActivated, roles, email) {
   if (isActivated === null || isActivated === undefined) isActivated = true;
 
   if (!roles) roles = ['user'];
+
+  if (email == null) email = 'test@test.com';
 
   return mongoose.connection.collection(usersCollection).insert({
     metaData: metadata,
     userName: username,
     password: passwordHash(password),
-    email: "test@test.com",
+    email: email,
     isActivated: isActivated,
     roles: roles,
     '__v': 0
