@@ -10,7 +10,7 @@ var RoleSchema = new mongoose.Schema({
   name: String,
   description: String,
   actions: []
-});
+}, { usePushEach: true });
 
 function trimPattern(pattern) {
   var startPos = 0;

@@ -7,7 +7,7 @@ mongoose.Promise = Promise;
 var UserDeviceSchema = new mongoose.Schema({
   userName: String,
   devices: []
-});
+}, { usePushEach: true });
 
 UserDeviceSchema.methods.canAccess = function(deviceToken) {
   for (var i = 0; i < this.devices.length; i++) {

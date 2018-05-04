@@ -13,7 +13,7 @@ var ResetRequestSchema = new mongoose.Schema({
   resetKey: String,
   generationDate: Date,
   expirationDate: Date
-});
+}, { usePushEach: true });
 
 ResetRequestSchema.methods.generateKeyDates = function(expiresIn) {
   this.generationDate = new Date();

@@ -20,7 +20,7 @@ var UserSchema = new mongoose.Schema({
   roles: [String],
   metaData: {},
   lastPasswordResetDate: Date
-});
+}, { usePushEach: true });
 
 UserSchema.statics.findByUserName = function(userName) {
   return this.findOne({
