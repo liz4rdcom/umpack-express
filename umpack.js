@@ -593,6 +593,6 @@ module.exports = function(options) {
     init: init,
     initWithFullAccess: initWithFullAccess,
     getUserNameFromRequest: getUserNameFromRequest,
-    signup: credentialsInteractor.signup.bind(credentialsInteractor)
+    signup: credentialsInteractor.signup
   };
 };
