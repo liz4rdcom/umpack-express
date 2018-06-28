@@ -9,6 +9,7 @@ var Password = require('./domain/password');
 var config = require('./config');
 var API_ERRORS = require('./exceptions/apiErrorsEnum');
 var requestLogger = require('./requestLogger');
+var libPromiseWrap = require('./libPromiseWrap');
 
 var jwtVerifyAsync = Promise.promisify(jwt.verify, jwt);
 
@@ -580,19 +581,19 @@ module.exports = function(options) {
   return {
     router: router,
     isAuthorized: isAuthorized,
-    updateUserMetaData: updateUserMetaData,
-    getUserMetaDataByUserName: getUserMetaDataByUserName,
-    getUserMetaDataByRequest: getUserMetaDataByRequest,
-    filterUsersByMetaData: filterUsersByMetaData,
-    getFullName: userInteractor.getFullName,
-    getUserRolesByUserName: userInteractor.getUserRolesByUserName,
-    getUserRolesFromRequest: getUserRolesFromRequest,
-    getFullUserObject: getFullUserObject,
-    getFullUserObjectFromRequest: getFullUserObjectFromRequest,
-    filterUsersByRole: userInteractor.filterUsersByRole,
-    init: init,
-    initWithFullAccess: initWithFullAccess,
-    getUserNameFromRequest: getUserNameFromRequest,
-    signup: credentialsInteractor.signup
+    updateUserMetaData: libPromiseWrap(updateUserMetaData),
+    getUserMetaDataByUserName: libPromiseWrap(getUserMetaDataByUserName),
+    getUserMetaDataByRequest: libPromiseWrap(getUserMetaDataByRequest),
+    filterUsersByMetaData: libPromiseWrap(filterUsersByMetaData),
+    getFullName: libPromiseWrap(userInteractor.getFullName),
+    getUserRolesByUserName: libPromiseWrap(userInteractor.getUserRolesByUserName),
+    getUserRolesFromRequest: libPromiseWrap(getUserRolesFromRequest),
+    getFullUserObject: libPromiseWrap(getFullUserObject),
+    getFullUserObjectFromRequest: libPromiseWrap(getFullUserObjectFromRequest),
+    filterUsersByRole: libPromiseWrap(userInteractor.filterUsersByRole),
+    init: libPromiseWrap(init),
+    initWithFullAccess: libPromiseWrap(initWithFullAccess),
+    getUserNameFromRequest: libPromiseWrap(getUserNameFromRequest),
+    signup: libPromiseWrap(credentialsInteractor.signup)
   };
 };

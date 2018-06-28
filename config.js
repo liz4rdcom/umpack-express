@@ -22,6 +22,7 @@ var defaultLogger = {
 };
 
 var config = {
+  promiseLib: require('bluebird'),
   accessTokenExpiresIn: '1h',
   cookieAccessTokenName: 'accessToken',
   passwordResetData: passwordResetDataDefaults,
@@ -87,6 +88,10 @@ config.handleOptions = function(options) {
 
   if (options.userDefaultRole) {
     this.userDefaultRole = options.userDefaultRole;
+  }
+
+  if (options.promiseLib) {
+    this.promiseLib = options.promiseLib
   }
 };
 
