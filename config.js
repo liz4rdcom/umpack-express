@@ -73,8 +73,8 @@ config.handleOptions = function(options) {
     this.deviceControl = options.deviceControl;
   }
 
-  if (options.caseSensitive != null || options.caseSensitive != undefined) {
-    this.caseSensitive = options.caseSensitive;
+  if (options.userNameCaseSensitive != null || options.userNameCaseSensitive != undefined) {
+    this.userNameCaseSensitive = options.userNameCaseSensitive;
   }
 
   if (options.logger) {

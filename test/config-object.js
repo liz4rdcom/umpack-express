@@ -39,7 +39,8 @@ describe('config object', function() {
             //send
             console.log(phone, key);
           }
-        }
+        },
+        userNameCaseSensitive: true
       };
 
       config.handleOptions(options);
@@ -57,6 +58,7 @@ describe('config object', function() {
       config.passwordResetData.should.have.property('passwordWrongEmailInstruction');
       config.passwordResetPhoneData.should.have.property('resetKeyExpiresIn', '2h');
       config.passwordResetPhoneData.should.have.property('sendResetKey');
+      config.should.have.property('userNameCaseSensitive', true);
     });
 
     it('should use default values if not set', function() {
