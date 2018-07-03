@@ -54,6 +54,17 @@ describe('UserName', function () {
 
       config.userNameCaseSensitive = caseSensitiveFirstValue;
     });
+    it('should turn into lowercase when userNameCaseSensitive is false', function () {
+      var caseSensitiveFirstValue = config.userNameCaseSensitive;
+
+      config.userNameCaseSensitive = false;
+
+      var username = new UserName('userName');
+
+      username.value.should.equal('username');
+
+      config.userNameCaseSensitive = caseSensitiveFirstValue;
+    });
 
   });
 });
