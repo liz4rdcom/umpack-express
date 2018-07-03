@@ -46,7 +46,7 @@ describe('device control', function() {
   before(function() {
     umpackJs = rewire('../umpack');
 
-    return mongoose.connection.db.dropCollection(rolesCollection)
+    return mongoose.connection.dropCollection(rolesCollection)
       .then(function() {
         return mongoose.connection.db.collection(rolesCollection)
           .insert({
